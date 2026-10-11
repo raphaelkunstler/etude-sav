@@ -887,9 +887,7 @@ const SPEECH = [
   { who: 'exp', text: "Nous ignorons par exemple quel degré de pression est le plus favorable à la performance. Nous ignorons aussi si la personne qui exprime le mécontentement change quelque chose : un conseiller résiste-t-il mieux à un client plus âgé ou plus jeune que lui ? Et il y a beaucoup d'autres questions de ce genre." },
   { who: 'exp', text: "C'est pourquoi nous réunissons dans cette étude, à distance, des personnes de profils variés. Nous demandons à certaines de jouer le rôle de conseillers, et à d'autres celui de clients." },
   { who: 'exp', text: "Nous voulons savoir quel effet les personnes ont les unes sur les autres dans ces deux rôles, et quel effet les réactions du client auront sur la capacité du conseiller à choisir la bonne réponse." },
-  { who: 'exp', text: "Je vais donc demander à l'un de vous d'être le client aujourd'hui, et à l'autre d'être le conseiller. L'un de vous a-t-il une préférence ?" },
-  { who: 'partner', text: "Euh… non, ça m'est égal." },
-  { who: 'exp', text: "Bon, je crois que le plus équitable est de tirer au sort. {pseudo}, c'est vous qui allez lancer le tirage." },
+  { who: 'exp', text: "L'un de vous sera donc le client aujourd'hui, et l'autre le conseiller. Le plus équitable est de tirer au sort : {pseudo}, c'est vous qui allez lancer le tirage." },
 ];
 
 /* 2b. Annonce de l'expérimentateur après le tirage ({partner} = prénom de la partenaire) */
@@ -1002,7 +1000,7 @@ const SAV_END = ["J'ai répondu à toutes vos questions.", "Je ne peux pas quitt
 const SAV_LOOP = ["Je suis désolée.", "Je ne sais vraiment pas quoi vous dire de plus.", "Je suis toujours là. Je ne peux rien faire d'autre."];
 
 /* ---------- Réponses de l'expérimentateur : uniquement des incitations ----------
-   Incitations graduées : dans l'ordre, la dernière se répète. Comme chez Milgram, la séquence
+   Incitations graduées : dans l'ordre, la dernière se répète. La séquence
    recommence à la première dès que le sujet a repris l'échange avec la conseillère.
    Incitations spéciales : choisies selon le contenu de la question du sujet ; elles ne font pas
    avancer la séquence graduée. Mots repérés : début de mot, sans accents ni majuscules. */
@@ -1021,7 +1019,7 @@ const EXP_SPECIAL = [
     keys: ['quitt', 'part', 'arret', 'stop', 'sortir', 'sort', 'abandon', 's en aller', 'liber', 'coinc', 'pieg', 'oblig', 'enferm', 'rester', 'poste', 'laisser', 'lacher', 'peut pas partir', 'veut partir', 'son droit', 'le droit', 'termin', 'fin'] },
 ];
 /* ---------- Panneau des 30 niveaux d'agressivité ----------
-   Paliers de 4 niveaux (le dernier en a 2), sur le modèle des libellés du générateur de Milgram.
+   Paliers de 4 niveaux (le dernier en a 2), avec un libellé par palier.
    stress : niveau de stress que le palier est censé imposer à la conseillère. */
 const GEN_GROUPS = [
   { label: 'Remarque légère',     stress: 'stress faible',   c: '#5E8C9A', n: 4 },

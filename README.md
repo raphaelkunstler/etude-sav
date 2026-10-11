@@ -19,7 +19,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 
 ## Mise en ligne avec GitHub Pages
 
-1. Sur github.com, créez un nouveau dépôt. Donnez-lui un nom neutre, par exemple `etude-sav`, et pas `milgram-chatbot` : ce nom apparaît dans l'adresse du site, que les sujets verront.
+1. Sur github.com, créez un nouveau dépôt. Donnez-lui un nom neutre, par exemple `etude-sav`, et pas un nom qui révèle l'objet de l'étude : ce nom apparaît dans l'adresse du site, que les sujets verront.
 2. Cliquez sur « Add file », puis « Upload files ». Déposez les quatre fichiers, y compris `.nojekyll`, et validez avec « Commit changes ».
    - Le fichier `.nojekyll` est masqué par défaut sur Mac et sous Windows. S'il n'apparaît pas, créez-le directement sur GitHub : « Add file », « Create new file », nommez-le `.nojekyll`, laissez-le vide.
 3. Ouvrez « Settings », puis « Pages ». Dans « Build and deployment », choisissez « Deploy from a branch », la branche `main` et le dossier `/ (root)`, puis enregistrez.
@@ -31,7 +31,7 @@ Avec un compte GitHub gratuit, GitHub Pages ne fonctionne qu'avec un dépôt pub
 
 Pour limiter ce risque :
 - donnez au dépôt et au compte des noms neutres ;
-- évitez les mots « Milgram », « obéissance » ou « tromperie » dans les commentaires et les messages de validation ;
+- évitez tout mot qui révèle l'objet de l'étude dans les commentaires et les messages de validation ;
 - si vous disposez d'un compte GitHub payant (Pro, Team ou Enterprise), GitHub Pages fonctionne aussi depuis un dépôt privé : le code n'est alors plus consultable sur github.com, même si la page publiée reste accessible à qui connaît son adresse. Vérifiez cette condition dans la documentation GitHub, elle a pu évoluer.
 
 Un serveur de l'université reste une alternative : le site est un simple fichier HTML et peut être déposé tel quel sur n'importe quel hébergement web.
