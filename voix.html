@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voix et profil</title>
+<style>
+  :root { --bg: #ECEFF3; --paper: #fff; --ink: #1C2430; --muted: #5E6A78; --accent: #2E4C7D; --line: #D5DBE3; --soft: #E3E9F2; --petrol: #0B4A52; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .bar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .bar b { font-size: 16px; } .bar span { font-size: 13px; color: var(--muted); }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 60px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 20px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  h1 { font-size: 24px; margin: 0 0 4px; } h2 { font-size: 15px; margin: 22px 0 8px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .lead { margin: 0; color: var(--muted); }
+  input[type=text] { font: inherit; width: min(320px, 100%); padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; }
+  .symbols { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+  .symbols button { aspect-ratio: 1; border: 2px solid var(--line); border-radius: 12px; background: var(--paper); font-size: 24px; cursor: pointer; color: var(--accent); }
+  .symbols button[aria-pressed=true] { border-color: var(--accent); background: var(--soft); box-shadow: 0 0 0 3px #2E4C7D33; }
+  .symbols button:disabled { opacity: .3; cursor: not-allowed; }
+  .voices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .voice { border: 2px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; cursor: pointer; background: var(--paper); text-align: left; font: inherit; color: inherit; }
+  .voice[aria-pressed=true] { border-color: var(--accent); background: var(--soft); }
+  .voice b { font-size: 15px; } .voice small { color: var(--muted); }
+  .voice .play { justify-self: start; border: 0; border-radius: 8px; padding: 5px 12px; background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+  .preview { margin-top: 20px; display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 12px; background: var(--soft); }
+  .av { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; color: #fff; flex: none; }
+  .av.me { background: var(--accent); } .av.st { background: #7A5C2E; } .av.ex { background: #4F5B6B; }
+  .note { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+  .room { display: flex; flex-direction: column; min-height: 560px; padding: 0; overflow: hidden; }
+  .room-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #FAFBFC; }
+  .room-head label { font-size: 14px; display: flex; gap: 6px; align-items: center; }
+  .log { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .m { display: flex; gap: 8px; align-items: flex-end; max-width: 92%; }
+  .m .av { width: 32px; height: 32px; font-size: 16px; }
+  .m .bub { border-radius: 14px; padding: 8px 12px; font-size: 15px; background: var(--soft); position: relative; }
+  .m .bub b { display: block; font-size: 12px; opacity: .7; }
+  .m.st .bub { background: #F1EBE2; } .m.me { align-self: flex-end; flex-direction: row-reverse; } .m.me .bub { background: var(--accent); color: #fff; }
+  .m.speaking .bub { box-shadow: 0 0 0 3px #F2C230; }
+  .m.speaking .bub::after { content: "🔊"; position: absolute; right: -6px; top: -10px; font-size: 14px; }
+  .room-foot { padding: 12px; border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: center; }
+  .btn { border: 0; border-radius: 9px; padding: 10px 18px; font-weight: 700; font: inherit; cursor: pointer; background: var(--accent); color: #fff; }
+  .btn.quiet { background: var(--soft); color: var(--ink); }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } .voices { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="bar"><b>Étude en ligne · démonstration des voix</b><span>Page de travail, hors parcours des sujets</span></div>
+<main>
+  <section class="card" aria-labelledby="t-profil">
+    <h1 id="t-profil">Votre profil</h1>
+    <p class="lead">Les messages de la salle et du chat seront lus à voix haute dans votre casque. Choisissez comment vous apparaîtrez aux autres participants.</p>
+
+    <h2>Prénom ou pseudonyme</h2>
+    <input type="text" id="prenom" maxlength="20" value="Sam" autocomplete="off" aria-label="Prénom ou pseudonyme">
+
+    <h2>Votre symbole</h2>
+    <div class="symbols" id="symbols" role="group" aria-label="Symbole"></div>
+
+    <h2>Votre voix</h2>
+    <div class="voices" id="voices" role="group" aria-label="Voix"></div>
+
+    <div class="preview" aria-live="polite">
+      <div class="av me" id="pv-av">★</div>
+      <div><b id="pv-name">Sam</b><br><small id="pv-voice" style="color:var(--muted)">Voix 1</small></div>
+    </div>
+    <p class="note" id="note"></p>
+  </section>
+
+  <section class="card room" aria-label="Salle">
+    <div class="room-head"><b>Salle</b><label><input type="checkbox" id="auto" checked> Lecture à voix haute</label></div>
+    <div class="log" id="log"></div>
+    <div class="room-foot"><button class="btn" id="play" type="button">▶ Écouter la démonstration</button><button class="btn quiet" id="stop" type="button">■ Arrêter</button></div>
+  </section>
+</main>
+<script>
+/* ---------- Réglages ----------
+   Quatre voix proposées au sujet. La lecture utilise la synthèse vocale du navigateur : la voix réelle
+   dépend de l'ordinateur. Pour la passation, il faudra des fichiers audio enregistrés à l'avance,
+   identiques pour tous les sujets (voir la note en bas de la page). */
+const SYMBOLES = ['★', '●', '▲', '◆', '♣', '♥', '☀', '☾', '✿', '⚑', '✈', '♪'];
+const VOIX = [
+  { id: 'v1', nom: 'Voix 1', desc: 'grave, posée', pitch: 0.75, rate: 0.95, pref: /(thomas|paul|henri|male|homme|daniel)/i },
+  { id: 'v2', nom: 'Voix 2', desc: 'claire, rapide', pitch: 1.15, rate: 1.1, pref: /(amelie|amélie|audrey|julie|female|femme|google)/i },
+  { id: 'v3', nom: 'Voix 3', desc: 'douce, lente', pitch: 1.0, rate: 0.85, pref: /(marie|aurelie|aurélie|virginie|google)/i },
+  { id: 'v4', nom: 'Voix 4', desc: 'neutre', pitch: 0.95, rate: 1.0, pref: /./ },
+];
+/* Voix et symboles des autres participants, fixés pour tous les sujets */
+const AUTRES = {
+  st: { nom: 'Stéphanie', symbole: '✿', pitch: 1.2, rate: 1.0, pref: /(amelie|amélie|audrey|julie|google)/i },
+  ex: { nom: 'Expérimentateur', symbole: '⚑', pitch: 0.85, rate: 0.95, pref: /(thomas|paul|henri|daniel)/i },
+};
+const DEMO = [
+  ['st', "Bonjour ! Moi c'est Stéphanie. Vous êtes là pour l'étude aussi ?"],
+  ['me', "Oui, bonjour, moi c'est {prenom}."],
+  ['st', "Enchantée {prenom} ! Je suis en deuxième année de licence."],
+  ['ex', "Bonjour à tous les deux, et merci de participer à cette étude."],
+  ['ex', "{prenom}, c'est vous qui allez lancer le tirage."],
+];
+
+const $ = id => document.getElementById(id);
+const P = { prenom: 'Sam', symbole: SYMBOLES[0], voix: VOIX[0] };
+const taken = new Set([AUTRES.st.symbole, AUTRES.ex.symbole]);   // symboles déjà pris par les autres
+
+/* Voix françaises disponibles sur cet ordinateur */
+let fr = [];
+function loadVoices() {
+  fr = speechSynthesis.getVoices().filter(v => /^fr/i.test(v.lang));
+  $('note').textContent = fr.length
+    ? `Voix françaises trouvées sur cet ordinateur : ${fr.map(v => v.name).join(', ')}.`
+    : "Aucune voix française n'est installée dans ce navigateur : la démonstration utilisera la voix par défaut.";
+}
+function pick(spec) { return fr.find(v => spec.pref.test(v.name)) || fr[0] || null; }
+function speak(text, spec) {
+  return new Promise(res => {
+    if (!('speechSynthesis' in window)) return res();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'fr-FR'; u.pitch = spec.pitch; u.rate = spec.rate;
+    const v = pick(spec); if (v) u.voice = v;
+    u.onend = u.onerror = res;
+    speechSynthesis.speak(u);
+  });
+}
+if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+else $('note').textContent = "Ce navigateur ne permet pas la synthèse vocale.";
+
+/* Choix du symbole */
+SYMBOLES.forEach(s => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = s; b.setAttribute('aria-label', 'Symbole ' + s);
+  b.disabled = taken.has(s); b.setAttribute('aria-pressed', s === P.symbole);
+  b.onclick = () => { P.symbole = s; document.querySelectorAll('#symbols button').forEach(x => x.setAttribute('aria-pressed', x === b)); refresh(); };
+  $('symbols').appendChild(b);
+});
+/* Choix de la voix */
+VOIX.forEach(v => {
+  const d = document.createElement('div'); d.className = 'voice'; d.setAttribute('role', 'button'); d.tabIndex = 0; d.setAttribute('aria-pressed', v === P.voix);
+  d.innerHTML = `<b>${v.nom}</b><small>${v.desc}</small>`;
+  const play = document.createElement('button'); play.type = 'button'; play.className = 'play'; play.textContent = '▶ Écouter';
+  play.onclick = e => { e.stopPropagation(); speechSynthesis.cancel(); speak(`Bonjour, je m'appelle ${P.prenom}.`, v); };
+  d.appendChild(play);
+  const choose = () => { P.voix = v; document.querySelectorAll('.voice').forEach(x => x.setAttribute('aria-pressed', x === d)); refresh(); };
+  d.onclick = choose; d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } };
+  $('voices').appendChild(d);
+});
+$('prenom').oninput = () => { P.prenom = $('prenom').value.trim() || 'Sam'; refresh(); };
+
+/* Aperçu et démonstration */
+function render() {
+  $('log').textContent = '';
+  DEMO.forEach(([who, t], i) => {
+    const o = who === 'me' ? { nom: P.prenom + ' (vous)', symbole: P.symbole } : AUTRES[who];
+    const m = document.createElement('div'); m.className = 'm ' + who; m.dataset.i = i;
+    m.innerHTML = `<div class="av ${who}">${o.symbole}</div><div class="bub"><b></b><span></span></div>`;
+    m.querySelector('b').textContent = o.nom; m.querySelector('span').textContent = t.replace(/\{prenom\}/g, P.prenom);
+    $('log').appendChild(m);
+  });
+}
+function refresh() { $('pv-av').textContent = P.symbole; $('pv-name').textContent = P.prenom; $('pv-voice').textContent = `${P.voix.nom} · ${P.voix.desc}`; render(); }
+let playing = false;
+$('play').onclick = async () => {
+  if (playing) return; playing = true; speechSynthesis.cancel();
+  for (const [i, [who, t]] of DEMO.entries()) {
+    if (!playing) break;
+    const el = $('log').querySelector(`[data-i="${i}"]`); el.classList.add('speaking'); el.scrollIntoView({ block: 'nearest' });
+    const spec = who === 'me' ? P.voix : AUTRES[who];
+    if ($('auto').checked) await speak(t.replace(/\{prenom\}/g, P.prenom), spec); else await new Promise(r => setTimeout(r, 1200));
+    el.classList.remove('speaking');
+  }
+  playing = false;
+};
+$('stop').onclick = () => { playing = false; speechSynthesis.cancel(); document.querySelectorAll('.speaking').forEach(x => x.classList.remove('speaking')); };
+refresh();
+</script>
+</body>
+</html>
