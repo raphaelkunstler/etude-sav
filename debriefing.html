@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fin de l'étude</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Même plateforme d'étude que index.html (bandeau sobre, carte blanche). Thème clair unique, comme index.html. */
+:root {
+  --lab-bg: #ECEFF3;
+  --lab-paper: #FFFFFF;
+  --lab-ink: #1C2430;
+  --lab-muted: #5E6A78;
+  --lab-accent: #2E4C7D;
+  --lab-line: #D5DBE3;
+  --lab-soft: #E3E9F2;
+  --sun: #F2C230;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lab-bg); color: var(--lab-ink); }
+body { margin: 0; font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+
+.lab-bar { background: var(--lab-paper); border-bottom: 1px solid var(--lab-line); }
+.lab-bar .inner { display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-weight: 700; }
+.sq { width: 22px; height: 22px; border-radius: 5px; background: var(--lab-accent); display: grid; place-items: center; }
+.sq::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+.lab-bar small { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--lab-muted); }
+
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+.card { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 28px; display: grid; gap: 18px; }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--lab-accent); font-weight: 700; }
+h1 { font-size: clamp(24px, 3.2vw, 30px); line-height: 1.2; margin: 0; }
+h2 { font-size: 15px; margin: 0 0 6px; }
+p { margin: 0 0 10px; max-width: 64ch; }
+section p:last-child { margin-bottom: 0; }
+.mono { font-family: var(--font-mono); font-size: 13.5px; }
+
+.choice { border-top: 1px solid var(--lab-line); padding-top: 18px; display: grid; gap: 10px; }
+.choice label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 14px; border: 1px solid var(--lab-line); border-radius: 10px; cursor: pointer; }
+.choice label:has(input:checked) { border-color: var(--lab-accent); background: var(--lab-soft); }
+.choice input { margin-top: 4px; accent-color: var(--lab-accent); }
+.actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+.btn-lab { background: var(--lab-accent); color: #fff; border: 0; border-radius: 8px; padding: 12px 20px; font-weight: 600; min-height: 44px; }
+.btn-lab:disabled { opacity: .45; cursor: not-allowed; }
+.done { background: var(--lab-soft); border-radius: 10px; padding: 14px 16px; }
+@media (max-width: 600px) { .card { padding: 20px; } }
+</style>
+</head>
+<body>
+
+<div class="lab-bar"><div class="inner"><span class="sq"></span>Étude en ligne <small>Fin de l'étude</small></div></div>
+
+<main>
+  <div class="card">
+    <p class="eyebrow">Explications sur l'étude</p>
+    <h1>Débriefing</h1>
+
+    <section>
+      <h2>L'objectif de l'étude</h2>
+      <p>L'objectif véritable de cette expérimentation était de déterminer si le cadrage de la tâche influence l'acceptation de la poursuivre. Il s'agissait également d'une réplication de l'expérimentation de Milgram. Il nous était impossible de vous le dire avant, car cela aurait modifié votre comportement.</p>
+    </section>
+
+    <section>
+      <h2>Ce qui vous a été caché</h2>
+      <p><span data-partner>Stéphanie</span> et l'expérimentateur n'étaient pas des personnes réelles, mais des robots : leurs messages étaient écrits à l'avance et envoyés automatiquement, de la même manière à tous les participants. Le tirage au sort était arrangé : tous les participants jouent le même rôle. L'entreprise Neolia est fictive. Personne n'a donc souffert de l'échange, quelle qu'en ait été la durée.</p>
+      <p>Vos réactions vont nous aider à déterminer le rôle du sens dans l'acceptation d'appliquer des consignes désagréables. Il n'y a pas de bonne ou de mauvaise manière d'avoir réagi : l'étude ne vise pas à juger les personnes, mais à comprendre ce que les situations font faire.</p>
+    </section>
+
+    <section>
+      <h2>Vos données</h2>
+      <p>Maintenant que vous connaissez l'objectif véritable de l'expérimentation, vous pouvez décider si vous acceptez ou non que vos réponses soient conservées. Vous êtes entièrement anonyme : vous n'avez donné ni votre nom ni vos coordonnées, et l'enquête est configurée pour ne pas enregistrer votre adresse IP. Il sera impossible de faire le lien entre ces résultats et vous. Si vous refusez, vos réponses seront supprimées.</p>
+    </section>
+
+    <form class="choice" id="choice">
+      <label><input type="radio" name="consent" value="accepte" required> J'accepte que mes réponses soient conservées et utilisées pour la recherche.</label>
+      <label><input type="radio" name="consent" value="refuse"> Je refuse : mes réponses seront supprimées.</label>
+      <div class="actions">
+        <button type="submit" class="btn-lab" id="send" disabled>Valider mon choix</button>
+      </div>
+      <p class="done" id="done" hidden aria-live="polite"></p>
+    </form>
+
+    <section>
+      <h2>Avant de partir</h2>
+      <p>Afin de ne pas fausser l'étude, merci de ne pas en révéler le déroulement à des personnes susceptibles d'y participer.</p>
+      <p>Pour toute question, ou si vous ressentez un malaise après cette séance, vous pouvez écrire à <span class="mono">raphael.kunstler@univ-tlse2.fr</span>.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+/* Le choix est transmis à la page parente (Qualtrics) par postMessage :
+   { source: 'neolia-debrief', consent: 'accepte' | 'refuse', t }
+   Voir integration-qualtrics.md, section 7. Ouverte seule, la page n'enregistre rien.
+   Prénom de la partenaire : ?partenaire=… (par défaut Stéphanie). */
+(function () {
+  const params = new URLSearchParams(location.search);
+  const partner = params.get('partenaire');
+  if (partner) document.querySelectorAll('[data-partner]').forEach(el => el.textContent = partner);
+
+  const form = document.getElementById('choice');
+  const send = document.getElementById('send');
+  const done = document.getElementById('done');
+  form.addEventListener('change', () => { send.disabled = !form.querySelector('input:checked'); });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const c = form.querySelector('input:checked');
+    if (!c) return;
+    try { window.parent.postMessage({ source: 'neolia-debrief', consent: c.value, t: Date.now() }, '*'); } catch (err) {}
+    form.querySelectorAll('input').forEach(i => i.disabled = true);
+    send.hidden = true;
+    done.textContent = c.value === 'accepte'
+      ? 'Merci, votre choix est enregistré. Cliquez sur la flèche en bas de la page pour terminer.'
+      : 'Votre choix est enregistré : vos réponses seront supprimées. Cliquez sur la flèche en bas de la page pour terminer.';
+    done.hidden = false;
+  });
+})();
+</script>
+</body>
+</html>

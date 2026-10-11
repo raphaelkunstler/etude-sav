@@ -14,6 +14,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, colonne des commentaires du client à droite, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
 | `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
 | `qcm/qcm-neolia.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
+| `debriefing.html` | La page de débriefing, à placer en dernier dans Qualtrics : explications sur l'étude, puis choix « J'accepte » / « Je refuse » que les données soient conservées, transmis à Qualtrics (`debrief_consent`). |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
 | `.nojekyll` | Empêche GitHub de transformer les fichiers. Il ne faut pas le supprimer. |
 
