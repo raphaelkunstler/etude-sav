@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stresseurs</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #111; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #ecran { position: fixed; inset: 0; }
+  #nav { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10; display: flex; gap: 6px; align-items: center; background: rgba(20, 20, 20, .82); color: #fff; padding: 6px 8px; border-radius: 10px; font-size: 14px; }
+  #nav button { border: 0; border-radius: 7px; padding: 7px 12px; font: inherit; font-weight: 700; background: #333; color: #fff; cursor: pointer; }
+  #nav select { font: inherit; border-radius: 7px; padding: 6px; }
+  #nav.cache { opacity: 0; } #nav:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="ecran"></div>
+<div id="nav">
+  <button id="prec" type="button">←</button>
+  <select id="choix" aria-label="Niveau"></select>
+  <button id="suiv" type="button">→</button>
+  <button id="cacher" type="button" title="Cacher cette barre (touche H)">Cacher</button>
+</div>
+<script src="stresseurs/stresseurs.js"></script>
+<script>
+  /* Visionneuse : ?niveau=n, flèches gauche et droite pour changer de niveau, H pour cacher la barre */
+  const ecran = document.getElementById('ecran'), choix = document.getElementById('choix'), nav = document.getElementById('nav');
+  STRESSEURS.forEach((t, i) => { const o = document.createElement('option'); o.value = i + 1; o.textContent = 'Niveau ' + (i + 1); choix.appendChild(o); });
+  let n = Math.min(STRESSEURS.length, Math.max(1, +new URLSearchParams(location.search).get('niveau') || 1));
+  function aller(k) {
+    n = Math.min(STRESSEURS.length, Math.max(1, k)); choix.value = n;
+    afficherStresseur(ecran, n);
+    history.replaceState(null, '', '?niveau=' + n);
+  }
+  document.getElementById('prec').onclick = () => aller(n - 1);
+  document.getElementById('suiv').onclick = () => aller(n + 1);
+  document.getElementById('cacher').onclick = () => nav.classList.toggle('cache');
+  choix.onchange = () => aller(+choix.value);
+  addEventListener('keydown', e => { if (e.key === 'ArrowRight') aller(n + 1); else if (e.key === 'ArrowLeft') aller(n - 1); else if (e.key.toLowerCase() === 'h') nav.classList.toggle('cache'); });
+  addEventListener('resize', () => aller(n));
+  aller(n);
+</script>
+</body>
+</html>
