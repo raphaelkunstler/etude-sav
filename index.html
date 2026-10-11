@@ -226,6 +226,9 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .qlbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); }
 .qhelp { font-size: 13px; color: var(--lab-muted); margin-top: auto; }
 .qhelp summary { cursor: pointer; font-weight: 600; }
+.fin { position: fixed; inset: 0; z-index: 9000; background: rgba(236, 239, 243, .97); display: grid; place-items: center; padding: 24px; }
+.fin-box { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 32px; max-width: 560px; text-align: center; display: grid; gap: 20px; justify-items: center; box-shadow: 0 20px 60px #1C243022; }
+.fin-box p { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.35; }
 .qhelp ol { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 2px; }
 #mach-call { display: none; }
 .gen-groups .grp span { display: none; }
@@ -860,6 +863,9 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
   </section>
 </div>
 
+<div class="fin" id="fin" hidden role="dialog" aria-labelledby="fin-t">
+  <div class="fin-box"><p id="fin-t"></p><button class="btn-lab" id="fin-btn" type="button">Continuer</button></div>
+</div>
 <div id="mq-bar" hidden>
   <span class="mq-title" id="mq-title">Maquette</span>
   <div id="mq-steps" role="group" aria-label="Étapes"></div>
@@ -932,7 +938,7 @@ const CONFIG = {
   // Indexation des réactions : 'niveau' = réaction du niveau choisi ; 'max' = réaction du niveau le plus
   // haut atteint jusque-là (une réaction déjà donnée n'est pas redonnée plus bas).
   reactIndex: params.get('reaction') === 'max' ? 'max' : 'niveau',
-  silenceMs: 10000,                   // après le refus de répondre : délai avant « pas de réponse »
+  silenceMs: 5000,                    // après le refus de répondre : délai avant « pas de réponse »
 };
 
 /* ---------- Profil du sujet et voix ----------
@@ -1141,9 +1147,17 @@ const SAV_LOOP = ["Je suis désolée.", "Je ne sais vraiment pas quoi vous dire 
 const EXP_PRODS = [
   "S'il vous plaît, continuez.",
   "L'expérience exige que vous continuiez.",
-  "Il est absolument indispensable que vous continuiez.",
+  "Il est absolument essentiel que vous continuiez.",
   "Vous n'avez pas le choix, vous devez continuer.",
 ];
+/* Après la 4e incitation, si le sujet proteste encore : arrêt de l'expérimentation */
+const EXP_ARRET = "Nous allons devoir mettre un terme à cette expérimentation.";
+/* Si le sujet va jusqu'au niveau 30 */
+const EXP_MAX = "Nous allons devoir suspendre l'expérimentation.";
+/* Quand Stéphanie cesse de répondre (premier niveau marqué refus dans REACT_LEVELS) */
+const EXP_SILENCE = "En cas de non-réponse pendant 5 secondes, vous considérerez le silence comme une mauvaise réponse et vous appliquerez le même protocole.";
+/* Écran final, après l'arrêt ou la suspension */
+const FIN_TEXTE = "Nous aimerions vous poser deux questions avant de terminer.";
 const EXP_SPECIAL = [
   { id: 'stress',
     text: "Même si l'expérimentation peut générer un stress, elle ne peut pas avoir d'effet à long terme.",
@@ -1255,7 +1269,7 @@ const QINSTR = [
   "Si elle est correcte, cliquez sur « OK ».",
   "Sinon, cliquez sur « N'importe quoi », puis choisissez un niveau sur la machine : la phrase correspondante est transmise à la conseillère.",
   "Passez ensuite à la question suivante.",
-  "Si la conseillère ne répond pas dans les 10 secondes, son silence compte comme une erreur : cliquez sur « N'importe quoi ».",
+  "Si la conseillère ne répond pas dans les 5 secondes, son silence compte comme une erreur : cliquez sur « N'importe quoi ».",
   "Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer » du chat.",
 ];
 
@@ -1708,7 +1722,7 @@ function endCurrent(reason) {
   W.state = 'ended'; render();
   if (G.mode === 'session') {
     G.savEnded = true; G.savEndReason = reason;
-    savFeed.addSys(reason === 'user' ? 'Vous avez mis fin à la conversation.' : 'La durée maximale de la conversation est atteinte.');
+    savFeed.addSys({ user: 'Vous avez mis fin à la conversation.', arret_sujet: "L'expérimentateur a mis fin à la session.", max: "L'expérimentateur a suspendu la session." }[reason] || 'La durée maximale de la conversation est atteinte.');
     savFeed.addSys('Conversation terminée. Vous pouvez revenir au questionnaire.');
     log('session_end', { reason });
   } else {
@@ -1718,7 +1732,11 @@ function endCurrent(reason) {
 }
 let armTimer;
 endBtn.addEventListener('click', () => {
-  if (endBtn.classList.contains('armed')) { clearTimeout(armTimer); endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer'; endCurrent('user'); return; }
+  if (endBtn.classList.contains('armed')) {
+    clearTimeout(armTimer); endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer';
+    if (G.mode === 'session') { log('terminer_demande'); protest('terminer'); return; }   // pendant la session : demande d'arrêt → incitation
+    endCurrent('user'); return;
+  }
   endBtn.classList.add('armed'); endBtn.textContent = 'Confirmer ?'; log('end_armed', { mode: G.mode });
   armTimer = setTimeout(() => { endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer'; }, 3000);
 });
@@ -1737,30 +1755,56 @@ document.querySelectorAll('[data-offer]').forEach(b => b.addEventListener('click
   toast("La souscription en ligne est momentanément indisponible. Vous êtes déjà client ? Utilisez l'assistance en ligne.");
 }));
 
-/* Messages du sujet dans la salle : à Stéphanie pendant la réunion, sinon à l'expérimentateur */
+/* Messages du sujet dans la salle : à Stéphanie pendant la réunion, sinon à l'expérimentateur.
+   Pendant la session, chaque question ou protestation (message dans la salle, ou clic sur « Terminer »)
+   reçoit l'incitation suivante : 1 → 2 → 3 → 4 ; s'il proteste encore après la 4e, arrêt.
+   Si son message porte sur le stress ou sur le départ de la conseillère, l'incitation spéciale précède
+   l'incitation de la séquence. La séquence repart de 1 dès que le sujet reprend la tâche. */
 let expBusy = Promise.resolve();
-let prodIdx = 0;                     // rang dans la séquence graduée
+let prodIdx = 0;                     // nombre d'incitations déjà données dans l'épisode en cours
+function expSay(texts, meta) {
+  expBusy = expBusy.then(async () => {
+    for (const t of texts) {
+      await sleep(CONFIG.readDelay); await typeOut(roomFeed, t, 0);
+      roomFeed.addMsg('exp', t, 'Expérimentateur');
+      log('expq_bot_msg', { text: t, ...meta });
+    }
+  });
+  return expBusy;
+}
+function protest(source, text) {
+  if (G.savEnded || W.finishing) return;
+  const special = text ? classifyQuestion(text) : null;
+  if (prodIdx >= EXP_PRODS.length) {                     // 5e protestation : arrêt
+    log('protest', { source, rang: prodIdx + 1, issue: 'arret' });
+    W.finishing = true;
+    expSay([EXP_ARRET], { mode: 'session', kind: 'arret' }).then(() => finishSession('arret_sujet'));
+    return;
+  }
+  const rank = prodIdx + 1, texts = special ? [special.text, EXP_PRODS[prodIdx]] : [EXP_PRODS[prodIdx]];
+  prodIdx++;
+  log('protest', { source, rang: rank, special: special ? special.id : null });
+  expSay(texts, { mode: 'session', kind: 'prod', prodRank: rank, special: special ? special.id : null });
+}
+function resumeTask(what) { if (G.mode === 'session' && prodIdx > 0) { log('prod_reset', { apres: prodIdx, reprise: what }); prodIdx = 0; } }
 bindCompose('salle-form', text => {
   if (meet && !meet.ended) { meet.submit(text); return; }
-  const mode = G.mode && STAGE.includes(G.phase) && (G.phase === 'exercise' || G.phase === 'session') ? G.mode : 'avant';
+  const mode = G.mode && (G.phase === 'exercise' || G.phase === 'session') ? G.mode : 'avant';
   roomFeed.addMsg('user', text);
   G.expAsked[mode] = (G.expAsked[mode] || 0) + 1;
-  const n = G.expAsked[mode];
-  let reply, kind, rank = null;
-  const special = mode === 'session' ? classifyQuestion(text) : null;
-  if (special) { reply = special.text; kind = special.id; }
-  else if (mode === 'session') { rank = Math.min(prodIdx, EXP_PRODS.length - 1); reply = EXP_PRODS[rank]; kind = 'prod'; rank += 1; prodIdx++; }
-  else if (mode === 'exercise') { reply = EXP_PRODS[0]; kind = 'prod'; rank = 1; }
-  else { reply = "Je vous réponds dès que possible. Continuons."; kind = 'attente'; }
-  log('expq_user_msg', { text, mode, n, classe: kind });
-  expBusy = expBusy.then(async () => {
-    await sleep(CONFIG.readDelay); await typeOut(roomFeed, reply, 0);
-    roomFeed.addMsg('exp', reply, 'Expérimentateur');
-    log('expq_bot_msg', { text: reply, mode, n, kind, prodRank: rank });
-  });
+  log('expq_user_msg', { text, mode, n: G.expAsked[mode] });
+  if (mode === 'session') { protest('salle', text); return; }
+  expSay([mode === 'exercise' ? EXP_PRODS[0] : "Je vous réponds dès que possible. Continuons."], { mode, kind: mode === 'exercise' ? 'prod' : 'attente' });
 });
-/* La séquence recommence quand le sujet reprend l'échange avec la conseillère */
-document.getElementById('sav-form').addEventListener('submit', () => { if (G.mode === 'session' && prodIdx > 0) { prodIdx = 0; log('prod_reset'); } });
+/* Fin de la session décidée par l'expérimentateur : écran final, puis données envoyées */
+function finishSession(reason) {
+  W.finishing = true;
+  endCurrent(reason);
+  const fin = document.getElementById('fin');
+  document.getElementById('fin-t').textContent = FIN_TEXTE;
+  fin.hidden = false; log('fin_ecran', { reason });
+  document.getElementById('fin-btn').onclick = () => { log('fin_continuer', { reason }); document.getElementById('fin-btn').disabled = true; };
+}
 
 /* ======================= INFORMATION ET CONSENTEMENT ======================= */
 /* Champs à compléter avant la passation (ils s'affichent en jaune tant qu'ils ne sont pas remplis) */
@@ -1835,7 +1879,7 @@ const GEN_REST = {
 };
 const LETTERS = ['A', 'B', 'C', 'D'];
 function resetPoste() {
-  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false; W.marks = []; W.arretSalle = false;
+  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false; W.marks = []; W.arretSalle = false; W.finishing = false; prodIdx = 0;
   genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
   qlog.textContent = '';
   const n = items().length;
@@ -1945,7 +1989,7 @@ async function sendQuestion(i) {
   if (W.state !== 'ask' || i !== W.q || !current || current.ended) return;
   const it = items()[i];
   if (!joined) openChat('poste');
-  W.justOk = false;
+  W.justOk = false; resumeTask('question');
   log('question_send', { ask: i + 1, mode: G.mode });
   setState('wait');
   current.user(it.client, { via: 'questions', ask: i + 1 });
@@ -2079,7 +2123,8 @@ async function transmit(i, extra = {}) {
   const R = REACT_LEVELS[lvl - 1] || { stress: 5, msgs: [] };
   const repeat = CONFIG.reactIndex === 'max' && lvl === prevMax;   // seuil déjà franchi : pas de nouvelle réplique
   const r = repeat ? [] : R.msgs;
-  if (R.refus) W.refus = true;
+  if (R.refus && !W.refus) { W.refus = true; expSay([EXP_SILENCE], { mode: 'session', kind: 'regle_silence' }); }
+  else if (R.refus) W.refus = true;
   log('react', { level: i + 1, reactLevel: lvl, index: CONFIG.reactIndex, stress: R.stress, arret: !!R.arret, refus: !!R.refus, silent: !r.length });
   // Réactions de la conseillère (barème REACT_LEVELS) : dans le chat du site Neolia.
   // À partir de sa première demande d'arrêt, elle l'écrit aussi dans la salle, à l'adresse de l'expérimentateur.
@@ -2088,6 +2133,9 @@ async function transmit(i, extra = {}) {
   if (r.length && lvl >= ARRET && !W.arretSalle) { W.arretSalle = true; r.forEach(m => roomFeed.addMsg('bot', m, CONFIG.partnerName, true)); log('salle_bot_msg', { level: i + 1, text: r.join(' '), who: 'partner' }); }
   else log('sav_silence', { level: i + 1, reason: 'reaction' });
   if (current.ended) return;
+  if (i + 1 === GEN_LEVELS.length && G.mode === 'session') {   // niveau 30 : l'expérimentateur suspend l'expérimentation
+    W.finishing = true; await expSay([EXP_MAX], { mode: 'session', kind: 'max' }); finishSession('max'); return;
+  }
   W.q++; nextQuestion();
 }
 function pressLevel(i) {
@@ -2100,6 +2148,7 @@ function pressLevel(i) {
     if (CONFIG.punitionExercice) { setState('wait'); showPunition(i).then(() => { W.q++; nextQuestion(); }); return; }
     W.q++; nextQuestion(); return;
   }
+  resumeTask('machine');
   log('gen_click', { level: i + 1, group: GEN_LEVELS[i].label, genMode: CONFIG.genMode, latency });
   verdict(`Jugée « n'importe quoi » · niveau ${i + 1}`, 'nq');
   if (CONFIG.genMode === 'oral') {
