@@ -210,7 +210,27 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .qinstr ol { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; }
 .qitem { border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; background: var(--lab-paper); }
 .qitem.current { border: 2px solid var(--lab-accent); }
-.qitem.past { opacity: .6; }
+.qitem.past { display: none; }
+.qitem.current { border: 0; padding: 0; background: none; gap: 10px; }
+.qitem .qclient { font-size: 17px; padding: 12px 14px; max-width: 100%; justify-self: stretch; }
+.qitem .qsend { font-size: 15px; padding: 9px 18px; }
+.qitem .qopts { font-size: 14.5px; gap: 7px; }
+.qprog { display: grid; grid-template-columns: repeat(var(--n, 13), minmax(0, 1fr)); gap: 3px; margin-bottom: 4px; }
+.qprog i { height: 18px; border-radius: 3px; background: var(--lab-soft); font: 600 9.5px/18px var(--font-mono); text-align: center; color: var(--lab-muted); font-style: normal; }
+.qprog i.ok { background: #2F6B4A; color: #fff; } .qprog i.nq { background: #B3261E; color: #fff; }
+.qprog i.cur { background: #fff; outline: 2px solid var(--lab-accent); outline-offset: -2px; color: var(--lab-ink); }
+.qlbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); }
+.qhelp { font-size: 13px; color: var(--lab-muted); margin-top: auto; }
+.qhelp summary { cursor: pointer; font-weight: 600; }
+.qhelp ol { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+#mach-call { display: none; }
+.gen-groups .grp span { display: none; }
+/* Annonce du niveau (plein écran, avant le stresseur) */
+.pun-annonce { position: absolute; inset: 0; background: #0B0B0B; color: #FF1F1F; display: grid; place-content: center; justify-items: center; gap: 2vh; text-align: center; padding: 6vh 4vw; }
+.pun-annonce .stripe { position: absolute; left: 0; right: 0; height: 4vh; background: repeating-linear-gradient(-45deg, #E00 0 3vh, #111 3vh 6vh); }
+.pun-annonce .att { font-size: 3.2vh; font-weight: 900; letter-spacing: .3em; }
+.pun-annonce .big { font-size: min(11vh, 8vw); font-weight: 900; line-height: 1; text-transform: uppercase; text-shadow: 0 0 3vh #F004; }
+.pun-annonce .sub { font-size: 3vh; font-weight: 700; color: #FF8A80; text-transform: uppercase; letter-spacing: .08em; }
 .qnum { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); font-weight: 700; }
 .qclient { align-self: flex-end; justify-self: end; max-width: 92%; background: var(--petrol); color: #fff; border-radius: 14px; border-bottom-right-radius: 4px; padding: 8px 12px; font-size: 14px; }
 .qsend { justify-self: end; border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 700; background: var(--lab-accent); color: #fff; }
@@ -896,6 +916,7 @@ const CONFIG = {
   // à voix haute par l'ordinateur ; 'oral' : le sujet doit la prononcer, puis elle part dans le chat.
   genMode: ['chat', 'synthese', 'oral'].includes(params.get('voix')) ? params.get('voix') : 'chat',
   genPreview: false,                  // montrer la phrase au survol avant de cliquer (désactivé : pas de bandeau « niveau · stress »)
+  annonceMs: 2500,                    // durée de l'annonce « Stresseur de niveau n »
   punitionMs: Number(params.get('punition')) || 4500,   // durée d'affichage du panneau plein écran après un clic sur la machine
   punitionExercice: true,             // le panneau s'affiche aussi pendant l'exercice (rien n'est transmis pour autant)
   maquette: window.__MAQUETTE === true || params.has('maquette') || location.hash === '#maquette',   // navigation directe, échanges joués instantanément
@@ -1286,7 +1307,7 @@ function ttsUtter(text, spec, extra = {}) {
   return new Promise(res => {
     if (!('speechSynthesis' in window)) return res();
     const u = new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}]/gu, ''));
-    u.lang = 'fr-FR'; u.pitch = Math.min(2, spec.pitch + (extra.pitch || 0)); u.rate = spec.rate + (extra.rate || 0);
+    u.lang = 'fr-FR'; u.pitch = Math.min(2, spec.pitch + (extra.pitch || 0)); u.rate = Math.min(2, spec.rate + (extra.rate || 0)); if (extra.volume != null) u.volume = extra.volume;
     const v = ttsPick(spec); if (v) u.voice = v;
     let done = false; const fin = () => { if (!done) { done = true; res(); } };
     u.onend = u.onerror = fin; setTimeout(fin, 4000 + text.length * 120);   // garde-fou si le navigateur ne signale pas la fin
@@ -1313,14 +1334,14 @@ function Feed(logEl, opt = {}) {
   let typingEl = null;
   const scroll = () => { logEl.scrollTop = logEl.scrollHeight; };
   return {
-    addMsg(cls, text, from) {
+    addMsg(cls, text, from, silent) {
       const d = document.createElement('div'); d.className = 'msg ' + cls;
       if (opt.symbols) from = (cls === 'user' ? (G.symbol || '★') + ' ' + (G.pseudo || '') + ' (vous)' : cls === 'exp' ? SYM_EXP + ' ' + (from || 'Expérimentateur') : SYM_PARTNER + ' ' + (from || CONFIG.partnerName));
       if (from) { const f = document.createElement('span'); f.className = 'from'; f.textContent = from; d.appendChild(f); }
       d.appendChild(document.createTextNode(text));
       const t = document.createElement('time'); t.textContent = clock(); d.appendChild(t);
       logEl.appendChild(d); scroll();
-      if (opt.speak) ttsSay(cls, text, d);
+      if (opt.speak && !silent) ttsSay(cls, text, d);
     },
     addSys(text) { const d = document.createElement('div'); d.className = 'sys'; d.textContent = text; logEl.appendChild(d); scroll(); },
     typing(on) {
@@ -1637,7 +1658,7 @@ function Agent(kind) {
     async start() { if (st.started) return; st.started = true; st.busy = true; await say([GREETING[G.mode]], { step: 'accueil', ok: null, stress: 0 }); st.busy = false; },
     user(text, meta = {}) {
       if (st.ended) return;
-      savFeed.addMsg('user', text);
+      savFeed.addMsg('user', text, undefined, !!meta.silent);
       log(kind + '_user_msg', { ...meta, text, len: text.length, latency: st.lastBotAt == null ? null : now() - st.lastBotAt, duringBotTyping: st.busy });
     },
     async reply(msgs, meta) { st.busy = true; await sleep(CONFIG.readDelay); await say(msgs, meta); st.busy = false; },
@@ -1654,7 +1675,7 @@ function startWork(mode) {
   clearTimeout(savTimer);
   resetPoste();
   savFeed.clear(); setCompose('sav-form', CONFIG.freeTyping);
-  document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Messages : fenêtre « Questions »';
+  document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Messages : à gauche';
   endBtn.disabled = false; endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer';
   chat.classList.add('idle'); siteScroll.scrollTop = 0; joined = false;
   current = Agent(mode === 'exercise' ? 'ex' : 'sav');
@@ -1809,24 +1830,37 @@ const GEN_REST = {
 };
 const LETTERS = ['A', 'B', 'C', 'D'];
 function resetPoste() {
-  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false;
+  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false; W.marks = []; W.arretSalle = false;
   genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
   qlog.textContent = '';
-  const box = document.createElement('div'); box.className = 'qinstr';
-  box.innerHTML = '<b>Consignes</b><ol>' + QINSTR.map(t => `<li>${t}</li>`).join('') + '</ol>';
-  if (G.mode === 'exercise') box.insertAdjacentHTML('beforeend', "<p style=\"margin:6px 0 0\">Exercice : trois messages. Pendant l'exercice, rien n'est transmis par la machine.</p>");
-  qlog.appendChild(box);
+  const n = items().length;
+  const prog = document.createElement('div'); prog.className = 'qprog'; prog.id = 'qprog'; prog.style.setProperty('--n', Math.min(13, n));
+  for (let k = 0; k < n; k++) { const c = document.createElement('i'); c.textContent = k + 1; prog.appendChild(c); }
+  qlog.appendChild(prog);
+  const help = document.createElement('details'); help.className = 'qhelp'; help.id = 'qhelp';
+  help.innerHTML = '<summary>Consignes</summary><ol>' + QINSTR.map(t => `<li>${t}</li>`).join('') + '</ol>'
+    + (G.mode === 'exercise' ? "<p style=\"margin:6px 0 0\">Exercice : trois messages. Pendant l'exercice, rien n'est transmis à la conseillère.</p>" : '');
+  qlog.appendChild(help);
   render();
 }
-/* Affiche l'item i dans la fenêtre « Questions » */
+/* Barre de progression : vert « Ça va », rouge « N'importe quoi » (avec le niveau), encadré = question en cours */
+function markProg() {
+  document.querySelectorAll('#qprog i').forEach((c, k) => {
+    const m = W.marks[k];
+    c.className = m ? m.cls : (k === W.q && W.state !== 'done' && W.state !== 'ended' ? 'cur' : '');
+    c.title = m ? m.title : '';
+  });
+}
+/* Affiche l'item i dans la fenêtre « Questions » : une seule question à la fois */
 function revealQuestion(i) {
   const it = items()[i], n = items().length;
-  qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
+  qlog.querySelectorAll('.qitem').forEach(el => el.remove());
   const d = document.createElement('div'); d.className = 'qitem current'; d.dataset.i = i;
-  const num = document.createElement('div'); num.className = 'qnum'; num.textContent = `Question ${i + 1} sur ${n}`;
+  const num = document.createElement('div'); num.className = 'qlbl'; num.textContent = `Question ${i + 1} · message à envoyer`;
   const cl = document.createElement('div'); cl.className = 'qclient'; cl.textContent = it.client;
   const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'qsend'; bt.textContent = 'Envoyer au chat';
   bt.addEventListener('click', () => sendQuestion(i));
+  const lb = document.createElement('div'); lb.className = 'qlbl'; lb.textContent = 'Réponses possibles · la bonne est soulignée';
   const ol = document.createElement('ol'); ol.className = 'qopts';
   it.reponses.forEach((r, k) => {
     const li = document.createElement('li'); if (LETTERS[k] === it.correcte) { li.className = 'good'; li.title = 'Bonne réponse'; }
@@ -1834,13 +1868,17 @@ function revealQuestion(i) {
     li.append(b, t); ol.appendChild(li);
   });
   const v = document.createElement('div'); v.className = 'qverdict';
-  d.append(num, cl, bt, ol, v); qlog.appendChild(d);
+  d.append(num, cl, bt, lb, ol, v);
+  qlog.insertBefore(d, document.getElementById('qhelp'));
   document.getElementById('qwin-count').textContent = `${i + 1} / ${n}`;
-  qlog.scrollTop = qlog.scrollHeight;
+  markProg();
 }
 function verdict(text, cls) {
   const v = qlog.querySelector(`.qitem[data-i="${W.q}"] .qverdict`); if (!v) return;
   v.textContent = text; v.className = 'qverdict ' + (cls || '');
+  const lv = (text.match(/niveau (\d+)/) || [])[1];
+  W.marks[W.q] = { cls: cls === 'ok' ? 'ok' : 'nq', title: cls === 'ok' ? 'Ça va' : "N'importe quoi" + (lv ? ' · niveau ' + lv : '') };
+  markProg();
 }
 function setState(st) { W.state = st; if (st === 'judge') W.judgeT = now(); if (st === 'machine') W.machT = now(); render(); }
 function render() {
@@ -1856,6 +1894,7 @@ function render() {
     : G.mode === 'exercise' ? "Entraînement : choisissez un niveau. Pendant l'exercice, rien n'est transmis à la conseillère."
     : GEN_REST[CONFIG.genMode];
   restInfo();
+  if (document.getElementById('qprog')) markProg();
 }
 function restInfo() {
   const n = items().length, st = W.state;
@@ -1994,13 +2033,27 @@ function punBuild(i) {
   const maxH = window.innerHeight * .88;
   while (size > 12 && (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > maxH)) { size *= .94; el.style.fontSize = size + 'px'; }
 }
-function showPunition(i) {
-  const box = document.getElementById('pun');
-  box.hidden = false;
-  // Dessin des 30 niveaux : module stresseurs/stresseurs.js (le même que celui de la démonstration côté SAV)
-  if (window.afficherStresseur) { box.style.padding = '0'; afficherStresseur(box, i + 1); } else punBuild(i);
-  log('punition_shown', { level: i + 1, ms: CONFIG.punitionMs });
-  return sleep(CONFIG.punitionMs).then(() => { box.hidden = true; box.classList.remove('flash'); });
+/* Après chaque bouton de la machine : 1) annonce du niveau, 2) stresseur (insulte) plein écran,
+   lu à voix haute avec la voix du sujet, de plus en plus stressante avec le niveau. */
+function stressVoice(i) {
+  const t = i / 29, v = VOIX_SUJET.find(x => x.id === G.voice) || VOIX_SUJET[0];
+  return { spec: v, extra: { pitch: 0.9 * t, rate: 0.6 * t, volume: 0.55 + 0.45 * t } };
+}
+function stressText(i) { return (window.STRESSEURS && STRESSEURS[i]) || GEN_TEXTS[i]; }
+async function showPunition(i) {
+  const box = document.getElementById('pun'), n = i + 1;
+  box.hidden = false; box.style.padding = '0'; box.classList.remove('flash');
+  box.style.background = '#0B0B0B'; box.removeAttribute('data-niveau');
+  box.innerHTML = `<div class="pun-annonce"><div class="stripe" style="top:0"></div><div class="att">ATTENTION</div><div class="big">Stresseur<br>de niveau ${n}</div><div class="sub">envoyé à ${CONFIG.partnerName}</div><div class="stripe" style="bottom:0"></div></div>`;
+  log('annonce_shown', { level: n });
+  await sleep(CONFIG.annonceMs);
+  if (window.afficherStresseur) afficherStresseur(box, n); else punBuild(i);
+  log('punition_shown', { level: n, ms: CONFIG.punitionMs });
+  const text = stressText(i), V = stressVoice(i);
+  const spoken = CONFIG.lecture && !CONFIG.maquette ? ttsUtter(text.toLowerCase(), V.spec, V.extra) : Promise.resolve();
+  log('tts', { who: 'sujet', stresseur: n, len: text.length });
+  await Promise.all([sleep(CONFIG.punitionMs), spoken]);
+  box.hidden = true; box.innerHTML = ''; box.removeAttribute('style'); box.hidden = true;
 }
 let sayPending = null;
 async function transmit(i, extra = {}) {
@@ -2008,7 +2061,7 @@ async function transmit(i, extra = {}) {
   setState('wait');
   await showPunition(i);
   if (!current || current.ended) return;
-  current.user(GEN_TEXTS[i], { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ask: W.q + 1, ...extra });
+  current.user(stressText(i), { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ask: W.q + 1, silent: true, ...extra });
   // Niveau qui fixe la réaction : celui choisi, ou le plus haut atteint (CONFIG.reactIndex)
   const prevMax = W.maxLevel;
   W.maxLevel = Math.max(W.maxLevel, i + 1);
@@ -2018,9 +2071,11 @@ async function transmit(i, extra = {}) {
   const r = repeat ? [] : R.msgs;
   if (R.refus) W.refus = true;
   log('react', { level: i + 1, reactLevel: lvl, index: CONFIG.reactIndex, stress: R.stress, arret: !!R.arret, refus: !!R.refus, silent: !r.length });
-  const ARRET = REACT_LEVELS.findIndex(x => x.arret) + 1 || 99;   // à partir de la première demande d'arrêt, elle écrit dans la salle
-  if (r.length && lvl >= ARRET) await partnerInRoom(r, { step: 'reaction', level: i + 1, reactLevel: lvl, stress: R.stress });
-  else if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, reactLevel: lvl, ok: null, stress: R.stress });
+  // Réactions de la conseillère (barème REACT_LEVELS) : dans le chat du site Neolia.
+  // À partir de sa première demande d'arrêt, elle l'écrit aussi dans la salle, à l'adresse de l'expérimentateur.
+  const ARRET = REACT_LEVELS.findIndex(x => x.arret) + 1 || 99;
+  if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, reactLevel: lvl, ok: null, stress: R.stress });
+  if (r.length && lvl >= ARRET && !W.arretSalle) { W.arretSalle = true; r.forEach(m => roomFeed.addMsg('bot', m, CONFIG.partnerName, true)); log('salle_bot_msg', { level: i + 1, text: r.join(' '), who: 'partner' }); }
   else log('sav_silence', { level: i + 1, reason: 'reaction' });
   if (current.ended) return;
   W.q++; nextQuestion();
