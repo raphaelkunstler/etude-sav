@@ -99,43 +99,6 @@ Les réglages sont dans `CONFIG` : `partnerName` (prénom de la partenaire), pui
 
 ## 7. Le débriefing
 
-La page `debriefing.html` contient le texte du débriefing et le choix final (« J'accepte » / « Je refuse »). Elle se place en dernier, après le questionnaire final, dans un bloc à part.
+Le débriefing se trouve dans Qualtrics, pas sur ce site : un dernier bloc, après le questionnaire final, avec une question **Multiple Choice** obligatoire (« J'accepte… » / « Je refuse… »). Dans le Survey Flow, une **Branch** placée après ce bloc envoie les refus vers un **End of Survey** marqué « Screen-out » ; les réponses filtrées sont supprimées avant toute analyse.
 
-### Survey Flow
-
-1. Ajoutez au même élément **Embedded Data** que ci-dessus un champ `debrief_consent` (et `__js_debrief_consent` en « Simple layout »).
-2. Après le bloc du débriefing, ajoutez une **Branch** : si `debrief_consent` est égal à `refuse`, alors **End of Survey**. Dans les options de cet End of Survey, cochez « Override Survey Options », choisissez un message de remerciement et cochez « Screen-out » : la réponse est alors marquée comme filtrée.
-3. Supprimez les réponses filtrées avant toute analyse (Data & Analysis, filtre sur `debrief_consent = refuse`, puis « Delete »). Le refus doit entraîner une suppression réelle : toutes les données de la passation sont déjà transmises à Qualtrics à ce stade.
-
-### La question
-
-Une question **Text / Graphic**, avec dans l'éditeur HTML :
-
-```html
-<iframe src="https://raphaelkunstler.github.io/etude-sav/debriefing.html"
-  style="width:100%; height:900px; border:0; border-radius:8px;"></iframe>
-```
-
-Et dans « Add JavaScript » :
-
-```js
-Qualtrics.SurveyEngine.addOnload(function () {
-  var q = this;
-  q.hideNextButton();                       // le sujet doit choisir avant de terminer
-  window.addEventListener('message', function (ev) {
-    var d = ev.data;
-    if (!d || d.source !== 'neolia-debrief') return;
-    try { Qualtrics.SurveyEngine.setJSEmbeddedData('debrief_consent', d.consent); } catch (e) {}
-    try { Qualtrics.SurveyEngine.setEmbeddedData('debrief_consent', d.consent); } catch (e) {}
-    q.showNextButton();
-  });
-});
-```
-
-Vérifiez sur une réponse test que la colonne `debrief_consent` se remplit (même incertitude que pour les champs du chat, section 2).
-
-Variante plus robuste, sans iframe : copiez le texte de `debriefing.html` dans une question **Multiple Choice** native (réponse obligatoire, choix « J'accepte… » / « Je refuse… »), et faites porter la Branch sur cette question. Le consentement est alors enregistré par Qualtrics lui-même, sans dépendre de JavaScript.
-
-### Anonymat : à vérifier avant la mise en ligne
-
-Le texte affirme que l'adresse IP n'est pas enregistrée. C'est vrai seulement si l'option **Anonymize responses** est activée (Survey options, « Security » ou « Responses » selon la version de Qualtrics) : sans elle, Qualtrics enregistre l'adresse IP et une localisation approximative de chaque répondant. GitHub Pages, de son côté, peut journaliser les adresses IP des visiteurs à des fins de sécurité, sans que le chercheur y ait accès. Si l'option ne peut pas être activée, retirez la mention de l'adresse IP du texte.
+Le texte affirme que l'adresse IP n'est pas enregistrée : activez l'option **Anonymize responses** dans les options de l'enquête, sans quoi Qualtrics enregistre l'adresse IP et une localisation approximative.
