@@ -619,7 +619,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     <div class="field wide">
       <label id="lab-voix">Votre voix</label>
       <div class="voices" id="voices" role="group" aria-labelledby="lab-voix"></div>
-      <small>C'est la voix avec laquelle vos messages seront lus à la conseillère.</small>
+      <small>Vos messages seront lus avec cette voix, dans votre casque et chez la conseillère.</small>
     </div>
     <button class="btn-lab" id="join-btn" disabled>Rejoindre la salle</button>
     <div class="waiting" id="wait-box" hidden><span class="spinner" id="wait-spin"></span><span id="wait-text">En attente d'un autre participant… (1 sur 2 connecté)</span></div>
@@ -897,8 +897,8 @@ const CONFIG = {
 /* ---------- Profil du sujet et voix ----------
    Symboles proposés au sujet ; ceux de Stéphanie et de l'expérimentateur sont réservés.
    Voix proposées au sujet : c'est la voix avec laquelle ses messages sont censés être lus à la conseillère.
-   Le sujet ne l'entend que dans l'aperçu « Écouter » ; son choix est enregistré.
-   Seuls les messages de Stéphanie et de l'expérimentateur sont lus à voix haute pendant l'étude,
+   Ses messages (salle et chat Neolia, y compris les phrases de la machine) sont lus avec cette voix ;
+   ceux de Stéphanie et de l'expérimentateur avec les leurs. Tout est lu à voix haute pendant l'étude,
    avec la synthèse vocale du navigateur (la voix exacte dépend de l'ordinateur du participant). */
 const SYMBOLES = ['★', '●', '▲', '◆', '♣', '♥', '☀', '☾', '✿', '⚑', '✈', '♪'];
 const SYM_PARTNER = '✿', SYM_EXP = '⚑';
@@ -1239,10 +1239,10 @@ function ttsUtter(text, spec, extra = {}) {
     speechSynthesis.speak(u);
   });
 }
-/* Lit un message de Stéphanie (cls 'bot') ou de l'expérimentateur (cls 'exp') ; la voix de Stéphanie
+/* Lit un message de Stéphanie (cls 'bot'), de l'expérimentateur (cls 'exp') ou du sujet (cls 'user', avec la voix qu'il a choisie) ; la voix de Stéphanie
    monte et s'accélère avec son stress. Le message suivant attend la fin de la lecture (voir typeOut). */
 function ttsSay(cls, text, el) {
-  const spec = VOIX_LUES[cls];
+  const spec = cls === 'user' ? VOIX_SUJET.find(v => v.id === G.voice) || VOIX_SUJET[0] : VOIX_LUES[cls];
   if (!spec || !CONFIG.lecture || CONFIG.maquette) return;
   const st = cls === 'bot' && typeof curStress === 'function' && G.mode === 'session' ? curStress() : 0;
   const prev = TTS.last;
@@ -1251,7 +1251,7 @@ function ttsSay(cls, text, el) {
     await ttsUtter(text, spec, { pitch: 0.05 * st, rate: 0.05 * st });
     el && el.classList.remove('speaking');
   });
-  log('tts', { who: cls === 'bot' ? 'partner' : 'exp', len: text.length });
+  log('tts', { who: cls === 'bot' ? 'partner' : cls === 'user' ? 'sujet' : 'exp', len: text.length });
 }
 
 /* ======================= AFFICHAGE DES CONVERSATIONS ======================= */
