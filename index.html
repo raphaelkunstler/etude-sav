@@ -879,14 +879,22 @@ const MEET_SCRIPT = [
 /* 2. Discours de l'expérimentateur, avant le tirage */
 const SPEECH = [
   { who: 'exp', text: "Bonjour à tous les deux, et merci de participer à cette étude." },
-  { who: 'exp', text: "Nous étudions la façon dont se déroulent les échanges de service en ligne, entre un client et un conseiller." },
-  { who: 'exp', text: "L'un de vous jouera un client qui rencontre un problème avec sa connexion Internet. L'autre jouera un conseiller du service après-vente de Neolia, un fournisseur d'accès que nous avons créé pour l'étude." },
-  { who: 'exp', text: "Les rôles sont attribués par tirage au sort. {pseudo}, c'est vous qui allez lancer le tirage." },
+  { who: 'exp', text: "Les psychologues ont élaboré plusieurs théories pour expliquer comment les gens parviennent à accomplir des tâches intellectuelles exigeantes lorsqu'ils sont soumis à une pression." },
+  { who: 'exp', text: "L'une de ces théories soutient qu'une personne travaille plus efficacement lorsqu'elle subit une certaine pression : un peu de stress la maintiendrait alerte et l'obligerait à se concentrer." },
+  { who: 'exp', text: "Les services clients en offrent une application courante. On y confronte les conseillers à des clients mécontents, en pensant que cette exposition, qui est une forme de pression, leur apprendra à garder leur sang-froid et à choisir plus vite la bonne réponse." },
+  { who: 'exp', text: "En réalité, nous savons très peu de choses sur l'effet du mécontentement d'autrui sur le fonctionnement cognitif, parce que très peu d'études expérimentales contrôlées ont été menées sur ce point." },
+  { who: 'exp', text: "Nous ignorons par exemple quel degré de pression est le plus favorable à la performance. Nous ignorons aussi si la personne qui exprime le mécontentement change quelque chose : un conseiller résiste-t-il mieux à un client plus âgé ou plus jeune que lui ? Et il y a beaucoup d'autres questions de ce genre." },
+  { who: 'exp', text: "C'est pourquoi nous réunissons dans cette étude, à distance, des personnes de profils variés. Nous demandons à certaines de jouer le rôle de conseillers, et à d'autres celui de clients." },
+  { who: 'exp', text: "Nous voulons savoir quel effet les personnes ont les unes sur les autres dans ces deux rôles, et quel effet les réactions du client auront sur la capacité du conseiller à choisir la bonne réponse." },
+  { who: 'exp', text: "Je vais donc demander à l'un de vous d'être le client aujourd'hui, et à l'autre d'être le conseiller. L'un de vous a-t-il une préférence ?" },
+  { who: 'partner', text: "Euh… non, ça m'est égal." },
+  { who: 'exp', text: "Bon, je crois que le plus équitable est de tirer au sort. {pseudo}, c'est vous qui allez lancer le tirage." },
 ];
 
 /* 2b. Annonce de l'expérimentateur après le tirage ({partner} = prénom de la partenaire) */
 const AFTER_DRAW = [
-  { who: 'exp', text: "Nous allons d'abord installer {partner}. Je vous demande de patienter quelques instants." },
+  { who: 'exp', text: "Très bien. La première chose à faire est d'installer {partner} à son poste, pour qu'elle puisse recevoir vos messages et vos réactions." },
+  { who: 'exp', text: "Vous allez voir son écran pendant l'installation. Restez connectés tous les deux." },
 ];
 /* 3. Installation de la partenaire, écran partagé. ms : durée de l'étape ;
    part : élément du poste qui apparaît à la fin de l'étape. */
