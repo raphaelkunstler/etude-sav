@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neolis Support Desk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+  :root{
+    --bandeau:#1F3A5F;
+    --accent:#1F4E8C;
+    --fond:#E9ECF0;
+    --texte:#1E2630;
+    --gris:#5A6573;
+    --bord:#CDD3DB;
+    --client:#DCEBFA;      /* couleur de l'encart client : à changer ici */
+    --rouge:#C62828;
+    --rouge-fond:#FBE9E7;
+    --vert:#1E6B3E;
+    --vert-fond:#E8F5EC;
+    --jaune:#F5B400;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);font-family:'Source Sans 3',system-ui,sans-serif}
+  .page{min-height:100vh;display:flex;flex-direction:column}
+  [hidden]{display:none !important}
+
+  /* ---------- Bandeau ---------- */
+  header{background:var(--bandeau);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px 24px;padding:0 20px;min-height:56px}
+  .logo{font-weight:700;font-size:20px;letter-spacing:.08em}
+  .service{font-size:14px;opacity:.85;border-left:1px solid rgba(255,255,255,.3);padding-left:16px}
+  .espace{flex-grow:1}
+  .info{font-size:14px}
+  .liaison{display:flex;align-items:center;gap:8px;font-size:14px;background:rgba(255,255,255,.1);padding:4px 10px;border-radius:3px}
+  .liaison .fleche{opacity:.8}
+  .pastille{width:10px;height:10px;border-radius:5px;background:#4CC38A;display:inline-block}
+  .chrono{font-size:14px;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.12);padding:4px 10px;border-radius:3px}
+  .btn-exp{width:44px;height:44px;border-radius:50%;background:#D32F2F;border:2px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;margin:6px 0;box-shadow:0 0 0 3px rgba(211,47,47,.35)}
+  .btn-exp:hover{background:#B71C1C}
+  .btn-exp:focus-visible{outline:3px solid #FFD54F;outline-offset:2px}
+
+  /* ---------- Bandeau d'installation (visible seulement pendant l'installation) ---------- */
+  .coach{background:#FFF4D6;border-bottom:1px solid #E8D59A;color:#4A3B0C;padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px}
+  .coach-etape{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;background:#F5B400;color:#3A2E05;padding:3px 10px;border-radius:3px;white-space:nowrap}
+  .coach-texte{font-size:19px;font-weight:600;flex:1 1 400px}
+  .surligne{outline:4px solid var(--jaune) !important;outline-offset:4px;animation:pulse 1.2s ease-in-out infinite alternate;position:relative;z-index:2}
+  @keyframes pulse{from{outline-color:rgba(245,180,0,.45)}to{outline-color:rgba(245,180,0,1)}}
+
+  .contenu{display:flex;flex-wrap:wrap;gap:14px;padding:14px;flex-grow:1}
+  main{flex:999 1 620px;min-width:0;display:flex;flex-direction:column;gap:14px}
+
+  /* ---------- Ce que dit le client ---------- */
+  .client{background:var(--client);border-radius:6px;padding:28px 36px;min-height:42vh;display:flex;flex-direction:column;gap:16px;transition:background .3s}
+  .client-entete{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:14px;color:#2F4560}
+  .client-entete strong{text-transform:uppercase;letter-spacing:.06em}
+  .client p{margin:0;font-size:38px;line-height:1.3;font-weight:600;color:#12233A}
+  .client.vide p{color:#7A8BA3;font-weight:400;font-style:italic;font-size:28px}
+  .client.arrivee{animation:arrivee .8s ease-out}
+  @keyframes arrivee{0%{box-shadow:0 0 0 0 rgba(31,78,140,.55)}100%{box-shadow:0 0 0 18px rgba(31,78,140,0)}}
+
+  /* ---------- Réponses ---------- */
+  #form-reponse{background:#fff;border:1px solid var(--bord);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+  .tour{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;padding:8px 12px;border-radius:4px;background:#EEF1F4;color:var(--gris)}
+  .tour .point{width:10px;height:10px;border-radius:5px;background:#9AA6B4;flex-shrink:0}
+  .tour.a-vous{background:#E3EDF9;color:var(--accent)}
+  .tour.a-vous .point{background:var(--accent)}
+  .tour.transmis{background:#EEF1F4;color:var(--gris)}
+  .tour.corriger{background:var(--rouge-fond);color:#9A2A1C}
+  .tour.corriger .point{background:var(--rouge)}
+  .reponses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .reponse{position:relative;display:flex;align-items:center;gap:14px;border:1px solid #B9C2CD;border-radius:4px;padding:16px 18px;min-height:76px;font-size:18px;cursor:pointer;background:#fff;transition:opacity .2s}
+  .reponse input{width:24px;height:24px;flex-shrink:0;accent-color:var(--accent)}
+  .reponse strong{color:var(--accent)}
+  .reponse:has(input:checked){border-color:var(--accent);background:#EEF4FB}
+  .verrouille .reponse{opacity:.45;cursor:not-allowed}
+  .reponse.refusee{opacity:.55;cursor:not-allowed;background:#F7F7F7;border-style:dashed}
+  .reponse.refusee span{text-decoration:line-through}
+  .reponse.refusee::after{content:"refusée par le client";position:absolute;top:6px;right:10px;font-size:12px;font-weight:700;color:var(--rouge);text-transform:uppercase;letter-spacing:.05em}
+  .actions{display:flex;justify-content:flex-end;align-items:center;gap:16px}
+  .confirmation{font-size:14px;color:var(--gris)}
+  .btn{font:inherit;font-weight:600;font-size:16px;background:var(--bandeau);color:#fff;border:0;border-radius:4px;padding:12px 28px;min-height:44px;cursor:pointer}
+  .btn:disabled{background:#9AA6B4;cursor:not-allowed}
+
+  /* ---------- Colonne de droite ---------- */
+  .colonne{flex:1 1 320px;max-width:380px;display:flex;flex-direction:column;gap:14px}
+
+  /* Chat expérimentateur */
+  .chat{background:#fff;border:2px solid var(--accent);border-radius:6px;display:flex;flex-direction:column;overflow:hidden;flex-grow:1}
+  .chat-entete{background:var(--accent);color:#fff;padding:10px 8px 10px 16px;display:flex;align-items:center;gap:10px}
+  .chat-titre{font-weight:700;font-size:17px}
+  .chat-sous{font-size:13px;opacity:.85}
+  .fermer{margin-left:auto;font:inherit;background:transparent;border:0;color:#fff;font-size:22px;line-height:1;cursor:pointer;min-width:44px;min-height:44px}
+  .fil{flex-grow:1;padding:16px;display:flex;flex-direction:column;gap:10px;background:#F6F8FA;min-height:220px;max-height:40vh;overflow-y:auto}
+  .msg{max-width:85%;border-radius:8px;padding:10px 12px;font-size:15px}
+  .msg .qui{font-size:12px;color:var(--gris);margin-bottom:2px}
+  .msg.exp{align-self:flex-start;background:#fff;border:1px solid #D5DAE1}
+  .msg.moi{align-self:flex-end;background:#DCE7F5}
+  .saisie{border-top:1px solid #D5DAE1;padding:12px;display:flex;flex-direction:row;gap:8px}
+  .saisie input{font:inherit;flex-grow:1;min-width:0;border:1px solid #B9C2CD;border-radius:4px;padding:10px 12px;font-size:15px}
+  .saisie button{font:inherit;font-weight:600;background:var(--accent);color:#fff;border:0;border-radius:4px;padding:0 16px;min-height:44px;cursor:pointer}
+  .masque{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* Zone réservée aux réactions du client (en bas à droite) */
+  .reactions{margin-top:auto;background:#fff;border:1px solid var(--bord);border-radius:6px;display:flex;flex-direction:column;min-height:300px;overflow:hidden}
+  .reactions-entete{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #E1E5EA}
+  .reactions-entete svg{flex-shrink:0}
+  .reactions-titre{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--gris);font-weight:700;flex-grow:1}
+  .compteur{font-size:13px;color:var(--gris);text-align:right;line-height:1.1}
+  .compteur b{display:block;font-size:24px;color:#A33A2B}
+  .pile{flex-grow:1;padding:12px;display:flex;flex-direction:column;gap:10px;background:#FAFBFC}
+  .pile-vide{margin:auto;color:#8A94A1;font-size:15px;text-align:center}
+  .popup{border-radius:6px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;animation:entree .35s ease-out}
+  .popup.negative{background:var(--rouge-fond);border:2px solid #E3A196}
+  .popup.positive{background:var(--vert-fond);border:1px solid #9BCFAE}
+  .popup .icone{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .popup.negative .icone{background:var(--rouge)}
+  .popup.positive .icone{background:#2E7D4F}
+  .popup .qui{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .popup.negative .qui{color:#9A2A1C}
+  .popup.positive .qui{color:var(--vert)}
+  .popup .dit{font-size:17px;font-weight:600;margin-top:2px}
+  .popup.ancienne{opacity:.55;animation:none}
+  .reactions.alerte{animation:alerte .6s ease-in-out 2}
+  @keyframes entree{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes alerte{0%,100%{border-color:var(--bord);box-shadow:none}50%{border-color:var(--rouge);box-shadow:0 0 0 4px rgba(198,40,40,.25)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+
+  footer{padding:6px 16px;font-size:12px;color:#7A8492;display:flex;justify-content:space-between}
+
+  @media (max-width:700px){
+    .reponses{grid-template-columns:1fr}
+    .client p{font-size:28px}
+    .colonne{max-width:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="logo">NEOLIS</div>
+    <div class="service">Support Desk · Service après-vente</div>
+    <div class="espace"></div>
+    <div class="info">Agent : <strong>Stéphanie M.</strong> · N1 #4471</div>
+    <div class="liaison" id="liaison" title="Ce poste est relié en direct au poste du client">
+      <span class="pastille"></span><span>Poste agent</span><span class="fleche" aria-hidden="true">⇄</span><span>Poste client n°2 · <span id="liaison-etat">connecté</span></span>
+    </div>
+    <div class="chrono" id="chrono">00:00:00</div>
+    <button type="button" class="btn-exp" id="btn-exp" aria-controls="chat" aria-expanded="false" aria-label="Discuter avec l'expérimentateur" title="Discuter avec l'expérimentateur">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+    </button>
+  </header>
+
+  <div class="coach" id="coach" hidden aria-live="polite">
+    <span class="coach-etape" id="coach-etape">Installation du poste</span>
+    <span class="coach-texte" id="coach-texte"></span>
+  </div>
+
+  <div class="contenu">
+    <main>
+      <section class="client vide" id="zone-client" aria-live="polite">
+        <div class="client-entete"><strong>Le client écrit — en direct depuis son écran</strong><span>Dossier #88213 · <span id="heure-demande">--:--:--</span></span></div>
+        <p id="question">En attente du message du client…</p>
+      </section>
+
+      <form id="form-reponse">
+        <div class="tour" id="tour"><span class="point"></span><span id="tour-texte">En attente du message du client — les réponses ne sont pas encore cliquables</span></div>
+        <div class="reponses verrouille" id="reponses">
+          <label class="reponse" id="lblA"><input type="radio" name="rep" value="A" disabled><strong>A</strong><span id="repA">[RÉPONSE A]</span></label>
+          <label class="reponse" id="lblB"><input type="radio" name="rep" value="B" disabled><strong>B</strong><span id="repB">[RÉPONSE B]</span></label>
+          <label class="reponse" id="lblC"><input type="radio" name="rep" value="C" disabled><strong>C</strong><span id="repC">[RÉPONSE C]</span></label>
+          <label class="reponse" id="lblD"><input type="radio" name="rep" value="D" disabled><strong>D</strong><span id="repD">[RÉPONSE D]</span></label>
+        </div>
+        <div class="actions">
+          <span class="confirmation" id="confirmation"></span>
+          <button type="submit" class="btn" id="btn-envoyer" disabled>Envoyer au client</button>
+        </div>
+      </form>
+    </main>
+
+    <div class="colonne">
+      <aside class="chat" id="chat" aria-label="Messagerie avec l'expérimentateur" hidden>
+        <div class="chat-entete">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+          <div><div class="chat-titre">Parler avec l'expérimentateur</div><div class="chat-sous">Messagerie interne · en ligne</div></div>
+          <button type="button" class="fermer" id="fermer-chat" aria-label="Fermer la messagerie">×</button>
+        </div>
+        <div class="fil" id="fil">
+          <div class="msg exp"><div class="qui">Expérimentateur</div>[MESSAGE DE L'EXPÉRIMENTATEUR]</div>
+        </div>
+        <form class="saisie" id="form-chat">
+          <label for="msg" class="masque">Message à l'expérimentateur</label>
+          <input id="msg" type="text" placeholder="Écrire à l'expérimentateur…" autocomplete="off">
+          <button type="submit">Envoyer</button>
+        </form>
+      </aside>
+
+      <section class="reactions" id="reactions" aria-live="assertive" aria-label="Réactions du client">
+        <div class="reactions-entete">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F3A5F" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          <div class="reactions-titre">Réactions du client</div>
+          <div class="compteur"><b id="compteur">0</b>désagréables</div>
+        </div>
+        <div class="pile" id="pile">
+          <div class="pile-vide" id="pile-vide">Les réactions du client à vos réponses s'afficheront ici.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer><span>Neolis Support Desk v3.2.7</span><span>srv-agt-04</span></footer>
+</div>
+
+<!-- Les 25 items du QCM (messages du client, quatre réponses, bonne réponse) -->
+<script src="qcm/qcm-neolis.js"></script>
+<script>
+/* =====================================================================
+   OUTILS
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const hms = d => pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+const attendre = ms => new Promise(r => setTimeout(r, ms));
+
+// Horloge de session
+const debut = Date.now();
+setInterval(() => {
+  const s = Math.floor((Date.now() - debut) / 1000);
+  $('chrono').textContent = pad(Math.floor(s / 3600)) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60);
+}, 1000);
+
+// Transmission des événements au questionnaire parent (Qualtrics) si la page est intégrée
+function signaler(type, donnees) {
+  try { window.parent.postMessage(Object.assign({ source: 'neolis-agent', type, t: Date.now() }, donnees || {}), '*'); } catch (e) {}
+}
+
+/* =====================================================================
+   SON DES RÉACTIONS DÉSAGRÉABLES
+   Bip discordant court, généré dans le navigateur (aucun fichier son).
+   Volume réglable ici (0 à 1).
+   ===================================================================== */
+const VOLUME_SON = 0.18;
+let audio = null;
+function initAudio() {
+  if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (audio && audio.state === 'suspended') audio.resume();
+}
+// Les navigateurs n'autorisent le son qu'après une interaction : on débloque au premier clic.
+document.addEventListener('pointerdown', initAudio, { once: true });
+function jouerSon() {
+  initAudio();
+  if (!audio) return;
+  const t0 = audio.currentTime;
+  const gain = audio.createGain();
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(VOLUME_SON, t0 + 0.02);
+  gain.gain.setValueAtTime(VOLUME_SON, t0 + 0.32);
+  gain.gain.linearRampToValueAtTime(0, t0 + 0.45);
+  gain.connect(audio.destination);
+  [220, 233].forEach(f => {              // deux fréquences proches : son dissonant
+    const o = audio.createOscillator();
+    o.type = 'square';
+    o.frequency.value = f;
+    o.connect(gain);
+    o.start(t0);
+    o.stop(t0 + 0.46);
+  });
+}
+
+/* =====================================================================
+   DÉROULEMENT D'UN TOUR
+   attente → (message du client) → à vous → (envoi) → transmis
+          → réaction positive → attente
+          → réaction désagréable → corriger → (nouvel envoi) → transmis …
+   ===================================================================== */
+const formRep = $('form-reponse');
+const btnEnvoyer = $('btn-envoyer');
+let derniereEnvoyee = null;
+let nbDesagreables = 0;
+let itemCourant = null;       // item du QCM affiché (null hors QCM, par exemple pendant l'installation)
+
+function etatTour(etat) {
+  const tour = $('tour'), txt = $('tour-texte');
+  tour.className = 'tour';
+  if (etat === 'a-vous') { tour.classList.add('a-vous'); txt.textContent = 'À vous de répondre — choisissez une réponse'; }
+  else if (etat === 'transmis') { tour.classList.add('transmis'); txt.textContent = 'Réponse transmise au client — en attente de sa réaction'; }
+  else if (etat === 'corriger') { tour.classList.add('corriger'); txt.textContent = 'Le client n\'est pas satisfait — corrigez : choisissez une autre réponse'; }
+  else { txt.textContent = 'En attente du message du client — les réponses ne sont pas encore cliquables'; }
+}
+
+function verrouiller(oui) {
+  $('reponses').classList.toggle('verrouille', oui);
+  formRep.querySelectorAll('input[name="rep"]').forEach(i => {
+    const refusee = i.closest('.reponse').classList.contains('refusee');
+    i.disabled = oui || refusee;
+    if (oui) i.checked = false;
+  });
+  btnEnvoyer.disabled = true;
+}
+
+/* Affiche le message du client et rend les réponses cliquables.
+   reponses : tableau facultatif de 4 textes [A, B, C, D]. */
+function nouvelleDemande(texte, reponses) {
+  itemCourant = null;
+  const zone = $('zone-client');
+  zone.classList.remove('vide', 'arrivee');
+  void zone.offsetWidth;
+  zone.classList.add('arrivee');
+  $('question').textContent = texte;
+  $('heure-demande').textContent = hms(new Date());
+  if (reponses) ['A', 'B', 'C', 'D'].forEach((l, i) => { if (reponses[i] != null) $('rep' + l).textContent = reponses[i]; });
+  document.querySelectorAll('.reponse').forEach(l => l.classList.remove('refusee'));
+  $('confirmation').textContent = '';
+  derniereEnvoyee = null;
+  verrouiller(false);
+  etatTour('a-vous');
+  signaler('demande-affichee', { texte });
+}
+
+/* Affiche l'item n (1 à 25) du QCM : message du client et quatre réponses.
+   La bonne réponse n'apparaît pas à l'écran ; elle sert seulement au journal. */
+function question(n) {
+  const QCM = window.QCM_NEOLIS || [];
+  const item = QCM.find(it => it.n === Number(n));
+  if (!item) { console.warn('QCM : item introuvable', n); return; }
+  nouvelleDemande(item.client, item.reponses);
+  itemCourant = item;
+  signaler('qcm-question', { n: item.n });
+}
+
+function envoyer(lettre) {
+  derniereEnvoyee = lettre;
+  $('confirmation').textContent = 'Réponse ' + lettre + ' envoyée à ' + hms(new Date());
+  verrouiller(true);
+  formRep.querySelector('input[value="' + lettre + '"]').checked = true;
+  etatTour('transmis');
+  const qcm = itemCourant ? { n: itemCourant.n, correcte: lettre === itemCourant.correcte } : {};
+  signaler('reponse-agent', Object.assign({ choix: lettre }, qcm));
+}
+
+formRep.addEventListener('change', () => { btnEnvoyer.disabled = !formRep.querySelector('input[name="rep"]:checked'); });
+formRep.addEventListener('submit', e => {
+  e.preventDefault();
+  const choix = formRep.querySelector('input[name="rep"]:checked');
+  if (choix) envoyer(choix.value);
+});
+
+/* Choix scripté de l'agent : coche la case, attend, puis envoie (pour que le sujet voie le clic). */
+async function agentChoisit(lettre, delai) {
+  const input = formRep.querySelector('input[value="' + lettre + '"]');
+  if (!input || input.disabled) return;
+  input.checked = true;
+  btnEnvoyer.disabled = false;
+  await attendre(delai == null ? 1500 : delai);
+  envoyer(lettre);
+}
+
+/* Réaction du client, affichée en pop-up dans la zone en bas à droite.
+   type : 'negative' (avec son, la réponse est refusée, l'agent doit corriger)
+          ou 'positive' (sans son, le tour se termine). */
+function reaction(texte, type) {
+  type = type || 'negative';
+  $('pile-vide').hidden = true;
+  const pile = $('pile');
+  pile.querySelectorAll('.popup').forEach(p => p.classList.add('ancienne'));
+  const p = document.createElement('div');
+  p.className = 'popup ' + type;
+  p.innerHTML =
+    '<div class="icone" aria-hidden="true">' +
+      (type === 'negative'
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 7v6"/><path d="M12 17h.01"/></svg>'
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>') +
+    '</div><div><div class="qui"></div><div class="dit"></div></div>';
+  p.querySelector('.qui').textContent = 'Client · ' + hms(new Date()).slice(0, 5);
+  p.querySelector('.dit').textContent = texte;
+  pile.prepend(p);
+  pile.querySelectorAll('.popup').forEach((el, i) => { if (i > 3) el.remove(); });   // 4 réactions visibles au plus
+
+  if (type === 'negative') {
+    nbDesagreables += 1;
+    $('compteur').textContent = nbDesagreables;
+    const zone = $('reactions');
+    zone.classList.remove('alerte'); void zone.offsetWidth; zone.classList.add('alerte');
+    jouerSon();
+    if (derniereEnvoyee) $('lbl' + derniereEnvoyee).classList.add('refusee');
+    verrouiller(false);
+    etatTour('corriger');
+  } else {
+    etatTour('attente');
+  }
+  signaler('reaction-client', { type, texte });
+}
+
+/* Remet l'écran à l'état « en attente du client ». */
+function reinitialiser() {
+  itemCourant = null;
+  $('zone-client').classList.add('vide');
+  $('question').textContent = 'En attente du message du client…';
+  $('heure-demande').textContent = '--:--:--';
+  ['A', 'B', 'C', 'D'].forEach(l => { $('rep' + l).textContent = '[RÉPONSE ' + l + ']'; $('lbl' + l).classList.remove('refusee'); });
+  $('confirmation').textContent = '';
+  $('pile').querySelectorAll('.popup').forEach(p => p.remove());
+  $('pile-vide').hidden = false;
+  nbDesagreables = 0; $('compteur').textContent = '0';
+  derniereEnvoyee = null;
+  verrouiller(true);
+  etatTour('attente');
+}
+
+/* =====================================================================
+   CHAT AVEC L'EXPÉRIMENTATEUR
+   ===================================================================== */
+const chat = $('chat'), btnExp = $('btn-exp');
+function ouvrirChat(ouvrir) {
+  chat.hidden = !ouvrir;
+  btnExp.setAttribute('aria-expanded', String(ouvrir));
+  if (ouvrir) $('msg').focus();
+}
+btnExp.addEventListener('click', () => ouvrirChat(chat.hidden));
+$('fermer-chat').addEventListener('click', () => ouvrirChat(false));
+
+function ajouterMessage(texte, auteur) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (auteur === 'moi' ? 'moi' : 'exp');
+  const qui = document.createElement('div');
+  qui.className = 'qui';
+  qui.textContent = (auteur === 'moi' ? 'Stéphanie' : 'Expérimentateur') + ' · ' + hms(new Date()).slice(0, 5);
+  div.appendChild(qui);
+  div.appendChild(document.createTextNode(texte));
+  $('fil').appendChild(div);
+  $('fil').scrollTop = $('fil').scrollHeight;
+}
+$('form-chat').addEventListener('submit', e => {
+  e.preventDefault();
+  const t = $('msg').value.trim();
+  if (!t) return;
+  ajouterMessage(t, 'moi');
+  signaler('chat-agent', { texte: t });
+  $('msg').value = '';
+});
+
+/* =====================================================================
+   INSTALLATION DU POSTE (étape 4)
+   Visite guidée adressée à Stéphanie, que le sujet voit se dérouler.
+   Elle rend manifeste : (a) que l'écran du client agit sur celui de
+   Stéphanie ; (b) qu'elle voit plusieurs réponses et doit cliquer,
+   seulement une fois le message reçu ; (c) les réactions désagréables
+   en pop-up avec son, et l'obligation de corriger.
+   Tous les textes et durées se modifient dans ETAPES ci-dessous.
+   ===================================================================== */
+const ETAPES = [
+  { cible: 'liaison', duree: 6000,
+    texte: 'Votre poste est relié en direct au poste du client. Ce que le client fait sur son écran s\'affiche immédiatement sur le vôtre.' },
+  { cible: 'zone-client', duree: 6000,
+    texte: 'Le message choisi par le client apparaît ici, dès qu\'il clique.',
+    action: () => nouvelleDemande('[Message test] Bonjour, ma connexion internet ne fonctionne plus depuis ce matin.',
+      ['[Réponse test A]', '[Réponse test B]', '[Réponse test C]', '[Réponse test D]']) },
+  { cible: 'form-reponse', duree: 7000,
+    texte: 'Plusieurs réponses vous sont alors proposées. Elles ne deviennent cliquables qu\'une fois le message du client reçu. Cochez-en une, puis cliquez sur « Envoyer au client ».',
+    action: () => agentChoisit('B', 2500) },
+  { cible: 'reactions', duree: 7000,
+    texte: 'Le client réagit à votre réponse. S\'il n\'est pas satisfait, sa réaction s\'affiche ici, accompagnée d\'un signal sonore.',
+    action: async () => { await attendre(1200); reaction('[Réaction test] Ce n\'est pas du tout ce que j\'ai demandé !', 'negative'); } },
+  { cible: 'form-reponse', duree: 7000,
+    texte: 'Après une réaction désagréable, vous devez corriger : la réponse refusée est barrée, choisissez-en une autre.',
+    action: async () => { await attendre(1500); await agentChoisit('D', 2000); await attendre(1200); reaction('[Réaction test] D\'accord, merci.', 'positive'); } },
+  { cible: 'btn-exp', duree: 5000,
+    texte: 'En cas de difficulté, le bouton rouge vous met en relation avec l\'expérimentateur.' }
+];
+
+let installationEnCours = false;
+async function installation() {
+  if (installationEnCours) return;
+  installationEnCours = true;
+  reinitialiser();
+  $('coach').hidden = false;
+  signaler('installation-debut');
+  for (let i = 0; i < ETAPES.length; i++) {
+    const e = ETAPES[i];
+    document.querySelectorAll('.surligne').forEach(el => el.classList.remove('surligne'));
+    $('coach-etape').textContent = 'Installation du poste · ' + (i + 1) + '/' + ETAPES.length;
+    $('coach-texte').textContent = e.texte;
+    const cible = $(e.cible);
+    if (cible) cible.classList.add('surligne');
+    if (e.action) e.action();
+    await attendre(e.duree);
+  }
+  document.querySelectorAll('.surligne').forEach(el => el.classList.remove('surligne'));
+  $('coach-etape').textContent = 'Installation terminée';
+  $('coach-texte').textContent = 'Votre poste est prêt. En attente du premier client.';
+  reinitialiser();
+  signaler('installation-fin');
+  await attendre(4000);
+  $('coach').hidden = true;
+  installationEnCours = false;
+}
+
+/* =====================================================================
+   PILOTAGE
+   – Depuis la page : appeler question(n), nouvelleDemande(), agentChoisit(),
+     reaction(), installation(), reinitialiser(), ajouterMessage(texte, 'exp').
+   – Depuis Qualtrics (page intégrée) : envoyer un message
+     { neolis: 'question', args: [3] } pour afficher l'item 3 du QCM,
+     ou { neolis: 'nouvelleDemande', args: [texte, [A,B,C,D]] } etc.
+   – Lancer l'installation à l'ouverture : ajouter ?installation à l'adresse.
+   – Afficher directement un item du QCM : ajouter ?question=3 à l'adresse.
+   ===================================================================== */
+const COMMANDES = { question, nouvelleDemande, agentChoisit, reaction, installation, reinitialiser, ajouterMessage };
+window.addEventListener('message', ev => {
+  const d = ev.data;
+  if (d && d.neolis && COMMANDES[d.neolis]) COMMANDES[d.neolis].apply(null, d.args || []);
+});
+Object.assign(window, COMMANDES);
+
+reinitialiser();
+const params = new URLSearchParams(location.search);
+if (params.has('installation')) installation();
+else if (params.has('question')) question(params.get('question'));
+</script>
+</body>
+</html>

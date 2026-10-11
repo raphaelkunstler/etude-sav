@@ -10,6 +10,9 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | --- | --- |
 | `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes (réunion, discours et tirage, installation de Stéphanie, consignes, rôle, exercice, session). C'est la page à donner aux sujets, et la seule à modifier. |
 | `machine.html` | Une démonstration qui ouvre directement la session, avec la machine affichée dès la salutation de Stéphanie. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
+| `ecran-agent.html` | L'écran de l'agent Neolis (Stéphanie) : message du client, quatre réponses à cocher, réactions du client, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
+| `qcm/qcm-neolis.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
+| `qcm/qcm-neolis.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
 | `.nojekyll` | Empêche GitHub de transformer les fichiers. Il ne faut pas le supprimer. |
 
@@ -84,3 +87,9 @@ Tous les textes et réglages sont en tête du dernier `<script>` de `index.html`
 - `BAND`, `INSTRUCTIONS` : la fiche, les questions et les réponses attendues.
 
 Après une modification d'`index.html`, régénérez la démonstration : `python3 scripts/build_machine.py`.
+
+## QCM de l'écran agent
+
+Après une modification de `qcm/qcm-neolis.md`, régénérez les données : `python3 scripts/build_qcm.py`. Le script vérifie que les items sont numérotés sans trou et que le corrigé les couvre tous.
+
+Pour afficher un item : `question(n)` dans la page, le message `{ neolis: 'question', args: [n] }` depuis Qualtrics, ou `ecran-agent.html?question=n` dans l'adresse. Chaque envoi de réponse produit un événement `reponse-agent` avec le numéro de l'item (`n`), la lettre choisie (`choix`) et `correcte` (vrai ou faux). La bonne réponse n'est jamais affichée à l'écran, mais elle figure dans le code source, comme le reste du script.
