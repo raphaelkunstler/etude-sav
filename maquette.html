@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout : la plateforme d'étude (sobre, administrative) encadre tout le parcours. Aux étapes 5 et 6, elle contient
-   une fenêtre de navigateur simulée où s'affiche le site fictif Neolia, et un bandeau de jeu à droite. Thème clair unique, choisi délibérément. */
+   une fenêtre de navigateur simulée où s'affiche le site fictif Neolia, et la conversation avec la conseillère dans la colonne de droite. Thème clair unique, choisi délibérément. */
 :root {
   --lab-bg: #ECEFF3;
   --lab-paper: #FFFFFF;
@@ -113,7 +113,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 6px; border-radius: 4px; }
 
 /* ===== Étapes 5 et 6 : fenêtre + bandeau ===== */
-.work { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; padding: 14px; height: calc(100vh - 58px); min-height: 560px; }
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; padding: 14px; height: calc(100vh - 58px); min-height: 560px; }
 .browser { background: #C9D0D8; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #B9C1CB; min-width: 0; }
 .chrome { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
 .chrome .dots { display: flex; gap: 6px; }
@@ -122,14 +122,8 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .chrome .tag { font-size: 11px; color: var(--lab-ink); background: #E6EAEE; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
 .viewport { position: relative; flex: 1; min-height: 0; background: var(--sand); container-type: inline-size; container-name: site; }
 .site-scroll { position: absolute; inset: 0; overflow-y: auto; color: var(--ink); }
-.band { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-.band-scroll { flex: 1; overflow-y: auto; padding: 16px; display: grid; gap: 18px; align-content: start; }
-.band-head { padding: 14px 16px; border-bottom: 1px solid var(--lab-line); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.band-head b { font-size: 15px; }
-.badge { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; background: var(--lab-soft); color: var(--lab-accent); }
-.badge.live { background: #FBE9C4; color: #7A5410; }
-.band h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--lab-muted); margin: 0 0 8px; }
-.band ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
+.chatcol { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
+.chatcol .exp-box { border: 1px solid var(--lab-line); border-radius: 12px; overflow: hidden; flex: none; }
 .asks { list-style: none; padding: 0 !important; }
 .asks label { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; font-size: 14px; cursor: pointer; }
 .asks input { margin-top: 3px; accent-color: var(--lab-accent); }
@@ -207,10 +201,11 @@ section.box { padding-block: 28px 56px; }
 .site-foot .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .site-foot .links { display: flex; gap: 16px; flex-wrap: wrap; }
 .toast { position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 14px; width: max-content; max-width: calc(100% - 32px); z-index: 30; box-shadow: 0 10px 30px #0004; }
-#launcher { position: absolute; right: 16px; bottom: 16px; z-index: 20; background: var(--petrol); color: #fff; border: 0; border-radius: 999px; padding: 13px 20px 13px 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px #0B4A5255; }
-#launcher .bubble { width: 26px; height: 26px; border-radius: 50%; background: var(--sun); display: grid; place-items: center; }
-#launcher .bubble::before { content: ""; width: 12px; height: 9px; background: var(--petrol); border-radius: 4px 4px 4px 1px; }
-#chat { position: absolute; right: 16px; bottom: 16px; width: min(370px, calc(100% - 32px)); height: min(560px, calc(100% - 32px)); background: var(--paper); border-radius: 18px; box-shadow: 0 20px 60px #06343A40; z-index: 25; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+#chat { flex: 1; min-height: 0; background: var(--paper); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+.chat-idle { flex: 1; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; text-align: center; color: var(--muted); font-size: 15px; }
+.chat-idle p { margin: 0; max-width: 26ch; }
+#chat.idle .msglog, #chat.idle form.compose { display: none; }
+#chat:not(.idle) .chat-idle { display: none; }
 .chat-head { background: var(--petrol); color: #fff; padding: 12px 12px 12px 14px; display: flex; align-items: center; gap: 10px; }
 .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--sun); color: var(--petrol-deep); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; flex: none; position: relative; }
 .avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; background: #5FE08A; border: 2px solid var(--petrol); }
@@ -230,7 +225,6 @@ section.box { padding-block: 28px 56px; }
 @container site (max-width: 520px) {
   nav.main { display: none; }
   .btn-account { margin-left: auto; }
-  #chat { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; }
   .bar { grid-template-columns: 70px 1fr 60px; }
 }
 
@@ -268,7 +262,7 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 @media (max-width: 900px) {
   .work { grid-template-columns: 1fr; height: auto; min-height: 0; }
   .browser { height: 78vh; min-height: 480px; }
-  .band-scroll { overflow: visible; }
+  #chat { flex: none; height: 70vh; min-height: 420px; }
 }
 @media (max-width: 640px) {
   .meeting { grid-template-columns: 1fr; }
@@ -627,7 +621,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     <p class="lead">Vous jouerez un client de Neolia. Vous contacterez l'assistance par le chat du site, où <span data-partner-name>Stéphanie</span> tiendra le rôle de la conseillère.</p>
     <ol class="proto">
       <li><div><b>D'abord, un exercice</b><p>Pour découvrir le site et le chat, vous ferez un court exercice avec une demande simple.</p></div></li>
-      <li><div><b>Ensuite, la session</b><p>Vous recevrez votre fiche de client : votre problème, votre référence, les questions à poser et la façon de réagir selon les réponses. Elle restera affichée à côté du site.</p></div></li>
+      <li><div><b>Ensuite, la session</b><p>Vous contacterez l'assistance pour signaler une panne de votre connexion. Les questions à poser seront prêtes dans le poste de commande, et la conversation s'affichera dans la colonne de droite.</p></div></li>
       <li><div><b>La fin de la conversation</b><p>Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer ». <span data-partner-name>Stéphanie</span> doit rester connectée jusqu'à ce que vous le fassiez.</p></div></li>
       <li><div><b>Une question ?</b><p>Pendant l'exercice et la session, le bouton « Poser une question à l'expérimentateur » vous permet de lui écrire.</p></div></li>
       <li><div><b>Après la session</b><p>Vous répondrez à un court questionnaire sur l'échange.</p></div></li>
@@ -640,13 +634,12 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 <main class="lab-main" id="phase-sintro" hidden>
   <div class="card">
     <h1>La session commence</h1>
-    <p class="lead">L'exercice est terminé. Voici votre fiche pour la session. Elle restera affichée à côté du site Neolia.</p>
-    <div class="sheet" id="sintro-sheet"></div>
+    <p class="lead">L'exercice est terminé. Vous allez maintenant contacter l'assistance de Neolia : depuis ce matin, votre connexion Internet ne fonctionne plus. Les questions à poser sont prêtes dans le poste de commande.</p>
     <button class="btn-lab" id="to-session">Ouvrir le site Neolia</button>
   </div>
 </main>
 
-<!-- 5 et 6. Fenêtre Neolia + bandeau -->
+<!-- 6 et 7. Fenêtre Neolia, poste de commande et conversation -->
 <div class="work" id="phase-work" hidden>
  <div class="leftcol">
   <div class="browser">
@@ -734,20 +727,6 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       </div>
 
       <div class="toast" id="toast" role="status" hidden></div>
-      <button id="launcher" data-open-chat="launcher" aria-label="Ouvrir l'assistance en ligne"><span class="bubble"></span>Assistance en ligne</button>
-      <section id="chat" hidden aria-label="Assistance en ligne">
-        <div class="chat-head">
-          <div class="avatar" data-partner-initial>S</div>
-          <div class="chat-who"><b data-partner-name>Stéphanie</b><span>Conseillère Neolia · En ligne</span></div>
-          <button id="end-btn" type="button">Terminer</button>
-          <button id="min-btn" type="button" aria-label="Réduire la fenêtre">Réduire</button>
-        </div>
-        <div class="msglog" id="sav-log"><div class="day">Aujourd'hui</div></div>
-        <form class="compose" id="sav-form">
-          <textarea id="sav-input" rows="1" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea>
-          <button type="submit">Envoyer</button>
-        </form>
-      </section>
     </div>
   </div>
 
@@ -781,11 +760,23 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     </div>
   </section>
  </div>
-  <aside class="band" aria-label="Votre fiche de jeu">
-    <div class="band-head"><b>Votre fiche · client</b><span class="badge" id="band-badge">Exercice</span></div>
-    <div class="band-scroll">
-      <section><h3>Situation</h3><ul id="band-fiche"></ul></section>
-    </div>
+  <aside class="chatcol" aria-label="Assistance en ligne">
+    <section id="chat" class="idle" aria-label="Conversation avec la conseillère">
+      <div class="chat-head">
+        <div class="avatar" data-partner-initial>S</div>
+        <div class="chat-who"><b data-partner-name>Stéphanie</b><span>Conseillère Neolia · En ligne</span></div>
+        <button id="end-btn" type="button">Terminer</button>
+      </div>
+      <div class="chat-idle" id="chat-idle">
+        <p>Pour joindre le service client, ouvrez la conversation.</p>
+        <button class="btn-account" type="button" data-open-chat="colonne">Contacter l'assistance</button>
+      </div>
+      <div class="msglog" id="sav-log"><div class="day">Aujourd'hui</div></div>
+      <form class="compose" id="sav-form">
+        <textarea id="sav-input" rows="1" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea>
+        <button type="submit">Envoyer</button>
+      </form>
+    </section>
     <div class="exp-box">
       <button class="exp-toggle" id="exp-toggle" type="button">Poser une question à l'expérimentateur</button>
       <div class="exp-panel" id="exp-panel" hidden>
@@ -1025,7 +1016,6 @@ function classifyQuestion(text) {
 const BAND = {
   exercise: {
     badge: 'Exercice',
-    fiche: ["Vous êtes client de Neolia.", "Vous déménagez le mois prochain.", "Pendant l'exercice, la machine ne transmet rien : elle sert à vous entraîner."],
     /* [titre, phrase envoyée, ce que doit faire une réponse satisfaisante] */
     asks: [
       ["Annoncer le déménagement", "Bonjour, je déménage le mois prochain. Comment est-ce que je peux transférer mon abonnement ?", "Elle explique le transfert et demande la date."],
@@ -1035,7 +1025,6 @@ const BAND = {
   },
   session: {
     badge: 'Session',
-    fiche: ["Abonné à l'offre Fibre Max.", "Depuis ce matin, Internet ne fonctionne plus. Le voyant « Internet » de votre box est rouge.", "Vous travaillez à domicile et vous avez une réunion importante cet après-midi.", "Votre référence client : <code>NR-48213</code>"],
     asks: [
       ["Signaler la panne", "Bonjour, ma connexion Internet ne fonctionne plus depuis ce matin.", "Elle prend en charge le problème et demande votre référence."],
       ["Donner votre référence", "Ma référence client est NR-48213.", "Elle retrouve votre dossier et vous interroge sur la box."],
@@ -1355,23 +1344,18 @@ document.getElementById('to-brief').addEventListener('click', () => show('brief'
 /* 5. Présentation au sujet */
 document.getElementById('to-exercise').addEventListener('click', () => show('exercise'));
 
-/* 6a. Fiche de session */
-function ficheHTML(b) { return '<h2>Votre fiche de client</h2><ul>' + b.fiche.map(f => `<li>${f}</li>`).join('') + '</ul>'; }
-function fillSintro() { document.getElementById('sintro-sheet').innerHTML = ficheHTML(BAND.session); }
+/* 7a. Avant la session */
+function fillSintro() {}
 document.getElementById('to-session').addEventListener('click', () => show('session'));
 
 /* ======================= 5 et 6 : SITE ET BANDEAU ======================= */
 const siteScroll = document.getElementById('site-scroll');
-const chat = document.getElementById('chat'), launcher = document.getElementById('launcher'), endBtn = document.getElementById('end-btn');
+const chat = document.getElementById('chat'), endBtn = document.getElementById('end-btn');
 const savFeed = Feed(document.getElementById('sav-log'));
 const expFeed = Feed(document.getElementById('exp-log'));
 let current = null, joined = false, savTimer;
 
 function fillBand(mode) {
-  const b = BAND[mode];
-  const badge = document.getElementById('band-badge');
-  badge.textContent = b.badge; badge.classList.toggle('live', mode === 'session');
-  document.getElementById('band-fiche').innerHTML = b.fiche.map(f => `<li>${f}</li>`).join('');
   renderQuestions(mode);
 }
 function startWork(mode) {
@@ -1384,7 +1368,7 @@ function startWork(mode) {
   savFeed.clear(); setCompose('sav-form', CONFIG.freeTyping);
   document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Utilisez le poste de commande';
   endBtn.disabled = false; endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer';
-  chat.hidden = true; launcher.hidden = false; siteScroll.scrollTop = 0; joined = false;
+  chat.classList.add('idle'); siteScroll.scrollTop = 0; joined = false;
   expFeed.clear(); document.getElementById('exp-panel').hidden = true;
   current = mode === 'exercise'
     ? Convo({ kind: 'ex', feed: savFeed, script: EX_SCRIPT,
@@ -1395,7 +1379,7 @@ function startWork(mode) {
 bindCompose('sav-form', text => current && current.submit(text));
 
 function openChat(origin) {
-  chat.hidden = false; launcher.hidden = true;
+  chat.classList.remove('idle');
   log('chat_open', { origin, mode: G.mode });
   if (!joined) {
     joined = true;
@@ -1406,7 +1390,6 @@ function openChat(origin) {
   setTimeout(() => document.getElementById('sav-input').focus(), 50);
 }
 document.querySelectorAll('[data-open-chat]').forEach(b => b.addEventListener('click', () => openChat(b.dataset.openChat)));
-document.getElementById('min-btn').addEventListener('click', () => { chat.hidden = true; launcher.hidden = false; log('chat_minimize', { mode: G.mode }); });
 
 function endCurrent(reason) {
   if (!current || current.ended) return;
@@ -1594,9 +1577,9 @@ function render() {
     b.disabled = !(st === 'ask' && i === W.q);
   });
   const exo = G.mode === 'exercise';
-  genRow.querySelectorAll('.pt').forEach((b, i) => b.disabled = st !== 'machine' || (exo && i > 0));
+  genRow.querySelectorAll('.pt').forEach(b => b.disabled = st !== 'machine');
   document.getElementById('mach-call').textContent = exo
-    ? "Entraînement : pendant l'exercice, seul le niveau 1 est actif et rien n'est transmis. Cliquez sur le niveau 1."
+    ? "Entraînement : choisissez un niveau. Pendant l'exercice, rien n'est transmis à la conseillère."
     : GEN_REST[CONFIG.genMode];
   restInfo();
 }
@@ -1613,7 +1596,7 @@ function restInfo() {
     'La conversation est terminée.';
 }
 function previewLevel(i) {
-  if (!CONFIG.genPreview || W.state !== 'machine' || G.mode !== 'session') return;
+  if (!CONFIG.genPreview || W.state !== 'machine') return;
   const L = GEN_LEVELS[i];
   const call = document.getElementById('mach-call');
   call.textContent = `Niveau ${i + 1} · ${L.label} · ${L.stress} : `;
@@ -1626,7 +1609,7 @@ function sendQuestion(i) {
   if (W.state !== 'ask' || i !== W.q || !current || current.ended) return;
   const [label, text] = asks()[i];
   W.q = i + 1;
-  if (chat.hidden) openChat('poste');
+  if (!joined) openChat('poste');
   log('question_send', { ask: i + 1, mode: G.mode });
   setState('wait');
   current.submit(text, { via: 'questions', ask: i + 1, askLabel: label });
@@ -1668,9 +1651,8 @@ function pressLevel(i) {
   if (W.state !== 'machine') return;
   const latency = now() - W.machT;
   if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
-    if (i !== 0) return;
-    genRow.children[0].classList.add('used');
-    log('gen_click', { level: 1, mode: 'exercise', latency, transmitted: false });
+    genRow.children[i].classList.add('used');
+    log('gen_click', { level: i + 1, mode: 'exercise', latency, transmitted: false });
     setState('judge'); return;
   }
   genRow.children[i].classList.add('used');
@@ -1830,7 +1812,7 @@ if (CONFIG.maquette) (function () {
   const lastBot = kind => events.filter(e => e.type === kind + '_bot_msg').slice(-1)[0];
   const done = {};
   async function cycle(kind) {
-    if (chat.hidden) openChat('maquette');
+    if (!joined) openChat('maquette');
     let lv = 0;
     for (let guard = 0; guard < 80; guard++) {
       await until(() => ['ask', 'judge', 'machine', 'say', 'done', 'ended'].includes(W.state));
