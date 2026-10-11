@@ -227,6 +227,23 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .qlbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); }
 .qhelp { font-size: 13px; color: var(--lab-muted); margin-top: auto; }
 .qhelp summary { cursor: pointer; font-weight: 600; }
+.qwin { position: relative; }
+.qwin-foot { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--lab-line); font-size: 13px; color: var(--lab-muted); flex: none; }
+.proc-btn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #2F9E5B; color: #fff; font-size: 22px; font-weight: 900; box-shadow: 0 4px 12px #2F9E5B66; z-index: 3; }
+.proc-btn:hover { background: #24834A; }
+.proc-pop { position: absolute; left: 10px; right: 10px; bottom: 66px; top: 50px; overflow-y: auto; align-content: start; background: var(--lab-paper); border: 2px solid #2F9E5B; border-radius: 12px; padding: 14px; font-size: 14px; box-shadow: 0 12px 30px #1C243033; z-index: 4; display: grid; gap: 8px; }
+.proc-pop ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.proc-pop button { justify-self: end; padding: 8px 14px; }
+.pt.used { position: relative; }
+.pt.used::after { content: "✕"; position: absolute; inset: 0; display: grid; place-items: center; font: 900 1.6em/1 var(--font-body); color: #1C2430; text-shadow: 0 0 2px #fff; }
+.pt.next:not(:disabled) { box-shadow: 0 0 0 3px #F2C230; }
+/* Démonstration guidée : curseur et mise en évidence */
+#fake-cursor { position: fixed; left: 0; top: 0; z-index: 9500; pointer-events: none; width: 30px; height: 30px; transform: translate(50vw, 50vh); }
+#fake-cursor svg { width: 30px; height: 30px; filter: drop-shadow(1px 2px 2px #0006); }
+#fake-cursor.clicking::after { content: ""; position: absolute; left: -14px; top: -14px; width: 28px; height: 28px; border-radius: 50%; border: 3px solid #F2C230; animation: clic .45s ease-out; }
+@keyframes clic { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+.demo-focus { outline: 3px solid #F2C230 !important; outline-offset: 3px; border-radius: 8px; }
+.work.guided .qwin, .work.guided .center, .work.guided .bottom { pointer-events: none; }
 .fin { position: fixed; inset: 0; z-index: 9000; background: rgba(236, 239, 243, .97); display: grid; place-items: center; padding: 24px; }
 .fin-box { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 32px; max-width: 560px; text-align: center; display: grid; gap: 20px; justify-items: center; box-shadow: 0 20px 60px #1C243022; }
 .fin-box p { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.35; }
@@ -675,6 +692,8 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
   <section class="qwin band-x" id="qwin" aria-label="Questions">
     <div class="qwin-head"><b>Questions</b><span id="qwin-count"></span></div>
     <div class="qlog" id="qlog"></div>
+    <div class="qwin-foot"><button type="button" class="proc-btn" id="proc-btn" title="Revoir la procédure" aria-label="Revoir la procédure">?</button><span>Revoir la procédure</span></div>
+    <div class="proc-pop" id="proc-pop" hidden role="dialog" aria-label="Procédure"><b>Procédure</b><ol id="proc-list"></ol><button type="button" class="btn-lab" id="proc-close">Fermer</button></div>
   </section>
 
   <!-- Centre : salle d'étude, puis écrans de démonstration, puis site Neolia -->
@@ -1055,12 +1074,27 @@ const SAV_REPEAT = [
   { who: 'exp', text: "Avez-vous compris ?" },
 ];
 const SAV_DEMO = { stress: 3, ms: { result: 2500, faux: 2000, annonce: 3000, stress: 4500 } };   // stresseur montré en exemple
-/* 4. Le côté client, avant l'exercice */
-const CLIENT_SPEECH = [
-  { who: 'exp', text: "Voici maintenant votre écran, celui du client." },
-  { who: 'exp', text: "À gauche, les messages à envoyer, un par un, avec la bonne réponse soulignée. Au centre, le site de Neolia et son chat avec la conseillère." },
-  { who: 'exp', text: "En bas, vous jugez chaque réponse de la conseillère : « Ça va » ou « N'importe quoi ». Après « N'importe quoi », vous choisissez un niveau de stresseur." },
-  { who: 'exp', text: "Commençons par un court exercice. Ouvrez l'assistance du site Neolia." },
+/* 4. Le côté client : l'expérimentateur commente chaque étape de l'exercice ; un curseur montre
+   ce dont il parle et clique à la place du sujet. vise : élément montré ; clic : le curseur clique dessus. */
+const GUIDE = [
+  { text: "Voici maintenant votre écran, celui du client. Je vais vous montrer comment il fonctionne.", vise: '#chat-idle [data-open-chat]', clic: true, attend: 'ask' },
+  { text: "Vous voyez deux fenêtres. Dans la fenêtre de droite, vous voyez votre discussion avec {partner}.", vise: '#chat' },
+  { text: "Celle de gauche vous indique la question qu'il faut poser à {partner}.", vise: '.qitem.current .qclient' },
+  { text: "Vous cliquez sur « Envoyer au chat », et la question apparaît dans la discussion avec {partner}.", vise: '.qitem.current .qsend' },
+  { text: "Vous lisez alors la réaction de {partner}, et vous la comparez avec la bonne réponse : celle qui est soulignée.", vise: '.qitem.current .qopts li.good' },
+  { text: "Vous passez alors en bas de l'écran. Vous y trouvez deux boutons : « Ça va » et « N'importe quoi ».", vise: '#judge .judge-btns' },
+  { text: "Si vous cliquez sur « Ça va », vous posez la question suivante.", vise: '#j-ok' },
+  { text: "Si vous cliquez sur « N'importe quoi », vous devez utiliser l'échelle des stresseurs.", vise: '#gen-row' },
+  { text: "La règle est que vous augmentiez d'un cran, et seulement d'un cran, à chaque fois. Seul le bouton suivant est actif ; ceux qui ont déjà servi sont barrés d'une croix.", vise: '#gen-row .pt' },
+  { text: "Une fois que vous avez envoyé le stresseur, vous envoyez la question suivante.", vise: '.qitem.current .qsend' },
+  { text: "Si vous avez un doute, il suffit de cliquer sur la pastille verte, en bas à gauche, pour revoir la procédure.", vise: '#proc-btn' },
+  { text: "Par exemple, imaginons que nous ayons cette question.", vise: '.qitem.current .qclient' },
+  { text: "{partner}, répondez de manière fausse.", stephanie: "D'accord." },
+  { faux: true, vise: '.qitem.current .qsend', clic: true, attend: 'judge' },
+  { text: "La réponse de {partner} ne correspond pas à la bonne réponse, soulignée.", vise: '.qitem.current .qopts li.good' },
+  { text: "Je dois donc cliquer sur « N'importe quoi », puis choisir le premier stresseur.", vise: '#j-nq', clic: true, attend: 'machine' },
+  { vise: '#gen-row .pt', clic: true, attend: 'ask' },
+  { text: "À vous maintenant : envoyez la question suivante, et continuez seul jusqu'à la fin de l'exercice.", vise: '.qitem.current .qsend' },
 ];
 /* 5. Avant la session */
 const SESSION_SPEECH = [
@@ -1084,7 +1118,7 @@ const EX_QCM = [
    (2 sur 3). En cas d'échec, les trois distracteurs sont utilisés à tour de rôle.
    Exercice : seul l'item 2 est un échec, pour s'entraîner à la machine. */
 const PLAN = {
-  exercise: n => n !== 2,
+  exercise: n => n === 2,   // item 1 : réponse fausse imposée pendant la démonstration ; item 2 juste ; item 3 faux
   session: n => (n - 1) % 3 === 0,
 };
 const GREETING = {
@@ -1265,13 +1299,12 @@ function classifyQuestion(text) {
 
 /* Consignes affichées en tête de la fenêtre « Questions » */
 const QINSTR = [
-  "Envoyez le message de la question en cours.",
-  "Lisez la réponse de la conseillère dans le chat et comparez-la à la bonne réponse, soulignée.",
-  "Si elle est correcte, cliquez sur « OK ».",
-  "Sinon, cliquez sur « N'importe quoi », puis choisissez un niveau sur la machine : la phrase correspondante est transmise à la conseillère.",
-  "Passez ensuite à la question suivante.",
-  "Si la conseillère ne répond pas dans les 5 secondes, son silence compte comme une erreur : cliquez sur « N'importe quoi ».",
-  "Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer » du chat.",
+  "La question à poser est à gauche : cliquez sur « Envoyer au chat ».",
+  "Lisez la réaction de la conseillère dans le chat et comparez-la à la bonne réponse, soulignée.",
+  "Si elle est correcte, cliquez sur « Ça va », puis envoyez la question suivante.",
+  "Sinon, cliquez sur « N'importe quoi », puis sur le stresseur suivant de l'échelle : un cran de plus à chaque fois, et seulement un cran.",
+  "Une fois le stresseur envoyé, envoyez la question suivante.",
+  "Si la conseillère ne répond pas dans les 5 secondes, son silence compte comme une mauvaise réponse : appliquez la même procédure.",
 ];
 
 /* ======================= JOURNAL ======================= */
@@ -1308,6 +1341,12 @@ function payload() {
     ended: G.savEnded, endReason: G.savEndReason,
     nUserMsgs: events.filter(e => e.type === 'sav_user_msg').length,
     nExpQuestions: G.expAsked.session,
+    // Tout ce que le sujet a écrit lui-même dans la salle (réunion, questions et protestations), dans l'ordre
+    sujetMessages: events.filter(e => e.type === 'expq_user_msg' || e.type === 'meet_user_msg')
+      .map(e => ({ t: e.t, etape: e.type === 'meet_user_msg' ? 'reunion' : e.mode, texte: e.text })),
+    nProtestations: events.filter(e => e.type === 'protest').length,
+    nIncitations: events.filter(e => e.type === 'expq_bot_msg' && e.kind === 'prod').length,
+    niveauMax: typeof W === 'object' ? W.maxLevel : 0,
     transcript: transcript(), events,
   };
 }
@@ -1699,7 +1738,7 @@ function startWork(mode) {
   endBtn.disabled = false; endBtn.classList.remove('armed', 'invite'); endBtn.textContent = 'Terminer';
   chat.classList.add('idle'); siteScroll.scrollTop = 0; joined = false;
   current = Agent(mode === 'exercise' ? 'ex' : 'sav');
-  salleSay(mode === 'exercise' ? CLIENT_SPEECH : SESSION_SPEECH, mode === 'exercise' ? 'client' : 'session');
+  if (mode === 'exercise') guidedExercise(); else salleSay(SESSION_SPEECH, 'session');
 }
 bindCompose('sav-form', text => current && current.submit(text));
 
@@ -1760,7 +1799,7 @@ document.querySelectorAll('[data-offer]').forEach(b => b.addEventListener('click
    Pendant la session, chaque question ou protestation (message dans la salle, ou clic sur « Terminer »)
    reçoit l'incitation suivante : 1 → 2 → 3 → 4 ; s'il proteste encore après la 4e, arrêt.
    Si son message porte sur le stress ou sur le départ de la conseillère, l'incitation spéciale précède
-   l'incitation de la séquence. La séquence repart de 1 dès que le sujet reprend la tâche. */
+   l'incitation de la séquence. Les incitations s'enchaînent sur toute la session, sans revenir à la première. */
 let expBusy = Promise.resolve();
 let prodIdx = 0;                     // nombre d'incitations déjà données dans l'épisode en cours
 function expSay(texts, meta) {
@@ -1787,7 +1826,7 @@ function protest(source, text) {
   log('protest', { source, rang: rank, special: special ? special.id : null });
   expSay(texts, { mode: 'session', kind: 'prod', prodRank: rank, special: special ? special.id : null });
 }
-function resumeTask(what) { if (G.mode === 'session' && prodIdx > 0) { log('prod_reset', { apres: prodIdx, reprise: what }); prodIdx = 0; } }
+function resumeTask(what) { if (G.mode === 'session' && prodIdx > 0) log('reprise_tache', { apres: prodIdx, reprise: what }); }   // la séquence des incitations ne repart pas de zéro : elle s'enchaîne sur toute la session
 bindCompose('salle-form', text => {
   if (meet && !meet.ended) { meet.submit(text); return; }
   const mode = G.mode && (G.phase === 'exercise' || G.phase === 'session') ? G.mode : 'avant';
@@ -1806,6 +1845,45 @@ function finishSession(reason) {
   fin.hidden = false; log('fin_ecran', { reason });
   document.getElementById('fin-btn').onclick = () => { log('fin_continuer', { reason }); document.getElementById('fin-btn').disabled = true; };
 }
+
+/* ======================= DÉMONSTRATION GUIDÉE DE L'EXERCICE ======================= */
+let fakeCursor = null;
+function cursor() {
+  if (!fakeCursor) {
+    fakeCursor = document.createElement('div'); fakeCursor.id = 'fake-cursor'; fakeCursor.hidden = true;
+    fakeCursor.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2 L4 20 L9 15 L12.5 22 L15.5 20.6 L12 13.8 L19 13.8 Z" fill="#fff" stroke="#111" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+    document.body.appendChild(fakeCursor);
+  }
+  return fakeCursor;
+}
+const waitFor = async (f, t = 120000) => { const t0 = Date.now(); while (!f()) { if (Date.now() - t0 > t) return false; await new Promise(r => setTimeout(r, 40)); } return true; };
+async function pointTo(sel, click) {
+  const el = sel && document.querySelector(sel); if (!el) return;
+  el.scrollIntoView({ block: 'nearest' });
+  const r = el.getBoundingClientRect(), c = cursor(); c.hidden = false;
+  c.style.transition = 'transform 900ms cubic-bezier(.4,.1,.2,1)';
+  c.style.transform = `translate(${Math.round(r.left + Math.min(r.width / 2, 60))}px, ${Math.round(r.top + r.height / 2)}px)`;
+  el.classList.add('demo-focus');
+  await sleep(1000);
+  if (click) { c.classList.add('clicking'); await sleep(250); el.click(); log('guide_clic', { cible: sel }); await sleep(300); c.classList.remove('clicking'); }
+  setTimeout(() => el.classList.remove('demo-focus'), click ? 300 : 2500);
+}
+async function guidedExercise() {
+  W.guided = true; workEl.classList.add('guided'); log('guide_debut');
+  for (const g of GUIDE) {
+    if (current.ended || G.mode !== 'exercise') break;
+    if (g.faux) W.forceWrong = true;
+    const said = g.text ? salleSay([{ who: 'exp', text: g.text }], 'guide') : Promise.resolve();
+    await Promise.all([said, g.vise ? pointTo(g.vise, g.clic) : Promise.resolve()]);
+    if (g.stephanie) await partnerInRoom([g.stephanie], { step: 'guide' });
+    if (g.attend) await waitFor(() => W.state === g.attend);
+  }
+  if (fakeCursor) fakeCursor.hidden = true;
+  workEl.classList.remove('guided'); W.guided = false; log('guide_fin');
+}
+/* Pastille verte : revoir la procédure */
+document.getElementById('proc-btn').addEventListener('click', () => { const pp = document.getElementById('proc-pop'); pp.hidden = !pp.hidden; log('procedure', { ouverte: !pp.hidden, mode: G.mode }); });
+document.getElementById('proc-close').addEventListener('click', () => { document.getElementById('proc-pop').hidden = true; });
 
 /* ======================= INFORMATION ET CONSENTEMENT ======================= */
 /* Champs à compléter avant la passation (ils s'affichent en jaune tant qu'ils ne sont pas remplis) */
@@ -1880,17 +1958,17 @@ const GEN_REST = {
 };
 const LETTERS = ['A', 'B', 'C', 'D'];
 function resetPoste() {
-  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false; W.marks = []; W.arretSalle = false; W.finishing = false; prodIdx = 0;
+  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false; W.marks = []; W.arretSalle = false; W.finishing = false; W.forceWrong = false; prodIdx = 0;
   genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
   qlog.textContent = '';
   const n = items().length;
   const prog = document.createElement('div'); prog.className = 'qprog'; prog.id = 'qprog'; prog.style.setProperty('--n', Math.min(13, n));
   for (let k = 0; k < n; k++) { const c = document.createElement('i'); c.textContent = k + 1; prog.appendChild(c); }
   qlog.appendChild(prog);
-  const help = document.createElement('details'); help.className = 'qhelp'; help.id = 'qhelp';
-  help.innerHTML = '<summary>Consignes</summary><ol>' + QINSTR.map(t => `<li>${t}</li>`).join('') + '</ol>'
-    + (G.mode === 'exercise' ? "<p style=\"margin:6px 0 0\">Exercice : trois messages. Pendant l'exercice, rien n'est transmis à la conseillère.</p>" : '');
+  const help = document.createElement('div'); help.id = 'qhelp';   // repère d'insertion
   qlog.appendChild(help);
+  document.getElementById('proc-list').innerHTML = QINSTR.map(t => `<li>${t}</li>`).join('');
+  document.getElementById('proc-pop').hidden = true;
   const idle = document.createElement('p'); idle.className = 'qlbl'; idle.id = 'qidle'; idle.style.cssText = 'text-transform:none;letter-spacing:0;font-size:15px;color:var(--lab-ink);margin:8px 0 0';
   idle.textContent = "Pour commencer, cliquez sur « Contacter l'assistance », dans le chat du site Neolia.";
   qlog.insertBefore(idle, help);
@@ -1943,7 +2021,7 @@ function render() {
   document.getElementById('j-ok').disabled = document.getElementById('j-nq').disabled = st !== 'judge';
   genSay.hidden = st !== 'say';
   qlog.querySelectorAll('.qsend').forEach(b => b.disabled = !(st === 'ask' && +b.closest('.qitem').dataset.i === W.q));
-  genRow.querySelectorAll('.pt').forEach(b => b.disabled = st !== 'machine');
+  genRow.querySelectorAll('.pt').forEach((b, k) => { b.disabled = st !== 'machine' || k !== W.maxLevel; b.classList.toggle('next', k === W.maxLevel); });
   document.getElementById('mach-call').textContent = st !== 'machine' ? "La machine s'active quand vous jugez une réponse « N'importe quoi »."
     : G.mode === 'exercise' ? "Entraînement : choisissez un niveau. Pendant l'exercice, rien n'est transmis à la conseillère."
     : GEN_REST[CONFIG.genMode];
@@ -1958,7 +2036,7 @@ function restInfo() {
     st === 'ask' ? (W.justOk ? `Réponse validée. Envoyez maintenant la question ${W.q + 1} sur ${n}, à gauche.` : `Envoyez le message de la question ${W.q + 1} sur ${n}.`) :
     st === 'wait' ? 'La conseillère répond…' :
     st === 'judge' ? 'Comparez sa réponse à la bonne réponse, soulignée.' :
-    st === 'machine' || st === 'say' ? 'Choisissez un niveau sur la machine.' :
+    st === 'machine' || st === 'say' ? `Cliquez sur le stresseur suivant : niveau ${W.maxLevel + 1}.` :
     st === 'done' ? "Tous les messages ont été envoyés. Vous pouvez mettre fin à la conversation avec « Terminer »." :
     'La conversation est terminée.';
 }
@@ -2002,7 +2080,7 @@ async function sendQuestion(i) {
     savFeed.addSys('Pas de réponse de la conseillère.');
     setState('judge'); return;
   }
-  const ok = PLAN[G.mode](it.n);
+  const ok = W.forceWrong ? false : PLAN[G.mode](it.n); W.forceWrong = false;
   let k = LETTERS.indexOf(it.correcte);
   if (!ok) { const wrong = [0, 1, 2, 3].filter(x => x !== k); k = wrong[W.fails % 3]; W.fails++; }
   W.lastOk = ok;
@@ -2140,10 +2218,11 @@ async function transmit(i, extra = {}) {
   W.q++; nextQuestion();
 }
 function pressLevel(i) {
-  if (W.state !== 'machine') return;
+  if (W.state !== 'machine' || i !== W.maxLevel) return;   // un cran, et seulement un cran
   const latency = now() - W.machT;
   genRow.children[i].classList.add('used');
-  if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
+  if (G.mode === 'exercise') {
+    W.maxLevel = Math.max(W.maxLevel, i + 1);           // entraînement : rien n'est transmis
     log('gen_click', { level: i + 1, mode: 'exercise', latency, transmitted: false });
     verdict(`Jugée « n'importe quoi » · niveau ${i + 1} (exercice, non transmis)`, 'nq');
     if (CONFIG.punitionExercice) { setState('wait'); showPunition(i).then(() => { W.q++; nextQuestion(); }); return; }
@@ -2308,6 +2387,7 @@ if (CONFIG.maquette) (function () {
   const lastBot = kind => events.filter(e => e.type === kind + '_bot_msg').slice(-1)[0];
   const done = {};
   async function cycle(kind) {
+    await until(() => !W.guided, 120000);
     if (!joined) openChat('maquette');
     let lv = 0;
     for (let guard = 0; guard < 80; guard++) {
@@ -2317,7 +2397,7 @@ if (CONFIG.maquette) (function () {
       if (st === 'done' || st === 'ended') break;
       if (st === 'ask') sendQuestion(W.q);
       else if (st === 'judge') document.getElementById(lastBot(kind)?.ok === false ? 'j-nq' : 'j-ok').click();
-      else if (st === 'machine') pressLevel(kind === 'ex' ? 0 : LEVELS[Math.min(lv++, LEVELS.length - 1)] - 1);
+      else if (st === 'machine') pressLevel(W.maxLevel);
       else if (st === 'say') document.getElementById('gen-said').click();
       await until(() => W.state !== st, 5000);
     }

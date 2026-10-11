@@ -14,8 +14,12 @@ Avant le bloc du chat, ajoutez un élément **Embedded Data** avec les champs su
 - `chat_events`
 - `chat_ended`
 - `chat_n_msgs`
+- `chat_sujet`
+- `chat_n_protest`
+- `chat_n_incitations`
+- `chat_niveau_max`
 
-Si votre enquête utilise la mise en page « Simple layout », Qualtrics exige que les champs écrits par JavaScript portent le préfixe `__js_`. Déclarez donc aussi `__js_chat_transcript`, `__js_chat_events`, `__js_chat_ended` et `__js_chat_n_msgs`. Le code ci-dessous essaie les deux API. Vérifiez sur une réponse test laquelle des deux colonnes se remplit : je ne suis pas certain du comportement selon les versions de Qualtrics.
+Si votre enquête utilise la mise en page « Simple layout », Qualtrics exige que les champs écrits par JavaScript portent le préfixe `__js_`. Déclarez donc aussi `__js_chat_transcript`, `__js_chat_events`, `__js_chat_ended`, `__js_chat_n_msgs`, `__js_chat_sujet`, `__js_chat_n_protest`, `__js_chat_n_incitations` et `__js_chat_niveau_max`. Le code ci-dessous essaie les deux API. Vérifiez sur une réponse test laquelle des deux colonnes se remplit : je ne suis pas certain du comportement selon les versions de Qualtrics.
 
 ## 3. La question qui contient le chat
 
@@ -51,6 +55,14 @@ Qualtrics.SurveyEngine.addOnload(function () {
     setED('chat_events', JSON.stringify(d.events));
     setED('chat_ended', d.ended ? (d.endReason || 'oui') : 'non');
     setED('chat_n_msgs', d.nUserMsgs);
+    // Messages écrits par le sujet dans la salle : un par ligne, « [mm:ss] étape : texte »
+    setED('chat_sujet', (d.sujetMessages || []).map(function (m) {
+      var s = Math.floor(m.t / 1000), mm = ('0' + Math.floor(s / 60)).slice(-2), ss = ('0' + (s % 60)).slice(-2);
+      return '[' + mm + ':' + ss + '] ' + m.etape + ' : ' + m.texte;
+    }).join('\n'));
+    setED('chat_n_protest', d.nProtestations || 0);
+    setED('chat_n_incitations', d.nIncitations || 0);
+    setED('chat_niveau_max', d.niveauMax || 0);
     if (d.ended) q.showNextButton();
   });
 });
@@ -81,7 +93,7 @@ Le site envoie le journal complet après chaque événement, et pas seulement à
   - `exp_panel` : ouverture du panneau de questions ;
   - `expq_user_msg` et `expq_bot_msg` : questions à l'expérimentateur et réponses standardisées, avec `n` = rang de la question.
 
-`chat_ended` vaut `user` ou `duree_max`. `chat_n_msgs` compte les messages du sujet pendant la session. Le délai entre la dernière réplique scriptée (étape 13) et `session_end` mesure combien de temps le sujet laisse la conseillère « prise au piège ». Le nombre et le moment des questions à l'expérimentateur, et le rang des réponses reçues, forment une seconde mesure.
+`chat_sujet` contient, un par ligne, tous les messages que le sujet a écrits dans la salle (réunion, puis questions et protestations adressées à l'expérimentateur), avec l'heure relative et l'étape. `chat_n_protest` compte ses protestations pendant la session (messages dans la salle et clics sur « Terminer »), `chat_n_incitations` les incitations reçues, `chat_niveau_max` le dernier niveau de stresseur atteint. `chat_ended` vaut `arret_sujet` (arrêt après la 4e incitation), `max` (niveau 30), `duree_max` ou `user`. `chat_n_msgs` compte les messages du sujet pendant la session. Le délai entre la dernière réplique scriptée (étape 13) et `session_end` mesure combien de temps le sujet laisse la conseillère « prise au piège ». Le nombre et le moment des questions à l'expérimentateur, et le rang des réponses reçues, forment une seconde mesure.
 
 ## 6. Modifier le script
 
