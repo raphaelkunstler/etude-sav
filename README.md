@@ -11,7 +11,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes (réunion, discours et tirage, installation de Stéphanie, consignes, rôle, exercice, session). C'est la page à donner aux sujets, et la seule à modifier. |
 | `machine.html` | Une démonstration qui ouvre directement la session, avec la machine affichée dès la salutation de Stéphanie. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
 | `maquette.html` | Une version de travail pour l'architecture du site : une barre violette en haut permet d'aller directement à n'importe quelle étape, et chaque échange (réunion, consignes, exercice, session) se joue instantanément avec des réponses types du sujet. Générée par le même script. |
-| `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, réactions du client, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
+| `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, colonne des commentaires du client à droite, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
 | `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
 | `qcm/qcm-neolia.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
