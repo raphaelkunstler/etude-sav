@@ -962,6 +962,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 const params = new URLSearchParams(location.search);
 const CONFIG = {
   partnerName: 'Stéphanie',
+  retour: /^https:\/\//.test(params.get('retour') || '') ? params.get('retour') : '',   // adresse où renvoyer le sujet après « Continuer », si le site n'est pas dans Qualtrics
   pid: params.get('pid') || 'test',   // identifiant Qualtrics (${e://Field/ResponseID})
   cond: params.get('cond') || '',     // condition expérimentale, transmise telle quelle
   debug: params.has('debug') || location.hash === '#debug',
@@ -1382,7 +1383,7 @@ function transcript() {
 function payload() {
   return {
     source: 'neolia-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, symbole: G.symbol, voix: G.voice, phase: G.phase,
-    ended: G.savEnded, endReason: G.savEndReason,
+    ended: G.savEnded, endReason: G.savEndReason, continuer: !!G.continuer,
     nUserMsgs: events.filter(e => e.type === 'sav_user_msg').length,
     nExpQuestions: G.expAsked.session,
     // Tout ce que le sujet a écrit lui-même dans la salle (réunion, questions et protestations), dans l'ordre
@@ -1932,7 +1933,12 @@ function finishSession(reason) {
   const fin = document.getElementById('fin');
   document.getElementById('fin-t').textContent = FIN_TEXTE;
   fin.hidden = false; log('fin_ecran', { reason });
-  document.getElementById('fin-btn').onclick = () => { log('fin_continuer', { reason }); document.getElementById('fin-btn').disabled = true; };
+  document.getElementById('fin-btn').onclick = () => {
+    const b = document.getElementById('fin-btn'); b.disabled = true;
+    G.continuer = true; log('fin_continuer', { reason });   // le journal part avec continuer: true ; le JavaScript de la question Qualtrics passe alors à la page suivante
+    if (CONFIG.retour) { setTimeout(() => { location.href = CONFIG.retour; }, 400); return; }   // site ouvert hors de Qualtrics avec ?retour=…
+    if (window.parent === window && !window.opener) b.textContent = 'Vous pouvez revenir au questionnaire';
+  };
 }
 
 /* ======================= DÉMONSTRATION GUIDÉE DE L'EXERCICE ======================= */

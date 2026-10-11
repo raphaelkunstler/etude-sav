@@ -64,9 +64,12 @@ Qualtrics.SurveyEngine.addOnload(function () {
     setED('chat_n_incitations', d.nIncitations || 0);
     setED('chat_niveau_max', d.niveauMax || 0);
     if (d.ended) q.showNextButton();
+    if (d.continuer) q.clickNextButton();   // bouton « Continuer » de l'écran final : page suivante du questionnaire
   });
 });
 ```
+
+Le bouton « Continuer » de l'écran final (après l'arrêt ou la suspension de la séance) envoie un dernier journal avec `continuer: true` : le script ci-dessus enregistre les données puis passe à la page suivante du questionnaire, où se trouvent les deux questions finales. Si le site est ouvert dans un nouvel onglet plutôt que dans la question, ajoutez à son adresse `&retour=` suivi de l'adresse (https) où renvoyer le sujet.
 
 Le site envoie le journal complet après chaque événement, et pas seulement à la fin. Si un sujet quitte en cours de route, ce qui a été échangé jusque-là est donc conservé.
 
