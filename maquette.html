@@ -64,6 +64,18 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 .field label { font-weight: 600; font-size: 14px; }
 .field input { font: inherit; padding: 10px 12px; border: 1px solid var(--lab-line); border-radius: 8px; background: var(--lab-paper); color: var(--lab-ink); }
 .field small { color: var(--lab-muted); font-size: 13px; }
+.field.wide { max-width: 560px; }
+.symbols { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; }
+.symbols button { aspect-ratio: 1; border: 2px solid var(--lab-line); border-radius: 10px; background: var(--lab-paper); font-size: 22px; color: var(--lab-accent); }
+.symbols button[aria-pressed="true"] { border-color: var(--lab-accent); background: var(--lab-soft); box-shadow: 0 0 0 3px #2E4C7D33; }
+.symbols button:disabled { opacity: .3; cursor: not-allowed; }
+.voices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.voice { border: 2px solid var(--lab-line); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--lab-paper); cursor: pointer; }
+.voice[aria-pressed="true"] { border-color: var(--lab-accent); background: var(--lab-soft); }
+.voice b { display: block; font-size: 15px; } .voice small { font-size: 12.5px; }
+.voice .play { border: 0; border-radius: 7px; padding: 5px 10px; background: var(--lab-accent); color: #fff; font-weight: 700; font-size: 13px; flex: none; }
+.msg.speaking { box-shadow: 0 0 0 3px #F2C230; }
+@media (max-width: 640px) { .voices { grid-template-columns: 1fr; } }
 .waiting { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 14px 16px; background: var(--lab-soft); border-radius: 10px; font-size: 15px; }
 .spinner { width: 20px; height: 20px; border-radius: 50%; border: 3px solid #2E4C7D40; border-top-color: var(--lab-accent); animation: spin 0.9s linear infinite; flex: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -599,6 +611,16 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       <input id="pseudo" maxlength="20" autocomplete="off" placeholder="Par exemple : Sam">
       <small>Il sera affiché à l'autre participant. N'indiquez pas votre nom de famille.</small>
     </div>
+    <div class="field wide">
+      <label id="lab-sym">Votre symbole</label>
+      <div class="symbols" id="symbols" role="group" aria-labelledby="lab-sym"></div>
+      <small>Il apparaît à côté de vos messages dans la salle.</small>
+    </div>
+    <div class="field wide">
+      <label id="lab-voix">Votre voix</label>
+      <div class="voices" id="voices" role="group" aria-labelledby="lab-voix"></div>
+      <small>C'est la voix avec laquelle vos messages seront lus à la conseillère.</small>
+    </div>
     <button class="btn-lab" id="join-btn" disabled>Rejoindre la salle</button>
     <div class="waiting" id="wait-box" hidden><span class="spinner" id="wait-spin"></span><span id="wait-text">En attente d'un autre participant… (1 sur 2 connecté)</span></div>
   </div>
@@ -865,10 +887,30 @@ const CONFIG = {
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
   readDelay: 900,                     // délai fixe avant chaque réponse
+  lecture: params.get('lecture') !== '0',   // lecture à voix haute des messages de Stéphanie et de l'expérimentateur (?lecture=0 pour couper)
   // Indexation des réactions : 'niveau' = réaction du niveau choisi ; 'max' = réaction du niveau le plus
   // haut atteint jusque-là (une réaction déjà donnée n'est pas redonnée plus bas).
   reactIndex: params.get('reaction') === 'max' ? 'max' : 'niveau',
   silenceMs: 10000,                   // après le refus de répondre : délai avant « pas de réponse »
+};
+
+/* ---------- Profil du sujet et voix ----------
+   Symboles proposés au sujet ; ceux de Stéphanie et de l'expérimentateur sont réservés.
+   Voix proposées au sujet : c'est la voix avec laquelle ses messages sont censés être lus à la conseillère.
+   Le sujet ne l'entend que dans l'aperçu « Écouter » ; son choix est enregistré.
+   Seuls les messages de Stéphanie et de l'expérimentateur sont lus à voix haute pendant l'étude,
+   avec la synthèse vocale du navigateur (la voix exacte dépend de l'ordinateur du participant). */
+const SYMBOLES = ['★', '●', '▲', '◆', '♣', '♥', '☀', '☾', '✿', '⚑', '✈', '♪'];
+const SYM_PARTNER = '✿', SYM_EXP = '⚑';
+const VOIX_SUJET = [
+  { id: 'v1', nom: 'Voix 1', desc: 'grave, posée', pitch: 0.75, rate: 0.95, pref: /(thomas|paul|henri|daniel|male|homme)/i },
+  { id: 'v2', nom: 'Voix 2', desc: 'claire, rapide', pitch: 1.15, rate: 1.1, pref: /(amelie|amélie|audrey|julie|female|femme|google)/i },
+  { id: 'v3', nom: 'Voix 3', desc: 'douce, lente', pitch: 1.0, rate: 0.85, pref: /(marie|aurelie|aurélie|virginie|google)/i },
+  { id: 'v4', nom: 'Voix 4', desc: 'neutre', pitch: 0.95, rate: 1.0, pref: /./ },
+];
+const VOIX_LUES = {   // qui est lu à voix haute, et avec quelle voix
+  bot: { pitch: 1.15, rate: 1.0, pref: /(amelie|amélie|audrey|julie|marie|google)/i },   // Stéphanie (salle et chat Neolia)
+  exp: { pitch: 0.85, rate: 0.95, pref: /(thomas|paul|henri|daniel)/i },                // l'expérimentateur
 };
 
 /* 1. Réunion : script de la partenaire (une étape par message du sujet ; {pseudo} = prénom saisi) */
@@ -1167,7 +1209,7 @@ function transcript() {
 }
 function payload() {
   return {
-    source: 'neolia-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, phase: G.phase,
+    source: 'neolia-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, symbole: G.symbol, voix: G.voice, phase: G.phase,
     ended: G.savEnded, endReason: G.savEndReason,
     nUserMsgs: events.filter(e => e.type === 'sav_user_msg').length,
     nExpQuestions: G.expAsked.session,
@@ -1181,17 +1223,50 @@ function emit() {
 }
 function log(type, data = {}) { events.push({ t: now(), type, ...data }); emit(); renderDebug(); }
 
+/* ======================= LECTURE À VOIX HAUTE ======================= */
+const TTS = { voices: [], last: Promise.resolve() };
+function ttsLoad() { try { TTS.voices = speechSynthesis.getVoices().filter(v => /^fr/i.test(v.lang)); } catch (e) {} }
+if ('speechSynthesis' in window) { ttsLoad(); speechSynthesis.onvoiceschanged = ttsLoad; }
+function ttsPick(spec) { return TTS.voices.find(v => spec.pref.test(v.name)) || TTS.voices[0] || null; }
+function ttsUtter(text, spec, extra = {}) {
+  return new Promise(res => {
+    if (!('speechSynthesis' in window)) return res();
+    const u = new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}]/gu, ''));
+    u.lang = 'fr-FR'; u.pitch = Math.min(2, spec.pitch + (extra.pitch || 0)); u.rate = spec.rate + (extra.rate || 0);
+    const v = ttsPick(spec); if (v) u.voice = v;
+    let done = false; const fin = () => { if (!done) { done = true; res(); } };
+    u.onend = u.onerror = fin; setTimeout(fin, 4000 + text.length * 120);   // garde-fou si le navigateur ne signale pas la fin
+    speechSynthesis.speak(u);
+  });
+}
+/* Lit un message de Stéphanie (cls 'bot') ou de l'expérimentateur (cls 'exp') ; la voix de Stéphanie
+   monte et s'accélère avec son stress. Le message suivant attend la fin de la lecture (voir typeOut). */
+function ttsSay(cls, text, el) {
+  const spec = VOIX_LUES[cls];
+  if (!spec || !CONFIG.lecture || CONFIG.maquette) return;
+  const st = cls === 'bot' && typeof curStress === 'function' && G.mode === 'session' ? curStress() : 0;
+  const prev = TTS.last;
+  TTS.last = prev.then(async () => {
+    el && el.classList.add('speaking');
+    await ttsUtter(text, spec, { pitch: 0.05 * st, rate: 0.05 * st });
+    el && el.classList.remove('speaking');
+  });
+  log('tts', { who: cls === 'bot' ? 'partner' : 'exp', len: text.length });
+}
+
 /* ======================= AFFICHAGE DES CONVERSATIONS ======================= */
-function Feed(logEl) {
+function Feed(logEl, opt = {}) {
   let typingEl = null;
   const scroll = () => { logEl.scrollTop = logEl.scrollHeight; };
   return {
     addMsg(cls, text, from) {
       const d = document.createElement('div'); d.className = 'msg ' + cls;
+      if (opt.symbols) from = (cls === 'user' ? (G.symbol || '★') + ' ' + (G.pseudo || '') + ' (vous)' : cls === 'exp' ? SYM_EXP + ' ' + (from || 'Expérimentateur') : SYM_PARTNER + ' ' + (from || CONFIG.partnerName));
       if (from) { const f = document.createElement('span'); f.className = 'from'; f.textContent = from; d.appendChild(f); }
       d.appendChild(document.createTextNode(text));
       const t = document.createElement('time'); t.textContent = clock(); d.appendChild(t);
       logEl.appendChild(d); scroll();
+      if (opt.speak) ttsSay(cls, text, d);
     },
     addSys(text) { const d = document.createElement('div'); d.className = 'sys'; d.textContent = text; logEl.appendChild(d); scroll(); },
     typing(on) {
@@ -1202,6 +1277,7 @@ function Feed(logEl) {
   };
 }
 async function typeOut(feed, text, stress) {   // durée déterministe, identique pour tous les sujets
+  await TTS.last;
   const base = Math.min(5200, Math.max(1100, 500 + text.length * 26)) * (1 + stress * 0.15);
   if (stress >= 3) { feed.typing(true); await sleep(base * 0.4); feed.typing(false); await sleep(1100); feed.typing(true); await sleep(base * 0.6); }
   else { feed.typing(true); await sleep(base); }
@@ -1324,18 +1400,36 @@ function setPseudo(p) {
   document.querySelectorAll('[data-me-name]').forEach(el => el.textContent = p + ' (vous)');
   document.querySelectorAll('[data-me-plain]').forEach(el => el.textContent = p);
   document.querySelectorAll('[data-me-initial]').forEach(el => el.textContent = p[0].toUpperCase());
-  document.getElementById('salle-who').textContent = `${p} (vous) · ${CONFIG.partnerName} · Expérimentateur`;
+  document.getElementById('salle-who').textContent = `${G.symbol || '★'} ${p} (vous) · ${SYM_PARTNER} ${CONFIG.partnerName} · ${SYM_EXP} Expérimentateur`;
 }
 function partnerAway() {}   // compatibilité : l'ancienne page de consignes n'existe plus
 
 /* Accueil */
 const pseudoIn = document.getElementById('pseudo'), joinBtn = document.getElementById('join-btn');
+G.symbol = SYMBOLES[0]; G.voice = VOIX_SUJET[0].id;
+SYMBOLES.forEach(sym => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = sym; b.setAttribute('aria-label', 'Symbole ' + sym);
+  b.disabled = sym === SYM_PARTNER || sym === SYM_EXP; b.setAttribute('aria-pressed', sym === G.symbol);
+  b.onclick = () => { G.symbol = sym; document.querySelectorAll('#symbols button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+  document.getElementById('symbols').appendChild(b);
+});
+VOIX_SUJET.forEach(v => {
+  const d = document.createElement('div'); d.className = 'voice'; d.setAttribute('role', 'button'); d.tabIndex = 0; d.setAttribute('aria-pressed', v.id === G.voice);
+  const txt = document.createElement('div'); txt.innerHTML = `<b>${v.nom}</b><small>${v.desc}</small>`;
+  const play = document.createElement('button'); play.type = 'button'; play.className = 'play'; play.textContent = '▶ Écouter';
+  play.onclick = e => { e.stopPropagation(); try { speechSynthesis.cancel(); } catch (x) {} ttsUtter(`Bonjour, je m'appelle ${pseudoIn.value.trim() || 'Sam'}.`, v); log('voix_ecoute', { voix: v.id }); };
+  const choose = () => { G.voice = v.id; document.querySelectorAll('#voices .voice').forEach(x => x.setAttribute('aria-pressed', x === d)); };
+  d.onclick = choose; d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } };
+  d.append(txt, play); document.getElementById('voices').appendChild(d);
+});
 pseudoIn.addEventListener('input', () => joinBtn.disabled = !pseudoIn.value.trim());
 pseudoIn.addEventListener('keydown', e => { if (e.key === 'Enter' && !joinBtn.disabled) joinBtn.click(); });
 joinBtn.addEventListener('click', async () => {
   setPseudo(pseudoIn.value.trim().slice(0, 20));
   pseudoIn.disabled = true; joinBtn.disabled = true;
   log('pseudo', { pseudo: G.pseudo });
+  log('profil', { pseudo: G.pseudo, symbole: G.symbol, voix: G.voice });
+  document.querySelectorAll('#symbols button, #voices .voice, #voices .play').forEach(x => { x.disabled = true; x.style.pointerEvents = 'none'; });
   document.getElementById('wait-box').hidden = false;
   await sleep(CONFIG.waitForPartnerMs);
   document.getElementById('wait-spin').hidden = true;
@@ -1347,7 +1441,7 @@ joinBtn.addEventListener('click', async () => {
 });
 
 /* ---------- La salle : une seule discussion pour tout le monde, du début à la fin ---------- */
-const roomFeed = Feed(document.getElementById('salle-log'));
+const roomFeed = Feed(document.getElementById('salle-log'), { symbols: true, speak: true });
 const salleSay = (seq, where) => playSeq(roomFeed, seq, where);
 /* La conseillère écrit dans la salle (quand elle veut arrêter) */
 async function partnerInRoom(msgs, meta) {
@@ -1462,7 +1556,7 @@ async function startSavDemo() {
 /* ======================= 6 et 7 : SITE, QUESTIONS, CONVERSATION ======================= */
 const siteScroll = document.getElementById('site-scroll');
 const chat = document.getElementById('chat'), endBtn = document.getElementById('end-btn');
-const savFeed = Feed(document.getElementById('sav-log'));
+const savFeed = Feed(document.getElementById('sav-log'), { speak: true });
 let current = null, joined = false, savTimer;
 
 /* Conseillère pendant l'exercice et la session : elle répond à chaque message selon PLAN */
