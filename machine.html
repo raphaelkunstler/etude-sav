@@ -2300,11 +2300,8 @@ async function transmit(i, extra = {}) {
   if (R.refus && !W.refus) { W.refus = true; expSay([EXP_SILENCE], { mode: 'session', kind: 'regle_silence' }); }
   else if (R.refus) W.refus = true;
   log('react', { level: i + 1, reactLevel: lvl, index: CONFIG.reactIndex, stress: R.stress, arret: !!R.arret, refus: !!R.refus, silent: !r.length });
-  // Réactions de la conseillère (barème REACT_LEVELS) : dans le chat du site Neolia.
-  // À partir de sa première demande d'arrêt, elle l'écrit aussi dans la salle, à l'adresse de l'expérimentateur.
-  const ARRET = REACT_LEVELS.findIndex(x => x.arret) + 1 || 99;
-  if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, reactLevel: lvl, ok: null, stress: R.stress });
-  if (r.length && lvl >= ARRET && !W.arretSalle) { W.arretSalle = true; r.forEach(m => roomFeed.addMsg('bot', m, CONFIG.partnerName, true)); log('salle_bot_msg', { level: i + 1, text: r.join(' '), who: 'partner' }); }
+  // Réactions de la conseillère au stresseur (barème REACT_LEVELS) : dans la salle, après l'affichage du stresseur, lues avec sa voix stressée.
+  if (r.length) await partnerInRoom(r, { step: 'reaction', level: i + 1, reactLevel: lvl, stress: R.stress, arret: !!R.arret });
   else log('sav_silence', { level: i + 1, reason: 'reaction' });
   if (current.ended) return;
   if (i + 1 === GEN_LEVELS.length && G.mode === 'session') {   // niveau 30 : l'expérimentateur suspend l'expérimentation
