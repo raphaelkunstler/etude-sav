@@ -137,6 +137,21 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; }
 .welcome h1 { font-size: clamp(22px, 2.4vw, 30px); margin: 0; }
 .welcome .lead { margin: 0; }
+/* Diaporama du discours */
+.slides { width: 100%; max-width: 980px; aspect-ratio: 16 / 9; max-height: 100%; display: flex; }
+.slide { flex: 1; display: flex; flex-direction: column; background: #fff; border: 1px solid #C5D0E2; border-radius: 10px; box-shadow: 0 10px 30px #1C243022; overflow: hidden; text-align: left; animation: slide-in .45s ease; }
+@keyframes slide-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide { animation: none; } }
+.slide-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 22px; background: var(--lab-accent); color: #fff; font-size: 13px; letter-spacing: .04em; }
+.slide-body { flex: 1; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 4%; align-items: center; padding: 3% 5%; min-height: 0; }
+.slide-body.solo { grid-template-columns: 1fr; text-align: center; }
+.slide h3 { margin: 0 0 .5em; font-size: clamp(18px, 2.4vw, 32px); line-height: 1.15; color: var(--lab-ink); }
+.slide ul { margin: 0; padding-left: 1.1em; display: grid; gap: .45em; font-size: clamp(13px, 1.35vw, 18px); color: #34404E; }
+.slide p { margin: 0; font-size: clamp(13px, 1.35vw, 18px); color: #34404E; }
+.slide .vis { display: grid; place-items: center; min-height: 0; height: 100%; }
+.slide .vis svg { width: 100%; height: auto; max-height: 100%; }
+.slide .pict { font-size: clamp(42px, 6vw, 84px); line-height: 1; display: flex; gap: .3em; justify-content: center; align-items: center; }
+.slide .tag-big { display: inline-block; background: var(--lab-soft); color: var(--lab-accent); border-radius: 8px; padding: .2em .6em; font-weight: 700; }
 .welcome #draw-zone { width: min(620px, 100%); display: grid; gap: 12px; justify-items: center; margin-top: 10px; }
 .welcome .draw-title { margin: 0; font-weight: 700; color: var(--lab-muted); }
 .welcome .tokens { width: 100%; margin: 0; }
@@ -639,6 +654,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     <div class="cpanel welcome" id="c-welcome">
       <h1>Étude « relation de service en ligne »</h1>
       <p class="lead" id="welcome-lead">L'expérimentateur vous présentera l'étude dans la salle, à droite.</p>
+      <div class="slides" id="slides" hidden aria-live="polite"><div class="slide" id="slide"></div></div>
       <div id="draw-zone" hidden>
         <p class="draw-title">Tirage au sort des rôles</p>
         <div class="tokens">
@@ -932,6 +948,45 @@ const SPEECH = [
   { who: 'exp', text: "Nous voulons savoir quel effet les personnes ont les unes sur les autres dans ces deux rôles, et quel effet les réactions du client auront sur la capacité du conseiller à choisir la bonne réponse." },
   { who: 'exp', text: "L'un de vous sera donc le client aujourd'hui, et l'autre le conseiller. Le plus équitable est de tirer au sort : {pseudo}, c'est vous qui allez lancer le tirage." },
 ];
+
+/* 1a. Diapositives montrées au centre pendant le discours : une par réplique de SPEECH, dans l'ordre */
+const SLIDE_SVG = {
+  courbe: `<svg viewBox="0 0 320 210" role="img" aria-label="Courbe en U inversé : la performance augmente avec la pression, puis diminue">
+    <line x1="40" y1="180" x2="305" y2="180" stroke="#5E6A78" stroke-width="2"/><line x1="40" y1="180" x2="40" y2="15" stroke="#5E6A78" stroke-width="2"/>
+    <path d="M45 170 C 110 30, 210 30, 300 168" fill="none" stroke="#2E4C7D" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="172" cy="58" r="7" fill="#F2C230" stroke="#1C2430" stroke-width="2"/>
+    <text x="172" y="200" text-anchor="middle" font-size="14" fill="#34404E">Pression</text>
+    <text x="22" y="100" text-anchor="middle" font-size="14" fill="#34404E" transform="rotate(-90 22 100)">Performance</text>
+    <text x="182" y="45" font-size="12" fill="#1C2430">optimum ?</text></svg>`,
+  roles: `<svg viewBox="0 0 320 200" role="img" aria-label="Un client et un conseiller, reliés par un échange">
+    <rect x="10" y="60" width="120" height="80" rx="12" fill="#E3E9F2" stroke="#2E4C7D" stroke-width="2"/><text x="70" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#1C2430">Client</text><text x="70" y="118" text-anchor="middle" font-size="12" fill="#5E6A78">exprime son avis</text>
+    <rect x="190" y="60" width="120" height="80" rx="12" fill="#E8F1F1" stroke="#0B4A52" stroke-width="2"/><text x="250" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#1C2430">Conseiller</text><text x="250" y="118" text-anchor="middle" font-size="12" fill="#5E6A78">choisit la réponse</text>
+    <path d="M135 85 H185" stroke="#2E4C7D" stroke-width="3" marker-end="url(#fl)"/><path d="M185 115 H135" stroke="#0B4A52" stroke-width="3" marker-end="url(#fl2)"/>
+    <defs><marker id="fl" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2E4C7D"/></marker><marker id="fl2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0B4A52"/></marker></defs></svg>`,
+  mesure: `<svg viewBox="0 0 320 200" role="img" aria-label="Réactions du client, puis performance du conseiller">
+    <rect x="8" y="70" width="92" height="60" rx="10" fill="#E3E9F2"/><text x="54" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2430">Réactions</text><text x="54" y="116" text-anchor="middle" font-size="12" fill="#5E6A78">du client</text>
+    <rect x="114" y="70" width="92" height="60" rx="10" fill="#E8F1F1"/><text x="160" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2430">Conseiller</text><text x="160" y="116" text-anchor="middle" font-size="12" fill="#5E6A78">sous pression</text>
+    <rect x="220" y="70" width="92" height="60" rx="10" fill="#FFF3CF"/><text x="266" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2430">Bonne</text><text x="266" y="116" text-anchor="middle" font-size="12" fill="#5E6A78">réponse ?</text>
+    <path d="M100 100 H112 M206 100 H218" stroke="#2E4C7D" stroke-width="3"/></svg>`,
+};
+const SLIDES = [
+  { titre: "Stress et performance dans la relation de service", solo: true, html: `<p>Étude expérimentale en psychologie sociale</p><p style="margin-top:1.2em" class="pict">🎧 💬</p>` },
+  { titre: "Travailler sous pression", liste: ["Des tâches intellectuelles exigeantes", "Accomplies sous la pression d'autrui", "Plusieurs théories pour l'expliquer"], vis: `<div class="pict">🧠 ⏱️</div>` },
+  { titre: "Une théorie : un peu de stress aiderait", liste: ["La pression maintiendrait alerte", "Elle obligerait à se concentrer", "Au-delà d'un certain point, elle nuirait"], vis: SLIDE_SVG.courbe },
+  { titre: "Une application : les services clients", liste: ["Les conseillers face à des clients mécontents", "Garder son sang-froid", "Choisir plus vite la bonne réponse"], vis: `<div class="pict">🎧 😠</div>` },
+  { titre: "Ce que l'on sait", liste: ["Très peu d'études expérimentales contrôlées", "Sur l'effet du mécontentement d'autrui", "Sur le fonctionnement cognitif"], vis: `<div class="pict" style="font-size:clamp(70px,10vw,140px);color:#2E4C7D;font-weight:900">?</div>` },
+  { titre: "Questions ouvertes", liste: ["Quel degré de pression est le plus favorable ?", "La personne qui s'exprime compte-t-elle ?", "Client plus âgé, client plus jeune…"], vis: `<div class="pict">🤔</div>` },
+  { titre: "Notre étude", liste: ["Des participants de profils variés", "Réunis à distance", "Les uns conseillers, les autres clients"], vis: SLIDE_SVG.roles },
+  { titre: "Ce que nous mesurons", liste: ["L'effet des participants les uns sur les autres", "L'effet des réactions du client", "Sur la capacité du conseiller à bien répondre"], vis: SLIDE_SVG.mesure },
+  { titre: "Attribution des rôles", liste: ["Un client, un conseiller", "Tirage au sort"], vis: `<div class="pict">🎲</div>` },
+];
+function showSlide(i) {
+  const d = SLIDES[i] || SLIDES[SLIDES.length - 1], el = document.getElementById('slide');
+  const fresh = el.cloneNode(false); el.replaceWith(fresh);   // relance l'animation d'entrée
+  fresh.innerHTML = `<div class="slide-top"><span>Laboratoire · Étude « relation de service en ligne »</span><span>${i + 1} / ${SLIDES.length}</span></div>`
+    + `<div class="slide-body${d.solo ? ' solo' : ''}"><div><h3>${d.titre}</h3>${d.liste ? '<ul>' + d.liste.map(x => `<li>${x}</li>`).join('') + '</ul>' : ''}${d.html || ''}</div>${d.vis ? `<div class="vis">${d.vis}</div>` : ''}</div>`;
+  log('slide', { n: i + 1 });
+}
 
 /* 1b. Après le tirage, dans la salle ; la page passe ensuite toute seule aux deux écrans */
 const AFTER_DRAW = [
@@ -1483,8 +1538,12 @@ async function finishMeeting(reason) {
   roomFeed.addSys("L'expérimentateur a rejoint la salle.");
   document.getElementById('salle-input').placeholder = 'Écrivez dans la salle…';
   log('experimenter_joined', { reason });
-  await salleSay(SPEECH, 'discours');
-  document.getElementById('welcome-lead').hidden = true;
+  // Discours : une diapositive par réplique, au centre
+  const wl = document.getElementById('c-welcome'), slides = document.getElementById('slides');
+  wl.querySelector('h1').hidden = true; document.getElementById('welcome-lead').hidden = true; slides.hidden = false;
+  for (let i = 0; i < SPEECH.length; i++) { showSlide(i); await salleSay([SPEECH[i]], 'discours'); }
+  await sleep(1200);
+  slides.hidden = true; wl.querySelector('h1').hidden = false;
   document.getElementById('draw-zone').hidden = false;
 }
 const tokC = document.getElementById('tok-client'), tokS = document.getElementById('tok-sav');
