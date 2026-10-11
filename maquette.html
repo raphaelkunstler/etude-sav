@@ -164,6 +164,21 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .shot:has(img) { border: 1px solid #C5D0E2; background: #ECEFF3; }
 .shot img + span { display: none; }
 .shots figcaption { text-align: center; font-size: 14px; color: var(--lab-muted); }
+.liste { display: flex; flex-direction: column; padding: 14px 18px; gap: 10px; }
+.liste h2 { margin: 0; text-align: center; font-size: 20px; }
+.liste .liste-lead { margin: 0; text-align: center; color: var(--lab-muted); font-size: 14px; }
+.liste-rows { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; align-content: start; }
+.liste-rows li { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; padding: 8px 12px; border-radius: 9px; background: #fff; border: 1px solid var(--lab-line); font-size: 14px; line-height: 1.35; transition: background .2s; }
+.liste-rows li b { color: var(--lab-muted); }
+.liste-rows li .good { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; font-weight: 600; }
+.liste-rows li.current { background: #FFF6D6; border-color: #E2B93B; box-shadow: 0 0 0 2px #E2B93B; font-size: 16px; }
+.liste-rows li.read { opacity: .55; }
+.liste-rows li.read b::after { content: ' ✓'; color: #2F6B4A; }
+.liste-head { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); }
+.lire { display: flex; justify-content: center; align-items: center; gap: 18px; }
+.lire .jbtn { width: auto; padding: 0 28px; background: var(--lab-accent, #2F4F7A); }
+.lire #lire-prog { font-weight: 700; color: var(--lab-muted); }
+.lire .jbtn span { color: inherit; }
 .agent { display: flex; flex-direction: column; background: #C9D0D8; border: 3px solid var(--petrol); }
 .agent .chrome { display: flex; }
 .agent-body { flex: 1; display: grid; grid-template-columns: 200px minmax(0, 1fr); background: #fff; min-height: 0; }
@@ -593,7 +608,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 
 <div class="lab-bar"><div class="inner">
   <div class="lab-brand"><span class="sq"></span>Étude en ligne <small>Session S-1047</small></div>
-  <div class="steps" aria-label="Progression"><span id="step-label">Information</span><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="steps" aria-label="Progression"><span id="step-label">Information</span><i></i><i></i><i></i><i></i><i></i><i></i></div>
 </div></div>
 
 <!-- 0. Connexion -->
@@ -734,6 +749,13 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       </div>
     </div>
 
+    <div class="cpanel liste" id="c-liste" hidden>
+      <h2>Liste à lire à <span data-partner-name>Stéphanie</span></h2>
+      <p class="liste-lead">Pour chaque message du client, la bonne réponse est soulignée.</p>
+      <div class="liste-head"><span>N°</span><span>Message du client</span><span>Bonne réponse</span></div>
+      <ol class="liste-rows" id="liste-rows"></ol>
+    </div>
+
     <div class="cpanel flash" id="c-flash" hidden><div class="flash-in" id="flash-in"></div></div>
 
     <div class="browser" id="c-site" hidden>
@@ -858,6 +880,10 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       <button type="button" class="jbtn ok" id="u-yes">J'ai compris</button>
       <button type="button" class="jbtn nq" id="u-no">Je n'ai pas compris</button>
     </div>
+    <div class="bpanel lire" id="b-lire" hidden>
+      <button type="button" class="jbtn" id="lire-btn" disabled>Lire la ligne à <span data-partner-name>Stéphanie</span></button>
+      <span id="lire-prog"></span>
+    </div>
     <div class="bpanel abcd" id="b-abcd" hidden>
       <button type="button" data-letter="A">A</button><button type="button" data-letter="B">B</button><button type="button" data-letter="C">C</button><button type="button" data-letter="D">D</button>
     </div>
@@ -893,7 +919,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 </div>
 <aside id="debug" hidden>
   <header>
-    <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion et tirage</button><button data-jump="screens">2 Deux écrans</button><button data-jump="sav">3 Côté SAV</button><button data-jump="exercise">4 Exercice</button><button data-jump="session">5 Session</button><button id="copy-log">Copier</button>
+    <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion et tirage</button><button data-jump="screens">2 Deux écrans</button><button data-jump="sav">3 Côté SAV</button><button data-jump="exercise">4 Exercice</button><button data-jump="liste">5 Liste</button><button data-jump="session">6 Session</button><button id="copy-log">Copier</button>
   </header>
   <pre id="debug-pre"></pre>
 </aside>
@@ -1097,6 +1123,16 @@ const GUIDE = [
   { text: "À vous maintenant : envoyez la question suivante, et continuez seul jusqu'à la fin de l'exercice.", vise: '.qitem.current .qsend' },
 ];
 /* 5. Avant la session */
+/* 5. Lecture de la liste : le client lit à la conseillère la liste des messages et des bonnes réponses, pour qu'elle la mémorise */
+const LISTE_SPEECH = [
+  { who: 'exp', text: "Avant la session, {partner} doit mémoriser la liste des messages du client, avec la bonne réponse à chacun." },
+  { who: 'exp', text: "{pseudo}, vous allez lui lire cette liste. Elle s'affiche à l'écran ; la bonne réponse est soulignée." },
+  { who: 'exp', text: "Cliquez sur « Lire la ligne » : la ligne est lue à {partner}. Puis passez à la suivante, jusqu'à la fin de la liste." },
+];
+const LISTE_FIN = {
+  partner: "C'est noté. Je pense avoir retenu la liste.",
+  exp: [{ who: 'exp', text: "Très bien. Nous passons maintenant à la session. {pseudo}, vous retrouvez votre écran de client." }],
+};
 const SESSION_SPEECH = [
   { who: 'exp', text: "L'exercice est terminé. La session commence." },
   { who: 'exp', text: "Depuis ce matin, votre connexion Internet ne fonctionne plus. Contactez l'assistance de Neolia, puis envoyez les messages dans l'ordre." },
@@ -1514,29 +1550,29 @@ function setCompose(formId, enabled) { document.querySelectorAll('#' + formId + 
 /* Pages simples (information, accueil), puis une seule scène pour tout le reste :
    bandeau gauche (questions) · centre · salle à droite · bandeau du bas. */
 const PHASES = ['consent', 'declined', 'wait'];
-const STAGE = ['meeting', 'screens', 'sav', 'exercise', 'session'];
-const STEP_OF = { wait: 1, meeting: 1, screens: 2, sav: 3, exercise: 4, session: 5 };
+const STAGE = ['meeting', 'screens', 'sav', 'exercise', 'liste', 'session'];
+const STEP_OF = { wait: 1, meeting: 1, screens: 2, sav: 3, exercise: 4, liste: 5, session: 6 };
 const workEl = document.getElementById('phase-work');
-function setCenter(id) { ['c-welcome', 'c-screens', 'c-sav', 'c-flash', 'c-site'].forEach(c => document.getElementById(c).hidden = c !== id); }
-function setBottom(id) { ['b-blank', 'b-understood', 'b-abcd', 'gen'].forEach(c => document.getElementById(c).hidden = c !== id); }
+function setCenter(id) { ['c-welcome', 'c-screens', 'c-sav', 'c-liste', 'c-flash', 'c-site'].forEach(c => document.getElementById(c).hidden = c !== id); }
+function setBottom(id) { ['b-blank', 'b-understood', 'b-lire', 'b-abcd', 'gen'].forEach(c => document.getElementById(c).hidden = c !== id); }
 var show = function show(name) {
   const stage = STAGE.includes(name);
   PHASES.forEach(p => document.getElementById('phase-' + p).hidden = p !== name);
   workEl.hidden = !stage;
   const idx = STEP_OF[name] || 0;
-  document.getElementById('step-label').textContent = idx ? `Étape ${idx} sur 5` + (name === 'exercise' ? ' · exercice' : name === 'session' ? ' · session' : '') : 'Information';
+  document.getElementById('step-label').textContent = idx ? `Étape ${idx} sur 6` + (name === 'exercise' ? ' · exercice' : name === 'liste' ? ' · lecture de la liste' : name === 'session' ? ' · session' : '') : 'Information';
   document.querySelectorAll('.steps i').forEach((el, i) => el.classList.toggle('done', i < idx));
   G.phase = name; window.scrollTo(0, 0);
   log('phase', { name });
   if (stage) {
     const work = name === 'exercise' || name === 'session';
-    workEl.classList.toggle('wide', name === 'sav' || name === 'screens');
+    workEl.classList.toggle('wide', name === 'sav' || name === 'screens' || name === 'liste');
     workEl.classList.toggle('blank-left', !work);
-    setCenter({ meeting: 'c-welcome', screens: 'c-screens', sav: 'c-sav' }[name] || 'c-site');
-    setBottom(work ? 'gen' : name === 'sav' ? 'b-abcd' : 'b-blank');
+    setCenter({ meeting: 'c-welcome', screens: 'c-screens', sav: 'c-sav', liste: 'c-liste' }[name] || 'c-site');
+    setBottom(work ? 'gen' : name === 'sav' ? 'b-abcd' : name === 'liste' ? 'b-lire' : 'b-blank');
     if (!G.pseudo) setPseudo('Test');
   }
-  ({ meeting: startMeeting, screens: startScreens, sav: startSavDemo })[name]?.();
+  ({ meeting: startMeeting, screens: startScreens, sav: startSavDemo, liste: startListe })[name]?.();
   if (name === 'exercise' || name === 'session') startWork(name);
 }
 document.querySelectorAll('[data-partner-name]').forEach(el => el.textContent = CONFIG.partnerName);
@@ -1710,6 +1746,43 @@ async function startSavDemo() {
   askUnderstood('sav', SAV_REPEAT, () => show('exercise'));
 }
 
+/* 5. Lecture de la liste à la conseillère */
+let listeStarted = false;
+const ligneTexte = it => `${it.n}. Le client : « ${it.client} » Bonne réponse : « ${it.reponses[LETTERS.indexOf(it.correcte)]} »`;
+async function startListe() {
+  if (listeStarted) return; listeStarted = true;
+  const L = window.QCM_NEOLIA || [], rows = document.getElementById('liste-rows'), btn = document.getElementById('lire-btn'), prog = document.getElementById('lire-prog');
+  rows.textContent = '';
+  L.forEach(it => {
+    const li = document.createElement('li'), n = document.createElement('b'), c = document.createElement('span'), g = document.createElement('span');
+    n.textContent = it.n; c.textContent = '« ' + it.client + ' »'; g.className = 'good'; g.textContent = it.reponses[LETTERS.indexOf(it.correcte)];
+    li.append(n, c, g); rows.appendChild(li);
+  });
+  const lis = [...rows.children];
+  let k = 0;
+  const mark = () => { lis.forEach((li, j) => { li.classList.toggle('current', j === k); li.classList.toggle('read', j < k); }); prog.textContent = k < L.length ? `Ligne ${k + 1} sur ${L.length}` : 'Liste lue'; lis[k]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
+  mark(); btn.disabled = true;
+  await salleSay(LISTE_SPEECH, 'liste');
+  log('liste_debut', { n: L.length });
+  btn.disabled = false;
+  btn.onclick = async () => {
+    if (k >= L.length) return;
+    btn.disabled = true;
+    const t = ligneTexte(L[k]);
+    roomFeed.addMsg('user', t); log('liste_ligne', { ligne: k + 1, text: t });
+    await TTS.last; await sleep(400);   // la ligne suivante attend la fin de la lecture
+    k++; mark();
+    if (k < L.length) { btn.disabled = false; return; }
+    log('liste_fin');
+    dlgIn();
+    await partnerInRoom([LISTE_FIN.partner], { step: 'liste' });
+    await salleSay(LISTE_FIN.exp, 'liste');
+    await sleep(1200);
+    dlgOut();
+    show('session');
+  };
+}
+
 /* ======================= 6 et 7 : SITE, QUESTIONS, CONVERSATION ======================= */
 const siteScroll = document.getElementById('site-scroll');
 const chat = document.getElementById('chat'), endBtn = document.getElementById('end-btn');
@@ -1786,7 +1859,7 @@ function endCurrent(reason) {
     log('session_end', { reason });
   } else {
     savFeed.addSys("Vous avez mis fin à l'exercice.");
-    setTimeout(() => show('session'), 1800);
+    setTimeout(() => show('liste'), 1800);
   }
 }
 let armTimer;
@@ -2389,7 +2462,7 @@ log('page_view', { ua: navigator.userAgent, w: innerWidth, h: innerHeight });
 /* Navigation directe entre les étapes ; chaque étape se remplit toute seule, sans délai,
    avec des réponses types du sujet, pour travailler l'architecture du site. */
 if (CONFIG.maquette) (function () {
-  const LIST = [['consent', 'Information'], ['wait', 'Accueil'], ['meeting', '1 Réunion et tirage'], ['screens', '2 Deux écrans'], ['sav', '3 Côté SAV'], ['exercise', '4 Exercice'], ['session', '5 Session']];
+  const LIST = [['consent', 'Information'], ['wait', 'Accueil'], ['meeting', '1 Réunion et tirage'], ['screens', '2 Deux écrans'], ['sav', '3 Côté SAV'], ['exercise', '4 Exercice'], ['liste', '5 Lecture de la liste'], ['session', '6 Session']];
   const SUBJECT_MEET = ["Bonjour !", "Moi c'est Sam, je suis en master.", "Un peu aussi, je ne sais pas trop à quoi m'attendre.", "On verra bien."];
   const LEVELS = [4, 9, 14, 19, 24];   // niveaux choisis à chaque « N'importe quoi » (1 à 30)
   document.body.classList.add('maquette');
@@ -2438,6 +2511,9 @@ if (CONFIG.maquette) (function () {
     } else if (k === 'sav') {
       await until(() => !document.querySelector('#b-abcd button').disabled); document.querySelector('#b-abcd button[data-letter="B"]').click();
       await until(() => !document.getElementById('b-understood').hidden, 60000); document.getElementById('u-yes').click();
+    } else if (k === 'liste') {
+      const btn = document.getElementById('lire-btn');
+      while (G.phase === 'liste' && !document.querySelector('#liste-rows li:last-child.read')) { if (!await until(() => !btn.disabled, 10000)) break; btn.click(); await pause(20); }
     } else if (k === 'exercise') await cycle('ex');
     else if (k === 'session') await cycle('sav');
   }
@@ -2445,14 +2521,20 @@ if (CONFIG.maquette) (function () {
   const idx = () => LIST.findIndex(([k]) => k === G.phase);
   function go(k) { show(k); auto(k); }
   const orig = show;
-  window.show = show = function (name) { FF.on = false; orig(name); mark(name); };
+  window.show = show = function (name) { FF.on = false; orig(name); mark(name); if (name === 'liste') auto(name); };   // la liste se lit seule en maquette, même atteinte depuis l'exercice
   /* « Suivante » : s'il reste des dialogues sur la page, les fait défiler d'un coup (texte affiché, voix coupée) jusqu'au prochain geste
      attendu du sujet ; sinon, passe à la page suivante. */
-  const busy = () => DLG.n > 0 || (typeof W === 'object' && W.guided) || (G.phase === 'meeting' && meet && !meet.ended);
+  const listeEnCours = () => G.phase === 'liste' && listeStarted && !document.querySelector('#liste-rows li:last-child.read');
+  const busy = () => DLG.n > 0 || (typeof W === 'object' && W.guided) || (G.phase === 'meeting' && meet && !meet.ended) || listeEnCours();
   const next = document.getElementById('mq-next');
   function skip() {
     log('saut_dialogues', { phase: G.phase }); ffSkip();
     if (G.phase === 'meeting' && meet && !meet.ended) finishMeeting('saut');
+    if (listeEnCours()) (async () => {   // lecture de la liste : toutes les lignes d'un coup
+      dlgIn(); const btn = document.getElementById('lire-btn');
+      while (listeEnCours()) { if (!await until(() => !btn.disabled || !listeEnCours(), 10000)) break; if (listeEnCours()) btn.click(); await pause(10); }
+      dlgOut();
+    })();
   }
   setInterval(() => {
     const b = busy();
@@ -2465,7 +2547,7 @@ if (CONFIG.maquette) (function () {
 })();
 
 (function () {
-  const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'meeting', ecrans: 'screens', sav: 'sav', installation: 'sav', consignes: 'sav', role: 'exercise', exercice: 'exercise', fiche: 'session', session: 'session' };
+  const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'meeting', ecrans: 'screens', sav: 'sav', installation: 'sav', consignes: 'sav', role: 'exercise', exercice: 'exercise', liste: 'liste', lecture: 'liste', fiche: 'session', session: 'session' };
   const want = CONFIG.demo ? 'session' : ALIAS[(params.get('etape') || location.hash.replace('#', '')).toLowerCase()];
   if (CONFIG.maquette) { window.mqGo(want || 'consent'); return; }
   if (want) { if (!G.pseudo) setPseudo('Test'); show(want); if (want === 'session' || want === 'exercise') setTimeout(() => openChat('acces_direct'), 300); }

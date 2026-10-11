@@ -8,14 +8,14 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 
 | Fichier | Rôle |
 | --- | --- |
-| `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes (réunion, discours et tirage, installation de Stéphanie, consignes, rôle, exercice, session). C'est la page à donner aux sujets, et la seule à modifier. |
+| `index.html` | Le parcours complet : une page d'information et de consentement, puis six étapes : réunion, discours et tirage ; les deux écrans ; le côté SAV ; l'exercice commenté ; la lecture de la liste à Stéphanie ; la session. C'est la page à donner aux sujets, et la seule à modifier. |
 | `machine.html` | Une démonstration qui ouvre directement la session, sans passer par les étapes précédentes. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
 | `maquette.html` | Une version de travail pour l'architecture du site : une barre violette en haut permet d'aller directement à n'importe quelle étape, et chaque échange (réunion, consignes, exercice, session) se joue instantanément avec des réponses types du sujet. Générée par le même script. |
 | `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, colonne des commentaires du client à droite, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
 | `reactions-stephanie.md` | La liste lisible des répliques de Stéphanie : réaction à chacun des 30 niveaux de la machine (avec le stress, la demande d'arrêt et le refus), salutation, fin de session. Fichier généré à partir d'`index.html` par `scripts/build_reactions.py` : ne pas le modifier à la main. |
 | `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
 | `qcm/qcm-neolia.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
-| `demo.html` | Démonstration à jouer soi-même : barre de navigation entre les étapes, voix et délais réels, rien ne se joue tout seul. Générée par `scripts/build_machine.py`. |
+| `demo.html` | Démonstration à jouer soi-même : barre de navigation entre les étapes, voix et délais réels, rien ne se joue tout seul. Tant qu'il reste des dialogues sur la page, le bouton de droite devient « Passer les dialogues » : il les fait défiler d'un coup, voix coupée, jusqu'au prochain geste attendu du sujet ; ensuite il redevient « Suivante ». Générée par `scripts/build_machine.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
 | `.nojekyll` | Empêche GitHub de transformer les fichiers. Il ne faut pas le supprimer. |
 
@@ -47,7 +47,7 @@ Ajoutez ces éléments à la fin de l'adresse du site.
 | *(rien)* | Parcours complet depuis l'accueil, pour les sujets. |
 | `?pid=…&cond=…` | Identifiant du participant et condition, transmis par Qualtrics. |
 | `?voix=chat` / `?voix=synthese` / `?voix=oral` | Mode de la machine : phrase écrite (par défaut), lue par l'ordinateur, ou à dire à voix haute par le sujet. |
-| `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `installation`, `consignes`, `role`, `exercice`, `fiche`. |
+| `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `ecrans`, `sav`, `exercice`, `liste`. |
 | `#machine` | Ouvre directement la session, comme `machine.html`. |
 | `?maquette` ou `#maquette` | Mode maquette, comme `maquette.html`. Se combine avec une étape : `?maquette&etape=session`. |
 | `?punition=…` | Durée d'affichage du panneau plein écran, en millisecondes (4500 par défaut). |
@@ -106,6 +106,10 @@ Après une modification d'`index.html`, régénérez la démonstration et la maq
 Après une modification de `qcm/qcm-neolia.md`, régénérez les données : `python3 scripts/build_qcm.py`. Le script vérifie que les items sont numérotés sans trou et que le corrigé les couvre tous.
 
 Pour afficher un item : `question(n)` dans la page, le message `{ neolia: 'question', args: [n] }` depuis Qualtrics, ou `ecran-agent.html?question=n` dans l'adresse. Chaque envoi de réponse produit un événement `reponse-agent` avec le numéro de l'item (`n`), la lettre choisie (`choix`) et `correcte` (vrai ou faux). La bonne réponse n'est jamais affichée à l'écran, mais elle figure dans le code source, comme le reste du script.
+
+## Lecture de la liste (étape 5)
+
+Après l'exercice, une page affiche les 25 messages du client avec leur bonne réponse soulignée (`qcm/qcm-neolia.js`). L'expérimentateur demande au sujet de la lire à Stéphanie pour qu'elle la mémorise. Chaque clic sur « Lire la ligne » envoie la ligne dans la salle, lue avec la voix du sujet ; la ligne suivante s'active à la fin de la lecture. Après la dernière, Stéphanie dit l'avoir retenue et l'on passe à la session. Textes : `LISTE_SPEECH`, `LISTE_FIN` ; événements `liste_debut`, `liste_ligne`, `liste_fin`.
 
 ## Incitations de l'expérimentateur (session)
 
