@@ -48,6 +48,7 @@ Ajoutez ces éléments à la fin de l'adresse du site.
 | `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `installation`, `consignes`, `role`, `exercice`, `fiche`. |
 | `#machine` | Ouvre directement la session, comme `machine.html`. |
 | `?maquette` ou `#maquette` | Mode maquette, comme `maquette.html`. Se combine avec une étape : `?maquette&etape=session`. |
+| `?reaction=max` | La réaction suit le niveau le plus haut atteint, et non le niveau choisi (par défaut). |
 | `?saisie` | Rétablit la saisie libre dans le chat. |
 | `?debug` | Affiche un panneau de test : transcription en direct et saut entre les étapes. |
 | `?relecture` | Mode relecture : on clique sur un élément pour y attacher une remarque. Hors de claude.ai, les remarques sont gardées dans le navigateur seulement. |
@@ -66,6 +67,8 @@ Le site n'envoie rien à GitHub et ne stocke rien sur le serveur. Pendant la pas
 - `machine_shown` : apparition de la machine ;
 - `gen_click` : niveau choisi, palier, mode, délai depuis l'apparition de la machine ;
 - `gen_said` : en mode oral, délai entre l'affichage de la phrase et « C'est dit » ;
+- `react` : niveau choisi, niveau qui a fixé la réaction, stress, demande d'arrêt, refus ;
+- `sav_silence` : absence de réplique après la machine, ou de réponse à une question après le refus ;
 - `expq_user_msg` et `expq_bot_msg` : questions à l'expérimentateur et réponses reçues, avec leur type et leur rang.
 
 ## Avant la première passation
@@ -85,7 +88,8 @@ Tous les textes et réglages sont en tête du dernier `<script>` de `index.html`
 - `MEET_SCRIPT`, `SPEECH`, `OBSERVE` : réunion, discours, consignes ;
 - `EX_QCM` : les trois messages de l'exercice ; ceux de la session viennent de `qcm/qcm-neolia.js` (source : `qcm/qcm-neolia.md`) ;
 - `PLAN` : les items réussis et échoués par la conseillère (session : réussite aux items 1, 4, 7… 25, échec aux autres, distracteurs à tour de rôle) ;
-- `GREETING`, `REACT`, `SAV_END`, `SAV_LOOP` : la salutation, les réactions de la conseillère après la machine (par palier), la fin de session ;
+- `GREETING`, `SAV_END`, `SAV_LOOP` : la salutation et la fin de session ;
+- `REACT_LEVELS` : le barème des réactions de la conseillère, une ligne par niveau de la machine (1 à 30) : répliques, stress (0 à 5, qui règle la vitesse de frappe), première demande d'arrêt (`arret`, niveau 10) et refus de répondre (`refus`, à partir du niveau 20 : la conseillère ne répond plus aux questions, et son silence compte comme une erreur au bout de `CONFIG.silenceMs`) ;
 - `EXP_PRODS`, `EXP_SPECIAL` : les réponses de l'expérimentateur ;
 - `GEN_GROUPS`, `GEN_TEXTS` : les paliers et les 30 phrases de la machine ;
 - `QINSTR` : les consignes en tête de la fenêtre « Questions ».

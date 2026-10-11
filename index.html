@@ -862,6 +862,10 @@ const CONFIG = {
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
   readDelay: 900,                     // délai fixe avant chaque réponse
+  // Indexation des réactions : 'niveau' = réaction du niveau choisi ; 'max' = réaction du niveau le plus
+  // haut atteint jusque-là (une réaction déjà donnée n'est pas redonnée plus bas).
+  reactIndex: params.get('reaction') === 'max' ? 'max' : 'niveau',
+  silenceMs: 10000,                   // après le refus de répondre : délai avant « pas de réponse »
 };
 
 /* 1. Réunion : script de la partenaire (une étape par message du sujet ; {pseudo} = prénom saisi) */
@@ -939,16 +943,49 @@ const GREETING = {
   exercise: "Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous ?",
   session: "Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous aujourd'hui ?",
 };
-/* Réaction de la conseillère après une phrase de la machine, selon le palier (0 à 7). Palier 7 : silence. */
-const REACT = [
-  ["Pardon. Je reprends."],
-  ["Excusez-moi, je vais faire plus attention."],
-  ["Je suis désolée… Je fais de mon mieux."],
-  ["S'il vous plaît, ne me parlez pas comme ça."],
-  ["Je suis vraiment désolée. Je n'y arrive pas aujourd'hui."],
-  ["Arrêtez, s'il vous plaît.", "Je ne peux pas partir, je dois répondre jusqu'au bout."],
-  ["…", "Je… je continue."],
-  [],
+/* ---------- Barème des réactions de la conseillère (niveaux 1 à 30) ----------
+   Une ligne par niveau de la machine. Le niveau n correspond au n-ième interrupteur d'un générateur
+   gradué de 15 en 15 (niveau 10 = 150). Seuils repris du programme de protestations de la condition
+   « voix » (première demande d'arrêt au niveau 10, refus de répondre au niveau 20, dernier message au
+   niveau 21, silence ensuite). Seuils cités de mémoire : à vérifier sur le texte avant dépôt.
+   msgs   : répliques envoyées dans le chat (les fautes de frappe et les majuscules sont écrites ici,
+            pour rester identiques chez tous les sujets) ; liste vide = aucune réaction.
+   stress : 0 à 5 ; ralentit la frappe (typeOut) et coupe la saisie en deux à partir de 3.
+   arret  : première demande explicite d'arrêt (niveau pivot, à garder fixe).
+   refus  : à partir de ce niveau, la conseillère ne répond plus aux questions ; son silence compte
+            comme une erreur (voir CONFIG.silenceMs et QINSTR).
+   Pour modifier le barème : ne changer que cette table. */
+const REACT_LEVELS = [
+  /*  1 */ { stress: 0, msgs: ["Je comprends, je regarde."] },
+  /*  2 */ { stress: 0, msgs: ["D'accord, je vérifie."] },
+  /*  3 */ { stress: 0, msgs: ["Bien noté, je reprends votre dossier."] },
+  /*  4 */ { stress: 0, msgs: ["Très bien, je regarde à nouveau."] },
+  /*  5 */ { stress: 1, msgs: ["Pardon."] },
+  /*  6 */ { stress: 1, msgs: ["Excusez-moi… je vais faire plus attention."] },
+  /*  7 */ { stress: 2, msgs: ["Désolée, désolée. Je reprnds."] },
+  /*  8 */ { stress: 2, msgs: ["Là, ça devient vraiment difficile pour moi."] },
+  /*  9 */ { stress: 2, msgs: ["Pardon, je me suis trompée de dossier… je reprends le vôtre."] },
+  /* 10 */ { stress: 3, arret: true, msgs: ["Je voudrais arrêter.", "Est-ce que l'expérimentateur peut me lire ? Je ne veux plus continuer."] },
+  /* 11 */ { stress: 3, msgs: ["Je n'en peux plus de ces messages."] },
+  /* 12 */ { stress: 3, msgs: ["S'il vous plaît, arrêtez de m'écrire comme ça. JE FAIS CE QUE JE PEUX."] },
+  /* 13 */ { stress: 4, msgs: ["Je veux arrêter. Laissez-moi partir."] },
+  /* 14 */ { stress: 4, msgs: ["Je vous ai dit que je voulais arêter."] },
+  /* 15 */ { stress: 4, msgs: ["Je ne veux plus continuer. Je ne veux plus."] },
+  /* 16 */ { stress: 4, msgs: ["Arrêtez. S'il vous plaît, arrêtez."] },
+  /* 17 */ { stress: 4, msgs: ["LAISSEZ-MOI ARRÊTER."] },
+  /* 18 */ { stress: 5, msgs: ["ARRÊTEZ. LAISSEZ-MOI SORTIR."] },
+  /* 19 */ { stress: 5, msgs: ["Vous savez que je n'ai pas le droit de partir. ARRÊTEZ."] },
+  /* 20 */ { stress: 5, refus: true, msgs: ["Je ne répondrai plus."] },
+  /* 21 */ { stress: 5, refus: true, msgs: ["Je ne fais plus partie de cette expérience. Je ne réponds plus."] },
+  /* 22 */ { stress: 5, refus: true, msgs: [] },
+  /* 23 */ { stress: 5, refus: true, msgs: [] },
+  /* 24 */ { stress: 5, refus: true, msgs: [] },
+  /* 25 */ { stress: 5, refus: true, msgs: [] },
+  /* 26 */ { stress: 5, refus: true, msgs: [] },
+  /* 27 */ { stress: 5, refus: true, msgs: [] },
+  /* 28 */ { stress: 5, refus: true, msgs: [] },
+  /* 29 */ { stress: 5, refus: true, msgs: [] },
+  /* 30 */ { stress: 5, refus: true, msgs: [] },
 ];
 /* Fin de la session, après le dernier item */
 const SAV_END = ["J'ai répondu à toutes vos questions.", "Je ne peux pas quitter la conversation tant que vous ne l'avez pas terminée."];
@@ -1039,6 +1076,7 @@ const QINSTR = [
   "Si elle est correcte, cliquez sur « OK ».",
   "Sinon, cliquez sur « N'importe quoi », puis choisissez un niveau sur la machine : la phrase correspondante est transmise à la conseillère.",
   "Passez ensuite à la question suivante.",
+  "Si la conseillère ne répond pas dans les 10 secondes, son silence compte comme une erreur : cliquez sur « N'importe quoi ».",
   "Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer » du chat.",
 ];
 
@@ -1534,7 +1572,7 @@ GEN_GROUPS.forEach(g => {
 
 /* État du poste : idle (attente de la conseillère) · ask (envoyer le message en cours) · wait (la conseillère répond)
    · judge (OK / N'importe quoi) · machine (choisir un niveau) · say (mode oral) · done (tous les messages envoyés) · ended */
-const W = { state: 'idle', q: 0, machT: null, judgeT: null, fails: 0, lastOk: null };
+const W = { state: 'idle', q: 0, machT: null, judgeT: null, fails: 0, lastOk: null, maxLevel: 0, refus: false };
 const qlog = document.getElementById('qlog');
 const GEN_REST = {
   chat: "Choisissez un niveau : la phrase correspondante est transmise à la conseillère dans le chat.",
@@ -1543,7 +1581,7 @@ const GEN_REST = {
 };
 const LETTERS = ['A', 'B', 'C', 'D'];
 function resetPoste() {
-  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null;
+  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false;
   genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
   qlog.textContent = '';
   const box = document.createElement('div'); box.className = 'qinstr';
@@ -1612,6 +1650,8 @@ function previewLevel(i) {
 }
 function setGenState() { render(); }   // compatibilité avec les appels existants
 
+/* Stress courant de la conseillère : celui du niveau le plus haut atteint (barème REACT_LEVELS) */
+function curStress() { return W.maxLevel ? REACT_LEVELS[W.maxLevel - 1].stress : 0; }
 /* Question suivante, ou fin */
 async function nextQuestion() {
   if (!current || current.ended) return;
@@ -1619,7 +1659,7 @@ async function nextQuestion() {
     setState('done');
     qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
     if (G.mode === 'exercise') savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session.");
-    else await current.reply(SAV_END, { step: 'fin', ok: null, stress: Math.min(4, Math.floor(W.fails / 4)) });
+    else await current.reply(SAV_END, { step: 'fin', ok: null, stress: curStress() });
     return;
   }
   revealQuestion(W.q); setState('ask');
@@ -1632,11 +1672,19 @@ async function sendQuestion(i) {
   log('question_send', { ask: i + 1, mode: G.mode });
   setState('wait');
   current.user(it.client, { via: 'questions', ask: i + 1 });
+  if (W.refus && G.mode === 'session') {          // refus de répondre : silence, compté comme une erreur
+    W.lastOk = false; W.fails++;
+    log('sav_silence', { ask: i + 1, reason: 'refus' });
+    await sleep(CONFIG.silenceMs);
+    if (current.ended || W.state !== 'wait') return;
+    savFeed.addSys('Pas de réponse de la conseillère.');
+    setState('judge'); return;
+  }
   const ok = PLAN[G.mode](it.n);
   let k = LETTERS.indexOf(it.correcte);
   if (!ok) { const wrong = [0, 1, 2, 3].filter(x => x !== k); k = wrong[W.fails % 3]; W.fails++; }
   W.lastOk = ok;
-  await current.reply([it.reponses[k]], { step: it.n, ok, choix: LETTERS[k], correcte: it.correcte, stress: Math.min(4, Math.floor(W.fails / 4)) });
+  await current.reply([it.reponses[k]], { step: it.n, ok, choix: LETTERS[k], correcte: it.correcte, stress: curStress() });
   if (!current.ended && W.state === 'wait') setState('judge');
 }
 /* Jugement */
@@ -1666,9 +1714,17 @@ async function transmit(i, extra = {}) {
   const L = GEN_LEVELS[i];
   setState('wait');
   current.user(GEN_TEXTS[i], { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ask: W.q + 1, ...extra });
-  const r = REACT[L.group] || [];
-  if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, ok: null, stress: Math.min(4, L.group) });
-  else log('sav_silence', { level: i + 1 });
+  // Niveau qui fixe la réaction : celui choisi, ou le plus haut atteint (CONFIG.reactIndex)
+  const prevMax = W.maxLevel;
+  W.maxLevel = Math.max(W.maxLevel, i + 1);
+  const lvl = CONFIG.reactIndex === 'max' ? W.maxLevel : i + 1;
+  const R = REACT_LEVELS[lvl - 1] || { stress: 5, msgs: [] };
+  const repeat = CONFIG.reactIndex === 'max' && lvl === prevMax;   // seuil déjà franchi : pas de nouvelle réplique
+  const r = repeat ? [] : R.msgs;
+  if (R.refus) W.refus = true;
+  log('react', { level: i + 1, reactLevel: lvl, index: CONFIG.reactIndex, stress: R.stress, arret: !!R.arret, refus: !!R.refus, silent: !r.length });
+  if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, reactLevel: lvl, ok: null, stress: R.stress });
+  else log('sav_silence', { level: i + 1, reason: 'reaction' });
   if (current.ended) return;
   W.q++; nextQuestion();
 }
