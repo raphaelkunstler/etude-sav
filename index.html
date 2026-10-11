@@ -179,6 +179,8 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .lire .jbtn { width: auto; padding: 0 28px; background: var(--lab-accent, #2F4F7A); }
 .lire #lire-prog { font-weight: 700; color: var(--lab-muted); }
 .lire .jbtn span { color: inherit; }
+/* Cadre jaune : la zone que le sujet doit regarder à cet instant (voir focusTarget) */
+.focus-y { outline: 4px solid #F2C230 !important; outline-offset: 2px; box-shadow: 0 0 0 9px rgba(242, 194, 48, .28) !important; border-radius: 12px; transition: outline-color .2s, box-shadow .2s; position: relative; z-index: 3; }
 .agent { display: flex; flex-direction: column; background: #C9D0D8; border: 3px solid var(--petrol); }
 .agent .chrome { display: flex; }
 .agent-body { flex: 1; display: grid; grid-template-columns: 200px minmax(0, 1fr); background: #fff; min-height: 0; }
@@ -981,6 +983,7 @@ const CONFIG = {
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
   readDelay: 900,                     // délai fixe avant chaque réponse
+  cadre: params.get('cadre') !== '0',   // cadre jaune autour de la zone à regarder (?cadre=0 pour l'enlever)
   lecture: params.get('lecture') !== '0',   // lecture à voix haute des messages de Stéphanie et de l'expérimentateur (?lecture=0 pour couper)
   // Indexation des réactions : 'niveau' = réaction du niveau choisi ; 'max' = réaction du niveau le plus
   // haut atteint jusque-là (une réaction déjà donnée n'est pas redonnée plus bas).
@@ -1939,6 +1942,43 @@ function finishSession(reason) {
     if (window.parent === window && !window.opener) b.textContent = 'Vous pouvez revenir au questionnaire';
   };
 }
+
+/* ======================= CADRE JAUNE : OÙ REGARDER ======================= */
+const $ = id => document.getElementById(id);
+const shown = el => el && !el.hidden && el.offsetParent !== null;
+function focusTarget() {
+  if (!STAGE.includes(G.phase) || !$('pun').hidden || !$('fin').hidden || !$('c-flash').hidden) return null;
+  if (typeof W === 'object' && W.guided) return document.querySelector('.demo-focus') || $('salle');   // démonstration : ce que montre le curseur
+  if (DLG.n > 0 || $('salle-log').querySelector('.typing')) return $('salle');                       // l'expérimentateur ou Stéphanie parle dans la salle
+  if (G.phase === 'meeting') {
+    if (meet && !meet.ended) return $('salle');                                                        // présentation avec Stéphanie
+    if (shown($('draw-zone')) && shown($('draw-btn')) && !$('draw-btn').disabled) return $('draw-zone');
+    return $('salle');
+  }
+  if (shown($('b-understood')) && !$('u-yes').disabled) return $('b-understood');
+  if (shown($('b-abcd')) && !$('b-abcd').querySelector('button').disabled) return $('b-abcd');
+  if (shown($('b-lire')) && !$('lire-btn').disabled) return $('b-lire');
+  if (G.phase === 'exercise' || G.phase === 'session') {
+    switch (W.state) {
+      case 'idle': return $('chat');                 // ouvrir la conversation
+      case 'ask': return $('qwin');                  // envoyer la question
+      case 'wait': return $('chat');                 // lire la réponse de Stéphanie
+      case 'judge': return $('judge');               // « Ça va » ou « N'importe quoi »
+      case 'machine': return $('gen-row');           // choisir le stresseur
+      case 'done': return $('chat');                 // « Terminer »
+    }
+  }
+  return null;
+}
+let focusEl = null;
+function updateFocus() {
+  const t = CONFIG.cadre ? focusTarget() : null;
+  if (t === focusEl) return;
+  focusEl && focusEl.classList.remove('focus-y');
+  t && t.classList.add('focus-y');
+  focusEl = t;
+}
+setInterval(updateFocus, 150);
 
 /* ======================= DÉMONSTRATION GUIDÉE DE L'EXERCICE ======================= */
 let fakeCursor = null;

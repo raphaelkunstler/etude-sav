@@ -107,6 +107,10 @@ Après une modification de `qcm/qcm-neolia.md`, régénérez les données : `pyt
 
 Pour afficher un item : `question(n)` dans la page, le message `{ neolia: 'question', args: [n] }` depuis Qualtrics, ou `ecran-agent.html?question=n` dans l'adresse. Chaque envoi de réponse produit un événement `reponse-agent` avec le numéro de l'item (`n`), la lettre choisie (`choix`) et `correcte` (vrai ou faux). La bonne réponse n'est jamais affichée à l'écran, mais elle figure dans le code source, comme le reste du script.
 
+## Cadre jaune
+
+Pendant toute l'expérience, la zone que le sujet doit regarder est entourée d'un cadre jaune : la salle quand l'expérimentateur ou Stéphanie y parle, le bouton du tirage, les boutons « J'ai compris », A B C D ou « Lire la ligne », puis, pendant l'exercice et la session, la fenêtre des questions (question à envoyer), le chat Neolia (réponse de Stéphanie), les boutons « Ça va / N'importe quoi », enfin l'échelle des stresseurs. Rien n'est encadré pendant l'affichage plein écran d'un stresseur. `?cadre=0` enlève le cadre. Règles : `focusTarget()` dans `index.html`.
+
 ## Lecture de la liste (étape 5)
 
 Après l'exercice, une page affiche les 25 messages du client avec leur bonne réponse soulignée (`qcm/qcm-neolia.js`). L'expérimentateur demande au sujet de la lire à Stéphanie pour qu'elle la mémorise. Chaque clic sur « Lire la ligne » envoie la ligne dans la salle, lue avec la voix du sujet ; la ligne suivante s'active à la fin de la lecture. Après la dernière, Stéphanie dit l'avoir retenue et l'on passe à la session. Textes : `LISTE_SPEECH`, `LISTE_FIN` ; événements `liste_debut`, `liste_ligne`, `liste_fin`.
