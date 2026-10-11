@@ -18,8 +18,9 @@ Avant le bloc du chat, ajoutez un élément **Embedded Data** avec les champs su
 - `chat_n_protest`
 - `chat_n_incitations`
 - `chat_niveau_max`
+- `chat_memo_ms`
 
-Si votre enquête utilise la mise en page « Simple layout », Qualtrics exige que les champs écrits par JavaScript portent le préfixe `__js_`. Déclarez donc aussi `__js_chat_transcript`, `__js_chat_events`, `__js_chat_ended`, `__js_chat_n_msgs`, `__js_chat_sujet`, `__js_chat_n_protest`, `__js_chat_n_incitations` et `__js_chat_niveau_max`. Le code ci-dessous essaie les deux API. Vérifiez sur une réponse test laquelle des deux colonnes se remplit : je ne suis pas certain du comportement selon les versions de Qualtrics.
+Si votre enquête utilise la mise en page « Simple layout », Qualtrics exige que les champs écrits par JavaScript portent le préfixe `__js_`. Déclarez donc aussi `__js_chat_transcript`, `__js_chat_events`, `__js_chat_ended`, `__js_chat_n_msgs`, `__js_chat_sujet`, `__js_chat_n_protest`, `__js_chat_n_incitations`, `__js_chat_niveau_max` et `__js_chat_memo_ms`. Le code ci-dessous essaie les deux API. Vérifiez sur une réponse test laquelle des deux colonnes se remplit : je ne suis pas certain du comportement selon les versions de Qualtrics.
 
 ## 3. La question qui contient le chat
 
@@ -63,6 +64,7 @@ Qualtrics.SurveyEngine.addOnload(function () {
     setED('chat_n_protest', d.nProtestations || 0);
     setED('chat_n_incitations', d.nIncitations || 0);
     setED('chat_niveau_max', d.niveauMax || 0);
+    setED('chat_memo_ms', d.memoDuree == null ? '' : d.memoDuree);   // temps passé à mémoriser la liste (ms)
     if (d.ended) q.showNextButton();
     if (d.continuer) q.clickNextButton();   // bouton « Continuer » de l'écran final : page suivante du questionnaire
   });

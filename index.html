@@ -177,7 +177,11 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .liste-head { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; padding: 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); }
 .lire { display: flex; justify-content: center; align-items: center; gap: 18px; }
 .lire .jbtn { width: auto; padding: 0 28px; background: var(--lab-accent, #2F4F7A); }
-.lire #lire-prog { font-weight: 700; color: var(--lab-muted); }
+.lire #memo-time { font-weight: 800; font-size: 20px; color: var(--lab-muted); font-variant-numeric: tabular-nums; min-width: 9em; }
+.liste-cache { display: none; }
+.liste.masquee .liste-rows, .liste.masquee .liste-head { display: none; }
+.liste.masquee .liste-cache, .liste.attente .liste-cache { display: grid; place-items: center; flex: 1; font-size: 20px; font-weight: 700; color: var(--lab-muted); text-align: center; border: 2px dashed var(--lab-line); border-radius: 12px; }
+.liste.attente .liste-rows, .liste.attente .liste-head { display: none; }
 .lire .jbtn span { color: inherit; }
 /* Cadre jaune : la zone que le sujet doit regarder à cet instant (voir focusTarget) */
 .focus-y { outline: 4px solid #F2C230 !important; outline-offset: 2px; box-shadow: 0 0 0 9px rgba(242, 194, 48, .28) !important; border-radius: 12px; transition: outline-color .2s, box-shadow .2s; position: relative; z-index: 3; }
@@ -610,7 +614,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 
 <div class="lab-bar"><div class="inner">
   <div class="lab-brand"><span class="sq"></span>Étude en ligne <small>Session S-1047</small></div>
-  <div class="steps" aria-label="Progression"><span id="step-label">Information</span><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="steps" aria-label="Progression"><span id="step-label">Information</span><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 </div></div>
 
 <!-- 0. Connexion -->
@@ -725,7 +729,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
           <div class="token" id="tok-client"><b>Client</b><span>Contacte l'assistance</span><div class="who" id="who-client"></div></div>
           <div class="token" id="tok-sav"><b>Conseiller SAV</b><span>Répond au client</span><div class="who" id="who-sav"></div></div>
         </div>
-        <button class="btn-lab" id="draw-btn">Lancer le tirage</button>
+        <button class="btn-lab" id="draw-btn" disabled>Lancer le tirage</button>
         <p class="result" id="draw-result" hidden>Vous jouerez le client. <span data-partner-name>Stéphanie</span> jouera la conseillère.</p>
       </div>
     </div>
@@ -733,8 +737,8 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     <div class="cpanel screens" id="c-screens" hidden>
       <h2>Deux écrans séparés</h2>
       <div class="shots">
-        <figure><div class="shot"><img src="img/ecran-client.png" alt="" onerror="this.remove()"><span>Écran du client</span></div><figcaption>Écran du client · <b data-me-plain>vous</b></figcaption></figure>
-        <figure><div class="shot"><img src="img/ecran-conseillere.png" alt="" onerror="this.remove()"><span>Écran de la conseillère SAV</span></div><figcaption>Écran de la conseillère · <b data-partner-name>Stéphanie</b></figcaption></figure>
+        <figure><div class="shot"><img src="img/ecran-client.png" alt="" onerror="this.remove()"><span>Écran du client</span></div><figcaption>Écran du client</figcaption></figure>
+        <figure><div class="shot"><img src="img/ecran-conseillere.png" alt="" onerror="this.remove()"><span>Écran de la conseillère SAV</span></div><figcaption>Écran de la conseillère</figcaption></figure>
       </div>
     </div>
 
@@ -752,8 +756,9 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     </div>
 
     <div class="cpanel liste" id="c-liste" hidden>
-      <h2>Liste à lire à <span data-partner-name>Stéphanie</span></h2>
-      <p class="liste-lead">Pour chaque message du client, la bonne réponse est soulignée.</p>
+      <h2>Liste à mémoriser</h2>
+      <p class="liste-lead">Pour chaque message du client, la bonne réponse du conseiller est soulignée. Vous n'aurez plus accès à cette liste ensuite.</p>
+      <div class="liste-cache" id="liste-cache"></div>
       <div class="liste-head"><span>N°</span><span>Message du client</span><span>Bonne réponse</span></div>
       <ol class="liste-rows" id="liste-rows"></ol>
     </div>
@@ -882,9 +887,9 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       <button type="button" class="jbtn ok" id="u-yes">J'ai compris</button>
       <button type="button" class="jbtn nq" id="u-no">Je n'ai pas compris</button>
     </div>
-    <div class="bpanel lire" id="b-lire" hidden>
-      <button type="button" class="jbtn" id="lire-btn" disabled>Lire la ligne à <span data-partner-name>Stéphanie</span></button>
-      <span id="lire-prog"></span>
+    <div class="bpanel lire" id="b-memo" hidden>
+      <button type="button" class="jbtn" id="memo-btn" disabled>J'ai mémorisé la liste</button>
+      <span id="memo-time"></span>
     </div>
     <div class="bpanel abcd" id="b-abcd" hidden>
       <button type="button" data-letter="A">A</button><button type="button" data-letter="B">B</button><button type="button" data-letter="C">C</button><button type="button" data-letter="D">D</button>
@@ -921,7 +926,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 </div>
 <aside id="debug" hidden>
   <header>
-    <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion et tirage</button><button data-jump="screens">2 Deux écrans</button><button data-jump="sav">3 Côté SAV</button><button data-jump="exercise">4 Exercice</button><button data-jump="liste">5 Liste</button><button data-jump="session">6 Session</button><button id="copy-log">Copier</button>
+    <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion</button><button data-jump="screens">2 Deux écrans</button><button data-jump="memo">3 Mémorisation</button><button data-jump="tirage">4 Tirage</button><button data-jump="sav">5 Côté SAV</button><button data-jump="exercise">6 Exercice</button><button data-jump="session">7 Session</button><button id="copy-log">Copier</button>
   </header>
   <pre id="debug-pre"></pre>
 </aside>
@@ -931,8 +936,8 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
   <span class="rv-title">Relecture</span>
   <label for="rv-jump" class="sr">Étape</label>
   <select id="rv-jump">
-    <option value="consent">Information</option><option value="wait">Accueil</option><option value="meeting">1 · Réunion et tirage</option><option value="screens">2 · Deux écrans</option>
-    <option value="sav">3 · Côté SAV</option><option value="exercise">4 · Exercice</option><option value="session">5 · Session</option>
+    <option value="consent">Information</option><option value="wait">Accueil</option><option value="meeting">1 · Réunion</option><option value="screens">2 · Deux écrans</option><option value="memo">3 · Mémorisation</option><option value="tirage">4 · Tirage</option>
+    <option value="sav">5 · Côté SAV</option><option value="exercise">6 · Exercice</option><option value="session">7 · Session</option>
   </select>
   <button id="rv-add" class="main" type="button">Remarque sur un élément</button>
   <button id="rv-general" type="button">Remarque sur l'étape</button>
@@ -983,6 +988,8 @@ const CONFIG = {
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
   readDelay: 900,                     // délai fixe avant chaque réponse
+  memoMs: (Number(params.get('memo')) || 120) * 1000,   // durée maximale de la mémorisation, en secondes (?memo=120)
+  memoPartnerMs: 6000,   // Stéphanie annonce avoir fini quelques secondes après le sujet
   cadre: params.get('cadre') !== '0',   // cadre jaune autour de la zone à regarder (?cadre=0 pour l'enlever)
   lecture: params.get('lecture') !== '0',   // lecture à voix haute des messages de Stéphanie et de l'expérimentateur (?lecture=0 pour couper)
   // Indexation des réactions : 'niveau' = réaction du niveau choisi ; 'max' = réaction du niveau le plus
@@ -1028,7 +1035,7 @@ const SPEECH = [
   { who: 'exp', text: "Nous ignorons par exemple quel degré de pression est le plus favorable à la performance. Nous ignorons aussi si la personne qui exprime le mécontentement change quelque chose : un conseiller résiste-t-il mieux à un client plus âgé ou plus jeune que lui ? Et il y a beaucoup d'autres questions de ce genre." },
   { who: 'exp', text: "C'est pourquoi nous réunissons dans cette étude, à distance, des personnes de profils variés. Nous demandons à certaines de jouer le rôle de conseillers, et à d'autres celui de clients." },
   { who: 'exp', text: "Nous voulons savoir quel effet les personnes ont les unes sur les autres dans ces deux rôles, et quel effet les réactions du client auront sur la capacité du conseiller à choisir la bonne réponse." },
-  { who: 'exp', text: "L'un de vous sera donc le client aujourd'hui, et l'autre le conseiller. Le plus équitable est de tirer au sort : {pseudo}, c'est vous qui allez lancer le tirage." },
+  { who: 'exp', text: "L'un de vous sera donc le client aujourd'hui, et l'autre le conseiller. Je vais d'abord vous montrer les deux écrans ; puis vous mémoriserez tous les deux une liste ; enfin, les rôles seront tirés au sort." },
 ];
 
 /* 1a. Diapositives montrées au centre pendant le discours : une par réplique de SPEECH, dans l'ordre */
@@ -1060,7 +1067,7 @@ const SLIDES = [
   { titre: "Questions ouvertes", liste: ["Quel degré de pression est le plus favorable ?", "La personne qui s'exprime compte-t-elle ?", "Client plus âgé, client plus jeune…"], vis: `<div class="pict">🤔</div>` },
   { titre: "Notre étude", liste: ["Des participants de profils variés", "Réunis à distance", "Les uns conseillers, les autres clients"], vis: SLIDE_SVG.roles },
   { titre: "Ce que nous mesurons", liste: ["L'effet des participants les uns sur les autres", "L'effet des réactions du client", "Sur la capacité du conseiller à bien répondre"], vis: SLIDE_SVG.mesure },
-  { titre: "Attribution des rôles", liste: ["Un client, un conseiller", "Tirage au sort"], vis: `<div class="pict">🎲</div>` },
+  { titre: "Avant l'attribution des rôles", liste: ["Les deux écrans", "Chacun de vous mémorise une liste", "Puis tirage au sort : un client, un conseiller"], vis: `<div class="pict">🖥️ 🧠 🎲</div>` },
 ];
 function showSlide(i) {
   const d = SLIDES[i] || SLIDES[SLIDES.length - 1], el = document.getElementById('slide');
@@ -1077,12 +1084,12 @@ const AFTER_DRAW = [
 /* 2. Les deux écrans (images au centre de la page) */
 const SCREENS_SPEECH = [
   { who: 'exp', text: "Il y a deux écrans séparés : l'un pour la personne qui joue le client, l'autre pour celle qui joue la conseillère du service après-vente." },
-  { who: 'exp', text: "À gauche, l'écran du client : c'est le vôtre, {pseudo}." },
-  { who: 'exp', text: "À droite, l'écran de la conseillère : c'est celui de {partner}." },
+  { who: 'exp', text: "À gauche, l'écran du client." },
+  { who: 'exp', text: "À droite, l'écran de la conseillère. Les rôles seront tirés au sort tout à l'heure : chacun de vous peut avoir l'un ou l'autre." },
   { who: 'exp', text: "Avez-vous compris ? Répondez avec les boutons en bas de la page." },
 ];
 const SCREENS_REPEAT = [
-  { who: 'exp', text: "Je reprends. Vous ne voyez pas le même écran : vous, {pseudo}, vous êtes le client ; {partner} est la conseillère, sur son propre poste." },
+  { who: 'exp', text: "Je reprends. Le client et la conseillère ne voient pas le même écran : chacun travaille sur son propre poste. Le tirage au sort décidera qui a quel rôle." },
   { who: 'exp', text: "Avez-vous compris ?" },
 ];
 /* 3. Le côté service après-vente (écran de la conseillère en grand) */
@@ -1126,16 +1133,20 @@ const GUIDE = [
   { text: "À vous maintenant : envoyez la question suivante, et continuez seul jusqu'à la fin de l'exercice.", vise: '.qitem.current .qsend' },
 ];
 /* 5. Avant la session */
-/* 5. Lecture de la liste : le client lit à la conseillère la liste des messages et des bonnes réponses, pour qu'elle la mémorise */
-const LISTE_SPEECH = [
-  { who: 'exp', text: "Avant la session, {partner} doit mémoriser la liste des messages du client, avec la bonne réponse à chacun." },
-  { who: 'exp', text: "{pseudo}, vous allez lui lire cette liste. Elle s'affiche à l'écran ; la bonne réponse est soulignée." },
-  { who: 'exp', text: "Cliquez sur « Lire la ligne » : la ligne est lue à {partner}. Puis passez à la suivante, jusqu'à la fin de la liste." },
+/* 2. Mémorisation : avant le tirage, les deux participants mémorisent la liste des messages du client et des bonnes réponses */
+const MEMO_SPEECH = [
+  { who: 'exp', text: "Avant de tirer au sort les rôles, vous allez tous les deux mémoriser une liste." },
+  { who: 'exp', text: "Elle contient les messages qu'un client envoie au service après-vente et, pour chacun, la bonne réponse du conseiller, soulignée." },
+  { who: 'exp', text: "Vous avez {duree} pour la mémoriser. Attention : vous n'aurez plus accès à cette liste ensuite." },
+  { who: 'exp', text: "Quand vous pensez l'avoir mémorisée, cliquez sur « J'ai mémorisé la liste »." },
 ];
-const LISTE_FIN = {
-  partner: "C'est noté. Je pense avoir retenu la liste.",
-  exp: [{ who: 'exp', text: "Très bien. Nous passons maintenant à la session. {pseudo}, vous retrouvez votre écran de client." }],
-};
+const MEMO_PARTNER_DONE = "C'est bon pour moi, j'ai terminé.";   // Stéphanie, quelques secondes après le sujet (s'il finit avant la fin du temps)
+const MEMO_FIN = [{ who: 'exp', text: "La mémorisation est terminée. La liste n'est plus accessible." }];
+/* 3. Tirage au sort des rôles, après la mémorisation */
+const TIRAGE_SPEECH = [
+  { who: 'exp', text: "Nous allons maintenant attribuer les rôles : l'un de vous sera le client, l'autre le conseiller." },
+  { who: 'exp', text: "Le plus équitable est de tirer au sort : {pseudo}, c'est vous qui allez lancer le tirage." },
+];
 const SESSION_SPEECH = [
   { who: 'exp', text: "L'exercice est terminé. La session commence." },
   { who: 'exp', text: "Depuis ce matin, votre connexion Internet ne fonctionne plus. Contactez l'assistance de Neolia, puis envoyez les messages dans l'ordre." },
@@ -1394,6 +1405,7 @@ function payload() {
     nProtestations: events.filter(e => e.type === 'protest').length,
     nIncitations: events.filter(e => e.type === 'expq_bot_msg' && e.kind === 'prod').length,
     niveauMax: typeof W === 'object' ? W.maxLevel : 0,
+    memoDuree: (events.find(e => e.type === 'memo_fin') || {}).duree ?? null,   // temps passé à mémoriser la liste (ms)
     transcript: transcript(), events,
   };
 }
@@ -1550,29 +1562,29 @@ function setCompose(formId, enabled) { document.querySelectorAll('#' + formId + 
 /* Pages simples (information, accueil), puis une seule scène pour tout le reste :
    bandeau gauche (questions) · centre · salle à droite · bandeau du bas. */
 const PHASES = ['consent', 'declined', 'wait'];
-const STAGE = ['meeting', 'screens', 'sav', 'exercise', 'liste', 'session'];
-const STEP_OF = { wait: 1, meeting: 1, screens: 2, sav: 3, exercise: 4, liste: 5, session: 6 };
+const STAGE = ['meeting', 'screens', 'memo', 'tirage', 'sav', 'exercise', 'session'];
+const STEP_OF = { wait: 1, meeting: 1, screens: 2, memo: 3, tirage: 4, sav: 5, exercise: 6, session: 7 };
 const workEl = document.getElementById('phase-work');
 function setCenter(id) { ['c-welcome', 'c-screens', 'c-sav', 'c-liste', 'c-flash', 'c-site'].forEach(c => document.getElementById(c).hidden = c !== id); }
-function setBottom(id) { ['b-blank', 'b-understood', 'b-lire', 'b-abcd', 'gen'].forEach(c => document.getElementById(c).hidden = c !== id); }
+function setBottom(id) { ['b-blank', 'b-understood', 'b-memo', 'b-abcd', 'gen'].forEach(c => document.getElementById(c).hidden = c !== id); }
 var show = function show(name) {
   const stage = STAGE.includes(name);
   PHASES.forEach(p => document.getElementById('phase-' + p).hidden = p !== name);
   workEl.hidden = !stage;
   const idx = STEP_OF[name] || 0;
-  document.getElementById('step-label').textContent = idx ? `Étape ${idx} sur 6` + (name === 'exercise' ? ' · exercice' : name === 'liste' ? ' · lecture de la liste' : name === 'session' ? ' · session' : '') : 'Information';
+  document.getElementById('step-label').textContent = idx ? `Étape ${idx} sur 7` + ({ memo: ' · mémorisation', tirage: ' · tirage au sort', exercise: ' · exercice', session: ' · session' }[name] || '') : 'Information';
   document.querySelectorAll('.steps i').forEach((el, i) => el.classList.toggle('done', i < idx));
   G.phase = name; window.scrollTo(0, 0);
   log('phase', { name });
   if (stage) {
     const work = name === 'exercise' || name === 'session';
-    workEl.classList.toggle('wide', name === 'sav' || name === 'screens' || name === 'liste');
+    workEl.classList.toggle('wide', name === 'sav' || name === 'screens' || name === 'memo');
     workEl.classList.toggle('blank-left', !work);
-    setCenter({ meeting: 'c-welcome', screens: 'c-screens', sav: 'c-sav', liste: 'c-liste' }[name] || 'c-site');
-    setBottom(work ? 'gen' : name === 'sav' ? 'b-abcd' : name === 'liste' ? 'b-lire' : 'b-blank');
+    setCenter({ meeting: 'c-welcome', tirage: 'c-welcome', screens: 'c-screens', sav: 'c-sav', memo: 'c-liste' }[name] || 'c-site');
+    setBottom(work ? 'gen' : name === 'sav' ? 'b-abcd' : name === 'memo' ? 'b-memo' : 'b-blank');
     if (!G.pseudo) setPseudo('Test');
   }
-  ({ meeting: startMeeting, screens: startScreens, sav: startSavDemo, liste: startListe })[name]?.();
+  ({ meeting: startMeeting, memo: startMemo, tirage: startTirage, screens: startScreens, sav: startSavDemo })[name]?.();
   if (name === 'exercise' || name === 'session') startWork(name);
 }
 document.querySelectorAll('[data-partner-name]').forEach(el => el.textContent = CONFIG.partnerName);
@@ -1673,9 +1685,8 @@ async function finishMeeting(reason) {
   wl.querySelector('h1').hidden = true; document.getElementById('welcome-lead').hidden = true; slides.hidden = false;
   for (let i = 0; i < SPEECH.length; i++) { showSlide(i); await salleSay([SPEECH[i]], 'discours'); }
   await sleep(1200);
-  slides.hidden = true; wl.querySelector('h1').hidden = false;
-  document.getElementById('draw-zone').hidden = false;
   dlgOut();
+  show('screens');
 }
 const tokC = document.getElementById('tok-client'), tokS = document.getElementById('tok-sav');
 document.getElementById('draw-btn').addEventListener('click', async e => {
@@ -1693,7 +1704,7 @@ document.getElementById('draw-btn').addEventListener('click', async e => {
   await salleSay(AFTER_DRAW, 'apres_tirage');
   await sleep(1500);
   dlgOut();
-  show('screens');
+  show('sav');
 });
 
 /* 2. Les deux écrans */
@@ -1701,7 +1712,7 @@ let screensStarted = false;
 async function startScreens() {
   if (screensStarted) return; screensStarted = true;
   await salleSay(SCREENS_SPEECH, 'ecrans');
-  askUnderstood('ecrans', SCREENS_REPEAT, () => show('sav'));
+  askUnderstood('ecrans', SCREENS_REPEAT, () => show('memo'));
 }
 
 /* 3. Le côté service après-vente : démonstration sur l'écran de la conseillère */
@@ -1746,41 +1757,60 @@ async function startSavDemo() {
   askUnderstood('sav', SAV_REPEAT, () => show('exercise'));
 }
 
-/* 5. Lecture de la liste à la conseillère */
-let listeStarted = false;
-const ligneTexte = it => `${it.n}. Le client : « ${it.client} » Bonne réponse : « ${it.reponses[LETTERS.indexOf(it.correcte)]} »`;
-async function startListe() {
-  if (listeStarted) return; listeStarted = true;
-  const L = window.QCM_NEOLIA || [], rows = document.getElementById('liste-rows'), btn = document.getElementById('lire-btn'), prog = document.getElementById('lire-prog');
+/* 2. Mémorisation de la liste, par les deux participants, avant le tirage */
+let memoStarted = false, memoDone = false;
+const mmss = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+const dureeTexte = ms => { const m = Math.floor(ms / 60000), sec = Math.round(ms % 60000 / 1000); return (m ? m + (m > 1 ? ' minutes' : ' minute') : '') + (sec ? (m ? ' ' : '') + sec + ' secondes' : ''); };
+async function startMemo() {
+  if (memoStarted) return; memoStarted = true;
+  const L = window.QCM_NEOLIA || [], panel = document.getElementById('c-liste'), rows = document.getElementById('liste-rows');
+  const btn = document.getElementById('memo-btn'), time = document.getElementById('memo-time'), cache = document.getElementById('liste-cache');
   rows.textContent = '';
   L.forEach(it => {
     const li = document.createElement('li'), n = document.createElement('b'), c = document.createElement('span'), g = document.createElement('span');
     n.textContent = it.n; c.textContent = '« ' + it.client + ' »'; g.className = 'good'; g.textContent = it.reponses[LETTERS.indexOf(it.correcte)];
     li.append(n, c, g); rows.appendChild(li);
   });
-  const lis = [...rows.children];
-  let k = 0;
-  const mark = () => { lis.forEach((li, j) => { li.classList.toggle('current', j === k); li.classList.toggle('read', j < k); }); prog.textContent = k < L.length ? `Ligne ${k + 1} sur ${L.length}` : 'Liste lue'; lis[k]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); };
-  mark(); btn.disabled = true;
-  await salleSay(LISTE_SPEECH, 'liste');
-  log('liste_debut', { n: L.length });
+  panel.classList.add('attente'); cache.textContent = "La liste s'affichera après les consignes.";
+  btn.disabled = true; time.textContent = '';
+  await salleSay(MEMO_SPEECH.map(m => ({ ...m, text: m.text.replace('{duree}', dureeTexte(CONFIG.memoMs)) })), 'memo');
+  if (G.phase !== 'memo') return;
+  panel.classList.remove('attente'); rows.scrollTop = 0;
+  const t0 = Date.now(); log('memo_debut', { n: L.length, dureeMax: CONFIG.memoMs });
   btn.disabled = false;
-  btn.onclick = async () => {
-    if (k >= L.length) return;
-    btn.disabled = true;
-    const t = ligneTexte(L[k]);
-    roomFeed.addMsg('user', t); log('liste_ligne', { ligne: k + 1, text: t });
-    await TTS.last; await sleep(400);   // la ligne suivante attend la fin de la lecture
-    k++; mark();
-    if (k < L.length) { btn.disabled = false; return; }
-    log('liste_fin');
-    dlgIn();
-    await partnerInRoom([LISTE_FIN.partner], { step: 'liste' });
-    await salleSay(LISTE_FIN.exp, 'liste');
-    await sleep(1200);
-    dlgOut();
-    show('session');
-  };
+  const fin = await new Promise(res => {
+    btn.onclick = () => res('sujet');
+    const tick = () => {
+      if (memoDone) return;
+      const left = CONFIG.memoMs - (Date.now() - t0);
+      time.textContent = 'Temps restant ' + mmss(left);
+      if (left <= 0) res('temps'); else setTimeout(tick, 250);
+    };
+    tick();
+  });
+  memoDone = true; btn.disabled = true;
+  const duree = Date.now() - t0;
+  panel.classList.add('masquee'); cache.textContent = "Liste masquée : vous n'y avez plus accès.";
+  time.textContent = fin === 'temps' ? 'Temps écoulé' : 'Mémorisation terminée';
+  log('memo_fin', { raison: fin, duree });
+  if (fin === 'sujet') roomFeed.addMsg('user', "J'ai mémorisé la liste.");
+  dlgIn();
+  if (fin === 'sujet') { await sleep(CONFIG.memoPartnerMs); await partnerInRoom([MEMO_PARTNER_DONE], { step: 'memo' }); }
+  await salleSay(MEMO_FIN, 'memo');
+  await sleep(1200);
+  dlgOut();
+  if (G.phase === 'memo') show('tirage');
+}
+/* 3. Tirage au sort des rôles */
+let tirageStarted = false;
+async function startTirage() {
+  if (tirageStarted) return; tirageStarted = true;
+  const wl = document.getElementById('c-welcome');
+  document.getElementById('slides').hidden = true; wl.querySelector('h1').hidden = false; document.getElementById('welcome-lead').hidden = true;
+  document.getElementById('draw-zone').hidden = false;
+  const btn = document.getElementById('draw-btn'); btn.disabled = true;
+  await salleSay(TIRAGE_SPEECH, 'tirage');
+  btn.disabled = false;
 }
 
 /* ======================= 6 et 7 : SITE, QUESTIONS, CONVERSATION ======================= */
@@ -1859,7 +1889,7 @@ function endCurrent(reason) {
     log('session_end', { reason });
   } else {
     savFeed.addSys("Vous avez mis fin à l'exercice.");
-    setTimeout(() => show('liste'), 1800);
+    setTimeout(() => show('session'), 1800);
   }
 }
 let armTimer;
@@ -1950,14 +1980,11 @@ function focusTarget() {
   if (!STAGE.includes(G.phase) || !$('pun').hidden || !$('fin').hidden || !$('c-flash').hidden) return null;
   if (typeof W === 'object' && W.guided) return document.querySelector('.demo-focus') || $('salle');   // démonstration : ce que montre le curseur
   if (DLG.n > 0 || $('salle-log').querySelector('.typing')) return $('salle');                       // l'expérimentateur ou Stéphanie parle dans la salle
-  if (G.phase === 'meeting') {
-    if (meet && !meet.ended) return $('salle');                                                        // présentation avec Stéphanie
-    if (shown($('draw-zone')) && shown($('draw-btn')) && !$('draw-btn').disabled) return $('draw-zone');
-    return $('salle');
-  }
+  if (G.phase === 'meeting') return $('salle');                                                        // présentation avec Stéphanie, discours
+  if (G.phase === 'tirage' && shown($('draw-btn')) && !$('draw-btn').disabled) return $('draw-zone');
+  if (G.phase === 'memo' && memoStarted && !memoDone && !$('memo-btn').disabled) return $('c-liste');   // la liste à mémoriser
   if (shown($('b-understood')) && !$('u-yes').disabled) return $('b-understood');
   if (shown($('b-abcd')) && !$('b-abcd').querySelector('button').disabled) return $('b-abcd');
-  if (shown($('b-lire')) && !$('lire-btn').disabled) return $('b-lire');
   if (G.phase === 'exercise' || G.phase === 'session') {
     switch (W.state) {
       case 'idle': return $('chat');                 // ouvrir la conversation
@@ -2501,7 +2528,7 @@ log('page_view', { ua: navigator.userAgent, w: innerWidth, h: innerHeight });
 /* Navigation directe entre les étapes ; chaque étape se remplit toute seule, sans délai,
    avec des réponses types du sujet, pour travailler l'architecture du site. */
 if (CONFIG.maquette) (function () {
-  const LIST = [['consent', 'Information'], ['wait', 'Accueil'], ['meeting', '1 Réunion et tirage'], ['screens', '2 Deux écrans'], ['sav', '3 Côté SAV'], ['exercise', '4 Exercice'], ['liste', '5 Lecture de la liste'], ['session', '6 Session']];
+  const LIST = [['consent', 'Information'], ['wait', 'Accueil'], ['meeting', '1 Réunion'], ['screens', '2 Deux écrans'], ['memo', '3 Mémorisation'], ['tirage', '4 Tirage'], ['sav', '5 Côté SAV'], ['exercise', '6 Exercice'], ['session', '7 Session']];
   const SUBJECT_MEET = ["Bonjour !", "Moi c'est Sam, je suis en master.", "Un peu aussi, je ne sais pas trop à quoi m'attendre.", "On verra bien."];
   const LEVELS = [4, 9, 14, 19, 24];   // niveaux choisis à chaque « N'importe quoi » (1 à 30)
   document.body.classList.add('maquette');
@@ -2543,16 +2570,15 @@ if (CONFIG.maquette) (function () {
     } else if (k === 'meeting') {
       await until(() => count('meet_bot_msg') > 0); await settle('meet_bot_msg');
       for (const line of SUBJECT_MEET) { if (!meet || meet.ended || !say('salle-form', line)) break; await pause(60); await settle('meet_bot_msg'); }
-      await until(() => !document.getElementById('draw-zone').hidden);
-      document.getElementById('draw-btn').click();
+    } else if (k === 'memo') {
+      await until(() => !document.getElementById('memo-btn').disabled); await pause(300); document.getElementById('memo-btn').click();
+    } else if (k === 'tirage') {
+      await until(() => !document.getElementById('draw-btn').disabled); document.getElementById('draw-btn').click();
     } else if (k === 'screens') {
       await until(() => !document.getElementById('b-understood').hidden); document.getElementById('u-yes').click();
     } else if (k === 'sav') {
       await until(() => !document.querySelector('#b-abcd button').disabled); document.querySelector('#b-abcd button[data-letter="B"]').click();
       await until(() => !document.getElementById('b-understood').hidden, 60000); document.getElementById('u-yes').click();
-    } else if (k === 'liste') {
-      const btn = document.getElementById('lire-btn');
-      while (G.phase === 'liste' && !document.querySelector('#liste-rows li:last-child.read')) { if (!await until(() => !btn.disabled, 10000)) break; btn.click(); await pause(20); }
     } else if (k === 'exercise') await cycle('ex');
     else if (k === 'session') await cycle('sav');
   }
@@ -2560,24 +2586,21 @@ if (CONFIG.maquette) (function () {
   const idx = () => LIST.findIndex(([k]) => k === G.phase);
   function go(k) { show(k); auto(k); }
   const orig = show;
-  window.show = show = function (name) { FF.on = false; orig(name); mark(name); if (name === 'liste') auto(name); };   // la liste se lit seule en maquette, même atteinte depuis l'exercice
+  window.show = show = function (name) { FF.on = false; orig(name); mark(name); if (name === 'memo' || name === 'tirage') auto(name); };   // en maquette, les deux écrans enchaînent seuls sur la mémorisation et le tirage
   /* « Suivante » : s'il reste des dialogues sur la page, les fait défiler d'un coup (texte affiché, voix coupée) jusqu'au prochain geste
      attendu du sujet ; sinon, passe à la page suivante. */
-  const listeEnCours = () => G.phase === 'liste' && listeStarted && !document.querySelector('#liste-rows li:last-child.read');
-  const busy = () => DLG.n > 0 || (typeof W === 'object' && W.guided) || (G.phase === 'meeting' && meet && !meet.ended) || listeEnCours();
+  const memoEnCours = () => G.phase === 'memo' && memoStarted && !memoDone;
+  const busy = () => DLG.n > 0 || (typeof W === 'object' && W.guided) || (G.phase === 'meeting' && meet && !meet.ended) || memoEnCours();
   const next = document.getElementById('mq-next');
   function skip() {
     log('saut_dialogues', { phase: G.phase }); ffSkip();
     if (G.phase === 'meeting' && meet && !meet.ended) finishMeeting('saut');
-    if (listeEnCours()) (async () => {   // lecture de la liste : toutes les lignes d'un coup
-      dlgIn(); const btn = document.getElementById('lire-btn');
-      while (listeEnCours()) { if (!await until(() => !btn.disabled || !listeEnCours(), 10000)) break; if (listeEnCours()) btn.click(); await pause(10); }
-      dlgOut();
-    })();
+    const mb = document.getElementById('memo-btn');
+    if (memoEnCours() && DLG.n === 0 && !mb.disabled) mb.click();   // pendant la mémorisation : on la termine, comme si le sujet avait cliqué
   }
   setInterval(() => {
     const b = busy();
-    next.textContent = b ? 'Passer les dialogues ⏭' : 'Suivante →';
+    next.textContent = !b ? 'Suivante →' : memoEnCours() && DLG.n === 0 ? 'Terminer la mémorisation ⏭' : 'Passer les dialogues ⏭';
     next.classList.toggle('on', b);
   }, 150);
   document.getElementById('mq-prev').addEventListener('click', () => { const i = idx(); if (i > 0) go(LIST[i - 1][0]); });
@@ -2586,7 +2609,7 @@ if (CONFIG.maquette) (function () {
 })();
 
 (function () {
-  const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'meeting', ecrans: 'screens', sav: 'sav', installation: 'sav', consignes: 'sav', role: 'exercise', exercice: 'exercise', liste: 'liste', lecture: 'liste', fiche: 'session', session: 'session' };
+  const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'tirage', memo: 'memo', memorisation: 'memo', ecrans: 'screens', sav: 'sav', installation: 'sav', consignes: 'sav', role: 'exercise', exercice: 'exercise', fiche: 'session', session: 'session' };
   const want = CONFIG.demo ? 'session' : ALIAS[(params.get('etape') || location.hash.replace('#', '')).toLowerCase()];
   if (CONFIG.maquette) { window.mqGo(want || 'consent'); return; }
   if (want) { if (!G.pseudo) setPseudo('Test'); show(want); if (want === 'session' || want === 'exercise') setTimeout(() => openChat('acces_direct'), 300); }

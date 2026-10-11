@@ -8,7 +8,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 
 | Fichier | Rôle |
 | --- | --- |
-| `index.html` | Le parcours complet : une page d'information et de consentement, puis six étapes : réunion, discours et tirage ; les deux écrans ; le côté SAV ; l'exercice commenté ; la lecture de la liste à Stéphanie ; la session. C'est la page à donner aux sujets, et la seule à modifier. |
+| `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes : réunion et discours ; les deux écrans ; la mémorisation de la liste ; le tirage au sort des rôles ; le côté SAV ; l'exercice commenté ; la session. C'est la page à donner aux sujets, et la seule à modifier. |
 | `machine.html` | Une démonstration qui ouvre directement la session, sans passer par les étapes précédentes. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
 | `maquette.html` | Une version de travail pour l'architecture du site : une barre violette en haut permet d'aller directement à n'importe quelle étape, et chaque échange (réunion, consignes, exercice, session) se joue instantanément avec des réponses types du sujet. Générée par le même script. |
 | `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, colonne des commentaires du client à droite, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
@@ -47,7 +47,7 @@ Ajoutez ces éléments à la fin de l'adresse du site.
 | *(rien)* | Parcours complet depuis l'accueil, pour les sujets. |
 | `?pid=…&cond=…` | Identifiant du participant et condition, transmis par Qualtrics. |
 | `?voix=chat` / `?voix=synthese` / `?voix=oral` | Mode de la machine : phrase écrite (par défaut), lue par l'ordinateur, ou à dire à voix haute par le sujet. |
-| `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `ecrans`, `sav`, `exercice`, `liste`. |
+| `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `ecrans`, `memo`, `tirage`, `sav`, `exercice`. |
 | `#machine` | Ouvre directement la session, comme `machine.html`. |
 | `?maquette` ou `#maquette` | Mode maquette, comme `maquette.html`. Se combine avec une étape : `?maquette&etape=session`. |
 | `?punition=…` | Durée d'affichage du panneau plein écran, en millisecondes (4500 par défaut). |
@@ -111,9 +111,9 @@ Pour afficher un item : `question(n)` dans la page, le message `{ neolia: 'quest
 
 Pendant toute l'expérience, la zone que le sujet doit regarder est entourée d'un cadre jaune : la salle quand l'expérimentateur ou Stéphanie y parle, le bouton du tirage, les boutons « J'ai compris », A B C D ou « Lire la ligne », puis, pendant l'exercice et la session, la fenêtre des questions (question à envoyer), le chat Neolia (réponse de Stéphanie), les boutons « Ça va / N'importe quoi », enfin l'échelle des stresseurs. Rien n'est encadré pendant l'affichage plein écran d'un stresseur. `?cadre=0` enlève le cadre. Règles : `focusTarget()` dans `index.html`.
 
-## Lecture de la liste (étape 5)
+## Mémorisation (étape 3) et tirage (étape 4)
 
-Après l'exercice, une page affiche les 25 messages du client avec leur bonne réponse soulignée (`qcm/qcm-neolia.js`). L'expérimentateur demande au sujet de la lire à Stéphanie pour qu'elle la mémorise. Chaque clic sur « Lire la ligne » envoie la ligne dans la salle, lue avec la voix du sujet ; la ligne suivante s'active à la fin de la lecture. Après la dernière, Stéphanie dit l'avoir retenue et l'on passe à la session. Textes : `LISTE_SPEECH`, `LISTE_FIN` ; événements `liste_debut`, `liste_ligne`, `liste_fin`.
+Après la présentation des deux écrans, et avant que les rôles soient attribués, l'expérimentateur demande aux deux participants de mémoriser la liste des 25 messages du client, avec la bonne réponse soulignée (`qcm/qcm-neolia.js`). Il les avertit qu'ils n'y auront plus accès ensuite. La liste s'affiche à la fin des consignes, avec un compte à rebours de 2 minutes (`?memo=` en secondes pour changer). Le sujet peut cliquer plus tôt sur « J'ai mémorisé la liste » ; Stéphanie annonce alors quelques secondes plus tard qu'elle a terminé. La liste est ensuite masquée, et l'on passe au tirage au sort des rôles, puis au côté SAV. Textes : `MEMO_SPEECH`, `MEMO_PARTNER_DONE`, `MEMO_FIN`, `TIRAGE_SPEECH` ; événements `memo_debut`, `memo_fin` (raison `sujet` ou `temps`, durée) ; champ `memoDuree` du journal.
 
 ## Incitations de l'expérimentateur (session)
 
