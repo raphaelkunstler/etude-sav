@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Neolis Support Desk</title>
+<title>Neolia Support Desk</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>
   :root{
@@ -137,7 +137,7 @@
 <body>
 <div class="page">
   <header>
-    <div class="logo">NEOLIS</div>
+    <div class="logo">NEOLIA</div>
     <div class="service">Support Desk · Service après-vente</div>
     <div class="espace"></div>
     <div class="info">Agent : <strong>Stéphanie M.</strong> · N1 #4471</div>
@@ -207,11 +207,11 @@
     </div>
   </div>
 
-  <footer><span>Neolis Support Desk v3.2.7</span><span>srv-agt-04</span></footer>
+  <footer><span>Neolia Support Desk v3.2.7</span><span>srv-agt-04</span></footer>
 </div>
 
 <!-- Les 25 items du QCM (messages du client, quatre réponses, bonne réponse) -->
-<script src="qcm/qcm-neolis.js"></script>
+<script src="qcm/qcm-neolia.js"></script>
 <script>
 /* =====================================================================
    OUTILS
@@ -230,7 +230,7 @@ setInterval(() => {
 
 // Transmission des événements au questionnaire parent (Qualtrics) si la page est intégrée
 function signaler(type, donnees) {
-  try { window.parent.postMessage(Object.assign({ source: 'neolis-agent', type, t: Date.now() }, donnees || {}), '*'); } catch (e) {}
+  try { window.parent.postMessage(Object.assign({ source: 'neolia-agent', type, t: Date.now() }, donnees || {}), '*'); } catch (e) {}
 }
 
 /* =====================================================================
@@ -319,7 +319,7 @@ function nouvelleDemande(texte, reponses) {
 /* Affiche l'item n (1 à 25) du QCM : message du client et quatre réponses.
    La bonne réponse n'apparaît pas à l'écran ; elle sert seulement au journal. */
 function question(n) {
-  const QCM = window.QCM_NEOLIS || [];
+  const QCM = window.QCM_NEOLIA || [];
   const item = QCM.find(it => it.n === Number(n));
   if (!item) { console.warn('QCM : item introuvable', n); return; }
   nouvelleDemande(item.client, item.reponses);
@@ -499,15 +499,15 @@ async function installation() {
    – Depuis la page : appeler question(n), nouvelleDemande(), agentChoisit(),
      reaction(), installation(), reinitialiser(), ajouterMessage(texte, 'exp').
    – Depuis Qualtrics (page intégrée) : envoyer un message
-     { neolis: 'question', args: [3] } pour afficher l'item 3 du QCM,
-     ou { neolis: 'nouvelleDemande', args: [texte, [A,B,C,D]] } etc.
+     { neolia: 'question', args: [3] } pour afficher l'item 3 du QCM,
+     ou { neolia: 'nouvelleDemande', args: [texte, [A,B,C,D]] } etc.
    – Lancer l'installation à l'ouverture : ajouter ?installation à l'adresse.
    – Afficher directement un item du QCM : ajouter ?question=3 à l'adresse.
    ===================================================================== */
 const COMMANDES = { question, nouvelleDemande, agentChoisit, reaction, installation, reinitialiser, ajouterMessage };
 window.addEventListener('message', ev => {
   const d = ev.data;
-  if (d && d.neolis && COMMANDES[d.neolis]) COMMANDES[d.neolis].apply(null, d.args || []);
+  if (d && d.neolia && COMMANDES[d.neolia]) COMMANDES[d.neolia].apply(null, d.args || []);
 });
 Object.assign(window, COMMANDES);
 

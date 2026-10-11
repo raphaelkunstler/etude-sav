@@ -1,8 +1,8 @@
-# Intégration du chat Nérolis dans Qualtrics
+# Intégration du chat Neolia dans Qualtrics
 
 ## 1. Héberger le site
 
-Le fichier `nerolis-standalone.html` est une page statique autonome, sans serveur ni API. Il suffit de la mettre en ligne en HTTPS : GitHub Pages, serveur web de l'université, Netlify, etc. On obtient une adresse du type `https://exemple.org/nerolis.html`.
+Le fichier `neolia-standalone.html` est une page statique autonome, sans serveur ni API. Il suffit de la mettre en ligne en HTTPS : GitHub Pages, serveur web de l'université, Netlify, etc. On obtient une adresse du type `https://exemple.org/neolia.html`.
 
 Pour tester hors Qualtrics, ajoutez `?debug` à l'adresse. Un panneau affiche alors le journal en direct.
 
@@ -22,8 +22,8 @@ Si votre enquête utilise la mise en page « Simple layout », Qualtrics exige q
 Créez une question **Text / Graphic**. Dans l'éditeur HTML du texte de la question, collez :
 
 ```html
-<iframe id="nerolis"
-  src="https://exemple.org/nerolis.html?pid=${e://Field/ResponseID}&cond=${e://Field/cond}"
+<iframe id="neolia"
+  src="https://exemple.org/neolia.html?pid=${e://Field/ResponseID}&cond=${e://Field/cond}"
   style="width:100%; height:720px; border:0; border-radius:8px;"></iframe>
 ```
 
@@ -46,7 +46,7 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
   window.addEventListener('message', function (ev) {
     var d = ev.data;
-    if (!d || d.source !== 'nerolis-chat') return;
+    if (!d || d.source !== 'neolia-chat') return;
     setED('chat_transcript', d.transcript);
     setED('chat_events', JSON.stringify(d.events));
     setED('chat_ended', d.ended ? (d.endReason || 'oui') : 'non');

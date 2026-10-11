@@ -1,4 +1,4 @@
-"""Génère qcm/qcm-neolis.js à partir de qcm/qcm-neolis.md.
+"""Génère qcm/qcm-neolia.js à partir de qcm/qcm-neolia.md.
 
 Usage : python3 scripts/build_qcm.py
 À relancer après chaque modification du QCM.
@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent
-src = (root / "qcm" / "qcm-neolis.md").read_text(encoding="utf-8")
+src = (root / "qcm" / "qcm-neolia.md").read_text(encoding="utf-8")
 
 items = []
 for m in re.finditer(r"\*\*(\d+)\. (.+?)\*\* *\nA\. (.+)\nB\. (.+)\nC\. (.+)\nD\. (.+)", src):
@@ -23,9 +23,9 @@ assert set(corrige) == set(nums), "le corrigé ne couvre pas exactement les item
 for it in items:
     it["correcte"] = corrige[it["n"]]
 
-js = ("/* Questionnaire à choix multiples de la conseillère Neolis.\n"
+js = ("/* Questionnaire à choix multiples de la conseillère Neolia.\n"
       "   Pour chaque message du client, quatre réponses : la bonne (correcte) et trois distracteurs.\n"
-      "   Fichier généré : modifier qcm/qcm-neolis.md, puis relancer python3 scripts/build_qcm.py */\n"
-      "window.QCM_NEOLIS = " + json.dumps(items, ensure_ascii=False, indent=2) + ";\n")
-(root / "qcm" / "qcm-neolis.js").write_text(js, encoding="utf-8")
-print(f"qcm-neolis.js régénéré : {len(items)} items")
+      "   Fichier généré : modifier qcm/qcm-neolia.md, puis relancer python3 scripts/build_qcm.py */\n"
+      "window.QCM_NEOLIA = " + json.dumps(items, ensure_ascii=False, indent=2) + ";\n")
+(root / "qcm" / "qcm-neolia.js").write_text(js, encoding="utf-8")
+print(f"qcm-neolia.js régénéré : {len(items)} items")

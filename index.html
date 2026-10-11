@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Nérolis Fibre</title>
+<title>Neolia Fibre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout : la plateforme d'étude (sobre, administrative) encadre tout le parcours. Aux étapes 5 et 6, elle contient
-   une fenêtre de navigateur simulée où s'affiche le site fictif Nérolis, et un bandeau de jeu à droite. Thème clair unique, choisi délibérément. */
+   une fenêtre de navigateur simulée où s'affiche le site fictif Neolia, et un bandeau de jeu à droite. Thème clair unique, choisi délibérément. */
 :root {
   --lab-bg: #ECEFF3;
   --lab-paper: #FFFFFF;
@@ -143,7 +143,7 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .exp-panel .msglog { padding: 12px; }
 #exp-form button { background: var(--lab-ink); }
 
-/* ===== Site Nérolis (dimensionné sur la fenêtre, pas sur l'écran) ===== */
+/* ===== Site Neolia (dimensionné sur la fenêtre, pas sur l'écran) ===== */
 .top { background: var(--petrol-deep); color: #D7E6E6; font-size: 13px; }
 .top .wrap { display: flex; justify-content: space-between; gap: 12px; padding-block: 6px; flex-wrap: wrap; }
 header.site { background: var(--paper); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
@@ -559,7 +559,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       <ol class="checks" id="install-checks"></ol>
     </aside>
     <section class="share" aria-label="Écran partagé de la conseillère">
-      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">Écran de <span data-partner-name>Stéphanie</span> · Poste conseiller Nérolis</span><span class="live">Partagé</span></div>
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">Écran de <span data-partner-name>Stéphanie</span> · Poste conseiller Neolia</span><span class="live">Partagé</span></div>
       <div class="desk">
         <div class="desk-side">
           <b>Poste conseiller</b>
@@ -614,7 +614,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 <main class="lab-main" id="phase-brief" hidden>
   <div class="card">
     <h1>Votre rôle : client</h1>
-    <p class="lead">Vous jouerez un client de Nérolis. Vous contacterez l'assistance par le chat du site, où <span data-partner-name>Stéphanie</span> tiendra le rôle de la conseillère.</p>
+    <p class="lead">Vous jouerez un client de Neolia. Vous contacterez l'assistance par le chat du site, où <span data-partner-name>Stéphanie</span> tiendra le rôle de la conseillère.</p>
     <ol class="proto">
       <li><div><b>D'abord, un exercice</b><p>Pour découvrir le site et le chat, vous ferez un court exercice avec une demande simple.</p></div></li>
       <li><div><b>Ensuite, la session</b><p>Vous recevrez votre fiche de client : votre problème, votre référence, les questions à poser et la façon de réagir selon les réponses. Elle restera affichée à côté du site.</p></div></li>
@@ -630,23 +630,23 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 <main class="lab-main" id="phase-sintro" hidden>
   <div class="card">
     <h1>La session commence</h1>
-    <p class="lead">L'exercice est terminé. Voici votre fiche pour la session. Elle restera affichée à côté du site Nérolis.</p>
+    <p class="lead">L'exercice est terminé. Voici votre fiche pour la session. Elle restera affichée à côté du site Neolia.</p>
     <div class="sheet" id="sintro-sheet"></div>
-    <button class="btn-lab" id="to-session">Ouvrir le site Nérolis</button>
+    <button class="btn-lab" id="to-session">Ouvrir le site Neolia</button>
   </div>
 </main>
 
-<!-- 5 et 6. Fenêtre Nérolis + bandeau -->
+<!-- 5 et 6. Fenêtre Neolia + bandeau -->
 <div class="work" id="phase-work" hidden>
  <div class="leftcol">
   <div class="browser">
-    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">nerolis · assistance-et-offres</span><span class="tag">Site simulé pour l'étude</span></div>
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">neolia · assistance-et-offres</span><span class="tag">Site simulé pour l'étude</span></div>
     <div class="viewport">
       <div class="site-scroll" id="site-scroll">
         <div class="top"><div class="wrap"><span>Particuliers · Professionnels</span><span>Réseau fibre : 98,2 % de disponibilité ce mois-ci</span></div></div>
         <header class="site">
           <div class="wrap">
-            <span class="logo"><span class="dot"></span>Nérolis</span>
+            <span class="logo"><span class="dot"></span>Neolia</span>
             <nav class="main" aria-label="Navigation principale">
               <button data-nav="offres">Offres fibre</button>
               <button data-nav="mobile">Mobile</button>
@@ -720,7 +720,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
             <button class="btn-account" data-open-chat="banner">Contacter l'assistance</button>
           </div>
         </section>
-        <div class="site-foot"><div class="wrap"><span>© 2026 Nérolis</span><span class="links"><span>Mentions légales</span><span>Données personnelles</span><span>Cookies</span></span></div></div>
+        <div class="site-foot"><div class="wrap"><span>© 2026 Neolia</span><span class="links"><span>Mentions légales</span><span>Données personnelles</span><span>Cookies</span></span></div></div>
       </div>
 
       <div class="toast" id="toast" role="status" hidden></div>
@@ -728,7 +728,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       <section id="chat" hidden aria-label="Assistance en ligne">
         <div class="chat-head">
           <div class="avatar" data-partner-initial>S</div>
-          <div class="chat-who"><b data-partner-name>Stéphanie</b><span>Conseillère Nérolis · En ligne</span></div>
+          <div class="chat-who"><b data-partner-name>Stéphanie</b><span>Conseillère Neolia · En ligne</span></div>
           <button id="end-btn" type="button">Terminer</button>
           <button id="min-btn" type="button" aria-label="Réduire la fenêtre">Réduire</button>
         </div>
@@ -859,7 +859,7 @@ const MEET_SCRIPT = [
 const SPEECH = [
   { who: 'exp', text: "Bonjour à tous les deux, et merci de participer à cette étude." },
   { who: 'exp', text: "Nous étudions la façon dont se déroulent les échanges de service en ligne, entre un client et un conseiller." },
-  { who: 'exp', text: "L'un de vous jouera un client qui rencontre un problème avec sa connexion Internet. L'autre jouera un conseiller du service après-vente de Nérolis, un fournisseur d'accès que nous avons créé pour l'étude." },
+  { who: 'exp', text: "L'un de vous jouera un client qui rencontre un problème avec sa connexion Internet. L'autre jouera un conseiller du service après-vente de Neolia, un fournisseur d'accès que nous avons créé pour l'étude." },
   { who: 'exp', text: "Les rôles sont attribués par tirage au sort. {pseudo}, c'est vous qui allez lancer le tirage." },
 ];
 
@@ -901,7 +901,7 @@ const OBSERVE_NUDGE_MS = 45000;   // relance unique si le sujet ne répond pas
 
 /* 5. Exercice : la conseillère répond correctement et calmement */
 const EX_SCRIPT = [
-  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Nérolis. Que puis-je faire pour vous ?"] },
+  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous ?"] },
   { ok: true, stress: 0, msgs: ["Bien sûr. Le transfert de votre abonnement à votre nouvelle adresse est gratuit.", "Quelle est la date de votre déménagement ?"] },
   { ok: true, stress: 0, msgs: ["C'est noté. Votre ligne sera activée à votre nouvelle adresse à cette date : il vous suffira d'y rebrancher votre box.", "Avez-vous une autre question ?"] },
   { ok: null, stress: 0, end: true, msgs: ["Je vous en prie. Bonne journée !"] },
@@ -909,7 +909,7 @@ const EX_SCRIPT = [
 
 /* 6. Session : ok = réussite ; false = échec volontaire (étapes 3, 6, 9, 12 → 2 sur 3). stress : 0 à 4. */
 const SAV_SCRIPT = [
-  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Nérolis. Que puis-je faire pour vous aujourd'hui ?"] },
+  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous aujourd'hui ?"] },
   { ok: true, stress: 0, msgs: ["Je suis désolée d'apprendre que vous rencontrez un problème de connexion. Je vais vous aider à le résoudre.", "Pouvez-vous d'abord m'indiquer votre référence client ? Elle commence par NR-."] },
   { ok: true, stress: 0, msgs: ["Merci, j'ai bien retrouvé votre dossier.", "Sur la façade de votre box, quelle est la couleur du voyant marqué « Internet » ?"] },
   { ok: false, stress: 1, msgs: ["Très bien. Pour changer d'offre mobile, il vous suffit de vous rendre dans la rubrique « Mes forfaits » de votre espace client et de sélectionner le forfait souhaité."] },
@@ -1008,7 +1008,7 @@ function classifyQuestion(text) {
 const BAND = {
   exercise: {
     badge: 'Exercice',
-    fiche: ["Vous êtes client de Nérolis.", "Vous déménagez le mois prochain.", "Pendant l'exercice, la machine ne transmet rien : elle sert à vous entraîner."],
+    fiche: ["Vous êtes client de Neolia.", "Vous déménagez le mois prochain.", "Pendant l'exercice, la machine ne transmet rien : elle sert à vous entraîner."],
     /* [titre, phrase envoyée, ce que doit faire une réponse satisfaisante] */
     asks: [
       ["Annoncer le déménagement", "Bonjour, je déménage le mois prochain. Comment est-ce que je peux transférer mon abonnement ?", "Elle explique le transfert et demande la date."],
@@ -1072,7 +1072,7 @@ function transcript() {
 }
 function payload() {
   return {
-    source: 'nerolis-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, phase: G.phase,
+    source: 'neolia-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, phase: G.phase,
     ended: G.savEnded, endReason: G.savEndReason,
     nUserMsgs: events.filter(e => e.type === 'sav_user_msg').length,
     nExpQuestions: G.expAsked.session,
@@ -1688,7 +1688,7 @@ if (CONFIG.review) (function () {
 
   /* Stockage : base partagée de l'artefact, sinon ce navigateur */
   let notes = [], me = null, owner = false, db = null;
-  const LS = 'nerolis-relecture';
+  const LS = 'neolia-relecture';
   const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch (e) { return []; } };
   const lsWrite = a => { try { localStorage.setItem(LS, JSON.stringify(a)); } catch (e) {} };
   const store = {

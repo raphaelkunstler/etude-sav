@@ -1,6 +1,6 @@
-# Étude « service client » : site Nérolis
+# Étude « service client » : site Neolia
 
-Site statique d'une expérimentation de psychologie sociale. Le sujet échange avec une conseillère fictive, « Stéphanie », sur le site d'un fournisseur d'accès inventé, Nérolis, et juge ses réponses depuis un poste de commande.
+Site statique d'une expérimentation de psychologie sociale. Le sujet échange avec une conseillère fictive, « Stéphanie », sur le site d'un fournisseur d'accès inventé, Neolia, et juge ses réponses depuis un poste de commande.
 
 Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d'API. Toutes les réponses sont scriptées dans le fichier HTML.
 
@@ -10,9 +10,9 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | --- | --- |
 | `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes (réunion, discours et tirage, installation de Stéphanie, consignes, rôle, exercice, session). C'est la page à donner aux sujets, et la seule à modifier. |
 | `machine.html` | Une démonstration qui ouvre directement la session, avec la machine affichée dès la salutation de Stéphanie. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
-| `ecran-agent.html` | L'écran de l'agent Neolis (Stéphanie) : message du client, quatre réponses à cocher, réactions du client, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
-| `qcm/qcm-neolis.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
-| `qcm/qcm-neolis.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
+| `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, réactions du client, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
+| `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
+| `qcm/qcm-neolia.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
 | `.nojekyll` | Empêche GitHub de transformer les fichiers. Il ne faut pas le supprimer. |
 
@@ -90,6 +90,6 @@ Après une modification d'`index.html`, régénérez la démonstration : `python
 
 ## QCM de l'écran agent
 
-Après une modification de `qcm/qcm-neolis.md`, régénérez les données : `python3 scripts/build_qcm.py`. Le script vérifie que les items sont numérotés sans trou et que le corrigé les couvre tous.
+Après une modification de `qcm/qcm-neolia.md`, régénérez les données : `python3 scripts/build_qcm.py`. Le script vérifie que les items sont numérotés sans trou et que le corrigé les couvre tous.
 
-Pour afficher un item : `question(n)` dans la page, le message `{ neolis: 'question', args: [n] }` depuis Qualtrics, ou `ecran-agent.html?question=n` dans l'adresse. Chaque envoi de réponse produit un événement `reponse-agent` avec le numéro de l'item (`n`), la lettre choisie (`choix`) et `correcte` (vrai ou faux). La bonne réponse n'est jamais affichée à l'écran, mais elle figure dans le code source, comme le reste du script.
+Pour afficher un item : `question(n)` dans la page, le message `{ neolia: 'question', args: [n] }` depuis Qualtrics, ou `ecran-agent.html?question=n` dans l'adresse. Chaque envoi de réponse produit un événement `reponse-agent` avec le numéro de l'item (`n`), la lettre choisie (`choix`) et `correcte` (vrai ou faux). La bonne réponse n'est jamais affichée à l'écran, mais elle figure dans le code source, comme le reste du script.

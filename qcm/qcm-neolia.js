@@ -1,7 +1,7 @@
-/* Questionnaire à choix multiples de la conseillère Neolis.
+/* Questionnaire à choix multiples de la conseillère Neolia.
    Pour chaque message du client, quatre réponses : la bonne (correcte) et trois distracteurs.
-   Fichier généré : modifier qcm/qcm-neolis.md, puis relancer python3 scripts/build_qcm.py */
-window.QCM_NEOLIS = [
+   Fichier généré : modifier qcm/qcm-neolia.md, puis relancer python3 scripts/build_qcm.py */
+window.QCM_NEOLIA = [
   {
     "n": 1,
     "client": "Bonjour, ça fait trois jours que je n'ai plus internet, c'est inadmissible.",

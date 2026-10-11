@@ -1,8 +1,8 @@
-# QCM de la conseillère Neolis
+# QCM de la conseillère Neolia
 
 Pour chaque message du client, la bonne réponse est celle de l'opératrice, et les trois autres sont des distracteurs. Ces distracteurs sont de trois sortes : une fausse piste technique, une réponse de script qui ignore ce que le client a dit, et une réponse froide ou qui rejette la responsabilité. La position de la bonne réponse varie d'une question à l'autre. Le corrigé est à la fin.
 
-Ce fichier est la source. Après modification, régénérez `qcm-neolis.js`, que lit l'écran de l'agent : `python3 scripts/build_qcm.py`.
+Ce fichier est la source. Après modification, régénérez `qcm-neolia.js`, que lit l'écran de l'agent : `python3 scripts/build_qcm.py`.
 
 ## Items
 
