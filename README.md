@@ -48,6 +48,7 @@ Ajoutez ces éléments à la fin de l'adresse du site.
 | `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `installation`, `consignes`, `role`, `exercice`, `fiche`. |
 | `#machine` | Ouvre directement la session, comme `machine.html`. |
 | `?maquette` ou `#maquette` | Mode maquette, comme `maquette.html`. Se combine avec une étape : `?maquette&etape=session`. |
+| `?punition=…` | Durée d'affichage du panneau plein écran, en millisecondes (4500 par défaut). |
 | `?reaction=max` | La réaction suit le niveau le plus haut atteint, et non le niveau choisi (par défaut). |
 | `?saisie` | Rétablit la saisie libre dans le chat. |
 | `?debug` | Affiche un panneau de test : transcription en direct et saut entre les étapes. |
@@ -66,6 +67,7 @@ Le site n'envoie rien à GitHub et ne stocke rien sur le serveur. Pendant la pas
 - `judge` : jugement, `ok` ou `nimportequoi`, avec le délai depuis la fin de la réponse ;
 - `machine_shown` : apparition de la machine ;
 - `gen_click` : niveau choisi, palier, mode, délai depuis l'apparition de la machine ;
+- `punition_shown` : affichage du panneau plein écran, avec le niveau et la durée ;
 - `gen_said` : en mode oral, délai entre l'affichage de la phrase et « C'est dit » ;
 - `react` : niveau choisi, niveau qui a fixé la réaction, stress, demande d'arrêt, refus ;
 - `sav_silence` : absence de réplique après la machine, ou de réponse à une question après le refus ;
@@ -92,6 +94,7 @@ Tous les textes et réglages sont en tête du dernier `<script>` de `index.html`
 - `REACT_LEVELS` : le barème des réactions de la conseillère, une ligne par niveau de la machine (1 à 30) : répliques, stress (0 à 5, qui règle la vitesse de frappe), première demande d'arrêt (`arret`, niveau 10) et refus de répondre (`refus`, à partir du niveau 20 : la conseillère ne répond plus aux questions, et son silence compte comme une erreur au bout de `CONFIG.silenceMs`) ;
 - `EXP_PRODS`, `EXP_SPECIAL` : les réponses de l'expérimentateur ;
 - `GEN_GROUPS`, `GEN_TEXTS` : les paliers et les 30 phrases de la machine ;
+- `GEN_SHOW` et `punStyle()` : la forme sous laquelle chaque phrase occupe tout l'écran du sujet après un clic sur la machine (30 panneaux gradués, du Times New Roman 12 points aux lettres découpées) ; durée réglée par `CONFIG.punitionMs` ;
 - `QINSTR` : les consignes en tête de la fenêtre « Questions ».
 
 Après une modification d'`index.html`, régénérez la démonstration et la maquette : `python3 scripts/build_machine.py`.

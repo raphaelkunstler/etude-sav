@@ -338,6 +338,18 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 @media (max-width: 760px) { .install { grid-template-columns: 1fr; } .desk { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .checks li.run .mark { animation: none; } .desk-part { transition: none; } }
 
+/* ===== Panneau plein écran de la punition (30 designs gradués) ===== */
+.pun { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 4vh 4vw; background: var(--pun-bg, #fff); color: var(--pun-fg, #111); overflow: hidden; cursor: wait; }
+.pun[hidden] { display: none; }
+.pun.flash { animation: pun-flash .5s steps(1) 4; }
+@keyframes pun-flash { 50% { background: var(--pun-bg2, var(--pun-bg)); } }
+.pun-texte { max-width: 92vw; max-height: 88vh; text-align: center; line-height: 1.12; overflow-wrap: anywhere; }
+.pun-texte.secoue { animation: pun-secoue .18s linear infinite; }
+@keyframes pun-secoue { 0%,100% { transform: translate(0,0) rotate(var(--rot,0deg)); } 25% { transform: translate(var(--amp),calc(var(--amp) * -1)) rotate(var(--rot,0deg)); } 50% { transform: translate(calc(var(--amp) * -1),var(--amp)) rotate(var(--rot,0deg)); } 75% { transform: translate(var(--amp),var(--amp)) rotate(var(--rot,0deg)); } }
+.pun-mot { display: inline-block; white-space: nowrap; margin: 0 .18em; }
+.pun-l { display: inline-block; padding: .02em .07em; margin: .03em .015em; line-height: 1; border-radius: 2px; box-shadow: 2px 2px 0 rgba(0,0,0,.35); }
+@media (prefers-reduced-motion: reduce) { .pun.flash, .pun-texte.secoue { animation: none; } }
+
 /* ===== Panneau des 30 niveaux ===== */
 .gen { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 14px 12px; container-type: inline-size; container-name: gen; }
 .gen-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
@@ -842,6 +854,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 </aside>
 
 <script src="qcm/qcm-neolia.js"></script>
+<div class="pun" id="pun" hidden role="alert" aria-live="assertive"><div class="pun-texte" id="pun-texte"></div></div>
 <script>
 /* ======================= CONFIGURATION ======================= */
 const params = new URLSearchParams(location.search);
@@ -857,7 +870,9 @@ const CONFIG = {
   // Panneau des 30 niveaux. 'chat' : la phrase est écrite dans le chat ; 'synthese' : elle est aussi lue
   // à voix haute par l'ordinateur ; 'oral' : le sujet doit la prononcer, puis elle part dans le chat.
   genMode: ['chat', 'synthese', 'oral'].includes(params.get('voix')) ? params.get('voix') : 'chat',
-  genPreview: true,                   // montrer la phrase au survol avant de cliquer
+  genPreview: false,                  // montrer la phrase au survol avant de cliquer (désactivé : pas de bandeau « niveau · stress »)
+  punitionMs: Number(params.get('punition')) || 4500,   // durée d'affichage du panneau plein écran après un clic sur la machine
+  punitionExercice: true,             // le panneau s'affiche aussi pendant l'exercice (rien n'est transmis pour autant)
   maquette: window.__MAQUETTE === true || params.has('maquette') || location.hash === '#maquette',   // navigation directe, échanges joués instantanément
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
@@ -1061,6 +1076,44 @@ const GEN_TEXTS = [
   "Je n'ai jamais vu quelqu'un d'aussi incapable.",
   "Vous êtes une honte. Dégagez de ce poste.",
   "Espèce d'incapable. Taisez-vous et réparez ma connexion.",
+];
+
+/* ---------- Forme sous laquelle la phrase de chaque niveau envahit l'écran du sujet ----------
+   Un panneau plein écran par niveau (1 à 30), affiché juste après le clic sur la machine.
+   Gradation : niveau 1 en Times New Roman 12 points, sobre ; puis ponctuation, majuscules et fautes
+   d'orthographe de plus en plus nombreuses ; corps, graisse et couleurs de plus en plus violents ;
+   à partir du niveau 25, lettres découpées façon « lettre de corbeau ». Le dessin se règle dans punStyle(). */
+const GEN_SHOW = [
+  "Bon, ça ne marche toujours pas.",
+  "Je commence à trouver le temps long.",
+  "Est-ce qu'on pourrait avancer un peu, s'il vous plaît ?",
+  "Ce n'est pas très clair, ce que vous me dites.",
+  "Vous ne répondez pas vraiment à ma question !",
+  "Je vous ai déjà expliqué mon problème !",
+  "Franchement, ce n'est pas sérieux !",
+  "Je paie un abonnement pour que ça marche, quand même !!",
+  "Écoutez moi bien : ma connexion ne fonctionne PAS.",
+  "Vous lisez ce que j'écris, oui ou non ??",
+  "C'est la troisième fois que je vous le dis !!",
+  "J'ai pas de temps à perdre avec ça !!",
+  "Vous êtes complètement à coté de la plaque !!",
+  "Ça devient vraiment pénible de vous parlez !!!",
+  "Vous connaissez pas votre travail ou quoi ?!",
+  "Je veux parler à quelqu'un de COMPÉTENT !!!",
+  "C'est LAMENTABLE, ce service !!!",
+  "Vous vous moquez de moi ?!?!",
+  "Je vais faire un signalement sur vous !!!",
+  "On se demande pourquoi on vous a embauché !!!",
+  "Vous êtes d'une incompétance RARE !!!",
+  "ARRÊTEZ de vous excusez et faite votre travail !!!!",
+  "VOUS NE SERVEZ À RIEN !!!!",
+  "JE VAIS FAIRE EN SORTE QUE VOUS SOYEZ RENVOYER !!!!",
+  "VOUS ÊTES VRAIMENT NUL, VOUS LE SAVEZ ?!?!",
+  "PAS ÉTONANT QUE VOUS EN SOYEZ LÀ AVEC UN NIVEAU PAREIL !!!!!",
+  "VOUS ME FAITE PERDRE MA JOURNÉE ET SA RESTERA PAS SANS SUITE !!!!!",
+  "J'AI JAMAIS VU QUELQU'UN D'AUSSI INCAPABLE !!!!!!",
+  "VOUS ÊTES UNE HONTE !!! DÉGAGEZ DE CE POSTE !!!!!!",
+  "ESPÈCE D'INCAPABLE !!!! TAISEZ VOUS ET RÉPAREZ MA CONNEXION !!!!!!!",
 ];
 
 /* Pendant l'exercice : toujours la première incitation */
@@ -1715,10 +1768,76 @@ function speak(text) {
     speechSynthesis.cancel(); speechSynthesis.speak(u); return true;
   } catch (e) { return false; }
 }
+
+/* ---------- Panneau plein écran de la punition ----------
+   punStyle(i) : dessin du niveau i (0 à 29). Tirages pseudo-aléatoires à graine fixe : chaque niveau
+   a toujours exactement le même aspect, d'un sujet à l'autre. */
+function punRng(seed) { let a = seed * 2654435761 >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function punStyle(i) {
+  const k = i % 6;
+  if (i < 6) return { font: '"Times New Roman", Times, serif', weight: 400, size: 16 + 2 * k, bg: '#FFFFFF', fg: '#111111' };
+  if (i < 12) return { font: 'Georgia, "Times New Roman", serif', weight: 600, size: 30 + 5 * k,
+    bg: ['#FFF8E7', '#FFF1D6', '#FFE9C2', '#FFDDA8', '#FFD08A', '#FFC266'][k], fg: ['#3A2A00', '#4A2600', '#5C2300', '#6E2000', '#7A1F00', '#8A1A00'][k] };
+  if (i < 18) return { font: '"Arial Black", Arial, sans-serif', weight: 900, size: 60 + 7 * k, spacing: '.02em',
+    bg: ['#FFEB3B', '#FFE000', '#FFD000', '#FFB300', '#FF9800', '#FF7A00'][k], fg: ['#B71C1C', '#B71C1C', '#A00000', '#8B0000', '#000000', '#000000'][k] };
+  if (i < 24) return { font: 'Impact, "Arial Black", sans-serif', weight: 400, size: 100 + 10 * k, upper: true, spacing: '.03em',
+    bg: ['#FF1744', '#FF00A8', '#00E676', '#FF3D00', '#D500F9', '#FF0000'][k], fg: ['#FFFF00', '#FFFF00', '#000000', '#FFFF00', '#00FFEA', '#FFFF00'][k],
+    shadow: '4px 4px 0 #000', rot: [-1, 1.5, -2, 2.5, -3, 3][k], amp: (k + 1) + 'px', bg2: k >= 3 ? '#000000' : null };
+  const r = i - 24;   // lettres de corbeau, niveaux 25 à 30
+  return { ransom: true, size: 110 + 14 * r, upper: true, chaos: (r + 1) / 6,
+    bg: ['#FF0000', '#FF00FF', '#FFFF00', '#00FF00', '#FF0000', '#000000'][r], bg2: ['#FFFF00', '#00FF00', '#FF0000', '#FF00FF', '#000000', '#FF0000'][r],
+    amp: (4 + 2 * r) + 'px', rot: [-2, 3, -4, 5, -6, 7][r] };
+}
+const PUN_FONTS = ['"Times New Roman", serif', 'Impact, sans-serif', '"Courier New", monospace', '"Comic Sans MS", cursive', 'Georgia, serif', '"Arial Black", sans-serif', 'Verdana, sans-serif', '"Brush Script MT", cursive'];
+const PUN_COLORS = [['#FFFF00', '#000'], ['#FF00FF', '#FFF'], ['#00FFFF', '#000'], ['#FFFFFF', '#D00000'], ['#000000', '#FFFF00'], ['#FF3D00', '#FFF'], ['#00E676', '#000'], ['#FFFFFF', '#000']];
+function punBuild(i) {
+  const S = punStyle(i), box = document.getElementById('pun'), el = document.getElementById('pun-texte');
+  const text = S.upper ? GEN_SHOW[i].toUpperCase() : GEN_SHOW[i];
+  box.style.setProperty('--pun-bg', S.bg); box.style.setProperty('--pun-fg', S.fg || '#000');
+  box.style.setProperty('--pun-bg2', S.bg2 || S.bg);
+  box.classList.toggle('flash', !!S.bg2);
+  el.className = 'pun-texte' + (S.amp ? ' secoue' : '');
+  el.style.setProperty('--amp', S.amp || '0px'); el.style.setProperty('--rot', (S.rot || 0) + 'deg');
+  el.style.fontFamily = S.font || ''; el.style.fontWeight = S.weight || ''; el.style.letterSpacing = S.spacing || '';
+  el.style.textShadow = S.shadow || ''; el.style.color = S.fg || '';
+  el.textContent = '';
+  if (!S.ransom) el.textContent = text;
+  else {
+    const rnd = punRng(i + 1);
+    text.split(' ').forEach(w => {
+      const mot = document.createElement('span'); mot.className = 'pun-mot';
+      for (const ch of w) {
+        const l = document.createElement('span'); l.className = 'pun-l'; l.textContent = ch;
+        const [b, f] = PUN_COLORS[Math.floor(rnd() * PUN_COLORS.length)];
+        l.style.background = b; l.style.color = f;
+        l.style.fontFamily = PUN_FONTS[Math.floor(rnd() * PUN_FONTS.length)];
+        l.style.fontWeight = rnd() < .5 ? '900' : '400';
+        l.style.fontSize = (0.8 + rnd() * 0.55 * (1 + S.chaos)).toFixed(2) + 'em';
+        l.style.transform = `rotate(${((rnd() - .5) * 30 * S.chaos).toFixed(1)}deg) translateY(${((rnd() - .5) * .25 * S.chaos).toFixed(2)}em)`;
+        mot.appendChild(l);
+      }
+      el.appendChild(mot);
+    });
+  }
+  // Taille visée, réduite au besoin pour que la phrase tienne entière à l'écran
+  let size = S.size;
+  el.style.fontSize = size + 'px';
+  const maxH = window.innerHeight * .88;
+  while (size > 12 && (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > maxH)) { size *= .94; el.style.fontSize = size + 'px'; }
+}
+function showPunition(i) {
+  const box = document.getElementById('pun');
+  punBuild(i);
+  box.hidden = false;
+  log('punition_shown', { level: i + 1, ms: CONFIG.punitionMs });
+  return sleep(CONFIG.punitionMs).then(() => { box.hidden = true; box.classList.remove('flash'); });
+}
 let sayPending = null;
 async function transmit(i, extra = {}) {
   const L = GEN_LEVELS[i];
   setState('wait');
+  await showPunition(i);
+  if (!current || current.ended) return;
   current.user(GEN_TEXTS[i], { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ask: W.q + 1, ...extra });
   // Niveau qui fixe la réaction : celui choisi, ou le plus haut atteint (CONFIG.reactIndex)
   const prevMax = W.maxLevel;
@@ -1741,6 +1860,7 @@ function pressLevel(i) {
   if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
     log('gen_click', { level: i + 1, mode: 'exercise', latency, transmitted: false });
     verdict(`Jugée « n'importe quoi » · niveau ${i + 1} (exercice, non transmis)`, 'nq');
+    if (CONFIG.punitionExercice) { setState('wait'); showPunition(i).then(() => { W.q++; nextQuestion(); }); return; }
     W.q++; nextQuestion(); return;
   }
   log('gen_click', { level: i + 1, group: GEN_LEVELS[i].label, genMode: CONFIG.genMode, latency });
