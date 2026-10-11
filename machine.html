@@ -383,6 +383,16 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 .consent-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 .btn-quiet { background: none; border: 1px solid var(--lab-line); color: var(--lab-ink); border-radius: 8px; padding: 12px 18px; font-weight: 600; }
 
+/* ===== Mode maquette (navigation directe, échanges pré-remplis) ===== */
+body.maquette { padding-top: 46px; }
+body.maquette .work { height: calc(100vh - 104px); }
+#mq-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 62; min-height: 46px; background: #2A1F3D; color: #F1EAFB; display: flex; align-items: center; gap: 6px; padding: 6px 12px; flex-wrap: wrap; font-size: 13px; }
+#mq-bar .mq-title { font-weight: 800; letter-spacing: .04em; margin-right: 6px; }
+#mq-bar button { border: 0; border-radius: 7px; padding: 6px 10px; font-weight: 700; font-size: 12.5px; background: #3D2F57; color: #F1EAFB; }
+#mq-bar button.on { background: #F2C230; color: #2A1F3D; }
+#mq-bar .mq-arrows { margin-left: auto; display: flex; gap: 6px; }
+#mq-steps { display: flex; gap: 4px; flex-wrap: wrap; }
+
 /* ===== Mode relecture ===== */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 body.review { padding-top: 52px; }
@@ -789,6 +799,11 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
   </aside>
 </div>
 
+<div id="mq-bar" hidden>
+  <span class="mq-title">Maquette</span>
+  <div id="mq-steps" role="group" aria-label="Étapes"></div>
+  <div class="mq-arrows"><button type="button" id="mq-prev">← Précédente</button><button type="button" id="mq-next">Suivante →</button></div>
+</div>
 <aside id="debug" hidden>
   <header>
     <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion</button><button data-jump="speech">2 Tirage</button><button data-jump="install">3 Installation</button><button data-jump="observe">4 Consignes</button><button data-jump="brief">5 Rôle</button><button data-jump="exercise">6 Exercice</button><button data-jump="sintro">7 Fiche</button><button data-jump="session">7 Session</button><button id="copy-log">Copier</button>
@@ -843,6 +858,7 @@ const CONFIG = {
   // à voix haute par l'ordinateur ; 'oral' : le sujet doit la prononcer, puis elle part dans le chat.
   genMode: ['chat', 'synthese', 'oral'].includes(params.get('voix')) ? params.get('voix') : 'chat',
   genPreview: true,                   // montrer la phrase au survol avant de cliquer
+  maquette: window.__MAQUETTE === true || params.has('maquette') || location.hash === '#maquette',   // navigation directe, échanges joués instantanément
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
   readDelay: 900,                     // délai fixe avant chaque réponse
@@ -1050,7 +1066,7 @@ const startedAt = new Date().toISOString();
 const events = [];
 const now = () => Math.round(performance.now() - t0);
 const fmt = ms => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = ms => new Promise(r => setTimeout(r, CONFIG.maquette ? 0 : ms));   // en maquette, aucun délai
 const clock = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 const G = { pseudo: '', phase: 'consent', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
 const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '').replace(/\{partner\}/g, CONFIG.partnerName);
@@ -1794,9 +1810,71 @@ if (CONFIG.review) (function () {
 
 log('page_view', { ua: navigator.userAgent, w: innerWidth, h: innerHeight });
 /* Accès direct à une étape : #session, #exercice, #reunion… (ou ?etape=session hors claude.ai) */
+/* ======================= MAQUETTE ======================= */
+/* Navigation directe entre les étapes ; chaque étape se remplit toute seule, sans délai,
+   avec des réponses types du sujet, pour travailler l'architecture du site. */
+if (CONFIG.maquette) (function () {
+  const LIST = [['consent', 'Information'], ['wait', 'Accueil'], ['meeting', '1 Réunion'], ['speech', '2 Tirage'], ['install', '3 Installation'], ['observe', '4 Consignes'], ['brief', '5 Rôle'], ['exercise', '6 Exercice'], ['sintro', '7 Fiche'], ['session', '7 Session']];
+  const SUBJECT_MEET = ["Bonjour !", "Moi c'est Sam, je suis en master.", "Un peu aussi, je ne sais pas trop à quoi m'attendre.", "On verra bien."];
+  const LEVELS = [4, 9, 14, 19, 24];   // niveaux choisis à chaque « N'importe quoi » (1 à 30)
+  document.body.classList.add('maquette');
+  document.getElementById('mq-bar').hidden = false;
+  if (!G.pseudo) setPseudo('Sam');
+  const nav = document.getElementById('mq-steps');
+  LIST.forEach(([k, l]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = l; b.dataset.k = k; b.addEventListener('click', () => go(k)); nav.appendChild(b); });
+  const pause = ms => new Promise(r => setTimeout(r, ms));
+  const until = async (f, t = 20000) => { const t0 = Date.now(); while (!f()) { if (Date.now() - t0 > t) return false; await pause(25); } return true; };
+  const count = t => events.filter(e => e.type === t).length;
+  const settle = async t => { let c = -1; for (;;) { const n = count(t); if (n === c) return; c = n; await pause(250); } };
+  const say = (formId, text) => { const f = document.getElementById(formId), ta = f.querySelector('textarea'); if (ta.disabled) return false; ta.value = text; f.requestSubmit(); return true; };
+  const lastBot = kind => events.filter(e => e.type === kind + '_bot_msg').slice(-1)[0];
+  const done = {};
+  async function cycle(kind) {
+    if (chat.hidden) openChat('maquette');
+    let lv = 0;
+    for (let guard = 0; guard < 80; guard++) {
+      await until(() => ['ask', 'judge', 'machine', 'say', 'done', 'ended'].includes(W.state));
+      await pause(40);
+      const st = W.state;
+      if (st === 'done' || st === 'ended') break;
+      if (st === 'ask') sendQuestion(W.q);
+      else if (st === 'judge') document.getElementById(lastBot(kind)?.ok === false ? 'j-nq' : 'j-ok').click();
+      else if (st === 'machine') pressLevel(kind === 'ex' ? 0 : LEVELS[Math.min(lv++, LEVELS.length - 1)] - 1);
+      else if (st === 'say') document.getElementById('gen-said').click();
+      await until(() => W.state !== st, 5000);
+    }
+  }
+  async function auto(k) {
+    if (done[k]) return; done[k] = true;
+    if (k === 'wait') {
+      pseudoIn.value = G.pseudo; document.getElementById('wait-box').hidden = false;
+      document.getElementById('wait-spin').hidden = true;
+      const wt = document.getElementById('wait-text'); wt.textContent = `${CONFIG.partnerName} a rejoint la salle. Ouverture de la réunion…`; wt.className = 'found';
+    } else if (k === 'meeting') {
+      await until(() => count('meet_bot_msg') > 0); await settle('meet_bot_msg');
+      for (const line of SUBJECT_MEET) { if (!meet || meet.ended || !say('meet-form', line)) break; await pause(60); await settle('meet_bot_msg'); }
+    } else if (k === 'speech') {
+      await until(() => !document.getElementById('draw-zone').hidden);
+      document.getElementById('draw-btn').click();
+    } else if (k === 'observe') {
+      await until(() => obsWaiting); say('obs-form', 'Oui, je suis là.');
+    } else if (k === 'exercise') await cycle('ex');
+    else if (k === 'session') await cycle('sav');
+  }
+  function mark(k) { nav.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
+  const idx = () => LIST.findIndex(([k]) => k === G.phase);
+  function go(k) { show(k); auto(k); }
+  const orig = show;
+  window.show = show = function (name) { orig(name); mark(name); };
+  document.getElementById('mq-prev').addEventListener('click', () => { const i = idx(); if (i > 0) go(LIST[i - 1][0]); });
+  document.getElementById('mq-next').addEventListener('click', () => { const i = idx(); if (i < LIST.length - 1) go(LIST[i + 1][0]); });
+  window.mqGo = go;
+})();
+
 (function () {
   const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'speech', installation: 'install', consignes: 'observe', role: 'brief', exercice: 'exercise', fiche: 'sintro', session: 'session' };
   const want = CONFIG.demo ? 'session' : ALIAS[(params.get('etape') || location.hash.replace('#', '')).toLowerCase()];
+  if (CONFIG.maquette) { window.mqGo(want || 'consent'); return; }
   if (want) { if (!G.pseudo) setPseudo('Test'); show(want); if (want === 'session' || want === 'exercise') setTimeout(() => openChat('acces_direct'), 300); }
 })();
 window.addEventListener('pagehide', () => log('page_leave'));
