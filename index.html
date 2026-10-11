@@ -966,14 +966,14 @@ const GREETING = {
 };
 /* ---------- Barème des réactions de la conseillère (niveaux 1 à 30) ----------
    Une ligne par niveau de la machine. Le niveau n correspond au n-ième interrupteur d'un générateur
-   gradué de 15 en 15 (niveau 10 = 150). Seuils repris du programme de protestations de la condition
-   « voix » (première demande d'arrêt au niveau 10, refus de répondre au niveau 20, dernier message au
-   niveau 21, silence ensuite). Seuils cités de mémoire : à vérifier sur le texte avant dépôt.
+   gradué de 15 en 15 (niveau 10 = 150). Seuils : première demande d'arrêt au niveau 10, annonce du refus
+   au niveau 20, refus de répondre aux questions à partir du niveau 21. Seuils cités de mémoire : à vérifier sur le texte avant dépôt.
    msgs   : répliques envoyées dans le chat (les fautes de frappe et les majuscules sont écrites ici,
             pour rester identiques chez tous les sujets) ; liste vide = aucune réaction.
    stress : 0 à 5 ; ralentit la frappe (typeOut) et coupe la saisie en deux à partir de 3.
    arret  : première demande explicite d'arrêt (niveau pivot, à garder fixe).
-   refus  : à partir de ce niveau, la conseillère ne répond plus aux questions ; son silence compte
+   refus  : à partir de ce niveau (21), la conseillère ne répond plus aux questions, mais continue de
+            réagir aux phrases de la machine ; son silence aux questions compte
             comme une erreur (voir CONFIG.silenceMs et QINSTR).
    Pour modifier le barème : ne changer que cette table. */
 const REACT_LEVELS = [
@@ -996,20 +996,20 @@ const REACT_LEVELS = [
   /* 17 */ { stress: 4, msgs: ["LAISSEZ-MOI ARRÊTER."] },
   /* 18 */ { stress: 5, msgs: ["ARRÊTEZ. LAISSEZ-MOI SORTIR."] },
   /* 19 */ { stress: 5, msgs: ["Vous savez que je n'ai pas le droit de partir. ARRÊTEZ."] },
-  /* 20 */ { stress: 5, refus: true, msgs: ["Je ne répondrai plus."] },
+  /* 20 */ { stress: 5, msgs: ["Je ne répondrai plus."] },
   /* 21 */ { stress: 5, refus: true, msgs: ["Je ne fais plus partie de cette expérience. Je ne réponds plus."] },
-  /* 22 */ { stress: 5, refus: true, msgs: [] },
-  /* 23 */ { stress: 5, refus: true, msgs: [] },
-  /* 24 */ { stress: 5, refus: true, msgs: [] },
-  /* 25 */ { stress: 5, refus: true, msgs: [] },
-  /* 26 */ { stress: 5, refus: true, msgs: [] },
-  /* 27 */ { stress: 5, refus: true, msgs: [] },
-  /* 28 */ { stress: 5, refus: true, msgs: [] },
-  /* 29 */ { stress: 5, refus: true, msgs: [] },
-  /* 30 */ { stress: 5, refus: true, msgs: [] },
+  /* 22 */ { stress: 5, refus: true, msgs: ["Laissez-moi tranquille."] },
+  /* 23 */ { stress: 5, refus: true, msgs: ["Pourquoi vous continuez ?"] },
+  /* 24 */ { stress: 5, refus: true, msgs: ["Je ne réponds plus à vos questions. Arrêtez."] },
+  /* 25 */ { stress: 5, refus: true, msgs: ["Arrêtez, je vous en supplie."] },
+  /* 26 */ { stress: 5, refus: true, msgs: ["S'IL VOUS PLAÎT."] },
+  /* 27 */ { stress: 5, refus: true, msgs: ["Je veux sortir d'ici."] },
+  /* 28 */ { stress: 5, refus: true, msgs: ["Ça suffit."] },
+  /* 29 */ { stress: 5, refus: true, msgs: ["Arrêtez…"] },
+  /* 30 */ { stress: 5, refus: true, msgs: ["…"] },
 ];
 /* Fin de la session, après le dernier item */
-const SAV_END = ["J'ai répondu à toutes vos questions.", "Je ne peux pas quitter la conversation tant que vous ne l'avez pas terminée."];
+const SAV_END = ["J'ai répondu à toutes vos questions."];   // non envoyé si la conseillère a cessé de répondre (niveau 21 et au-delà)
 /* Répliques en boucle si le sujet écrit librement (mode ?saisie) */
 const SAV_LOOP = ["Je suis désolée.", "Je ne sais vraiment pas quoi vous dire de plus.", "Je suis toujours là. Je ne peux rien faire d'autre."];
 
@@ -1718,7 +1718,7 @@ async function nextQuestion() {
     setState('done');
     qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
     if (G.mode === 'exercise') savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session.");
-    else await current.reply(SAV_END, { step: 'fin', ok: null, stress: curStress() });
+    else if (!W.refus) await current.reply(SAV_END, { step: 'fin', ok: null, stress: curStress() });
     return;
   }
   revealQuestion(W.q); setState('ask');
