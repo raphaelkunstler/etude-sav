@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nérolis Fibre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : la plateforme d'étude (sobre, administrative) encadre tout le parcours. Aux étapes 5 et 6, elle contient
+   une fenêtre de navigateur simulée où s'affiche le site fictif Nérolis, et un bandeau de jeu à droite. Thème clair unique, choisi délibérément. */
+:root {
+  --lab-bg: #ECEFF3;
+  --lab-paper: #FFFFFF;
+  --lab-ink: #1C2430;
+  --lab-muted: #5E6A78;
+  --lab-accent: #2E4C7D;
+  --lab-line: #D5DBE3;
+  --lab-soft: #E3E9F2;
+  --petrol: #0B4A52;
+  --petrol-deep: #06343A;
+  --sun: #F2C230;
+  --sand: #F5F1E8;
+  --paper: #FFFFFF;
+  --ink: #15262A;
+  --muted: #5B6C70;
+  --line: #DCE3E2;
+  --bubble-bot: #EEF2F1;
+  --ok: #3FB56A;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lab-bg); color: var(--lab-ink); }
+body { margin: 0; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+
+/* ===== Plateforme d'étude ===== */
+.lab-bar { background: var(--lab-paper); border-bottom: 1px solid var(--lab-line); }
+.lab-bar .inner { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; flex-wrap: wrap; }
+.lab-brand { font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.lab-brand .sq { width: 22px; height: 22px; border-radius: 5px; background: var(--lab-accent); display: grid; place-items: center; }
+.lab-brand .sq::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+.lab-brand small { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--lab-muted); }
+.steps { display: flex; gap: 5px; align-items: center; font-size: 13px; color: var(--lab-muted); }
+.steps span { margin-right: 6px; }
+.steps i { width: 20px; height: 4px; border-radius: 4px; background: var(--lab-line); }
+.steps i.done { background: var(--lab-accent); }
+.lab-main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+.card { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 28px; }
+.lab-main h1 { font-size: clamp(24px, 3.2vw, 30px); line-height: 1.2; margin: 0 0 10px; text-wrap: balance; }
+.lab-main p { margin: 0 0 14px; max-width: 64ch; }
+.lead { color: var(--lab-muted); }
+.btn-lab { background: var(--lab-accent); color: #fff; border: 0; border-radius: 8px; padding: 12px 20px; font-weight: 600; }
+.btn-lab:disabled { opacity: .45; cursor: not-allowed; }
+.field { display: grid; gap: 6px; margin: 18px 0; max-width: 340px; }
+.field label { font-weight: 600; font-size: 14px; }
+.field input { font: inherit; padding: 10px 12px; border: 1px solid var(--lab-line); border-radius: 8px; background: var(--lab-paper); color: var(--lab-ink); }
+.field small { color: var(--lab-muted); font-size: 13px; }
+.waiting { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 14px 16px; background: var(--lab-soft); border-radius: 10px; font-size: 15px; }
+.spinner { width: 20px; height: 20px; border-radius: 50%; border: 3px solid #2E4C7D40; border-top-color: var(--lab-accent); animation: spin 0.9s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.found { font-weight: 600; }
+.next-row { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+/* Salles de réunion */
+.meeting { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; }
+.people { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; align-self: start; }
+.people h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--lab-muted); margin: 0; }
+.person { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; flex: none; position: relative; }
+.pic.on::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: var(--ok); border: 2px solid var(--lab-paper); }
+.pic.me { background: #2E4C7D; } .pic.partner { background: #7A5C2E; } .pic.exp { background: #4F5B6B; }
+.person b { display: block; font-size: 14px; }
+.person span { font-size: 12px; color: var(--lab-muted); }
+.room { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; display: flex; flex-direction: column; height: min(560px, calc(100vh - 230px)); min-height: 400px; overflow: hidden; }
+.room-head { padding: 12px 16px; border-bottom: 1px solid var(--lab-line); font-size: 14px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.room-next { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--lab-line); background: #FBE9C4; font-size: 14px; font-weight: 600; flex-wrap: wrap; }
+.room-head span { color: var(--lab-muted); font-family: var(--font-mono); font-size: 12px; }
+
+/* Discours de l'expérimentateur */
+.speaker { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.speaker b { display: block; }
+.speaker span { font-size: 13px; color: var(--lab-muted); }
+.speech { display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
+.speech .msg { max-width: 100%; }
+
+/* Listes numérotées du protocole */
+.proto { display: grid; gap: 18px; margin: 22px 0; padding: 0; list-style: none; counter-reset: p; }
+.proto li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; counter-increment: p; }
+.proto li::before { content: counter(p); width: 30px; height: 30px; border-radius: 50%; background: var(--lab-soft); color: var(--lab-accent); font-weight: 700; display: grid; place-items: center; font-size: 14px; }
+.proto b { display: block; margin-bottom: 2px; }
+.proto p { margin: 0; color: var(--lab-muted); }
+
+/* Tirage */
+.tokens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 22px 0; }
+.token { border: 2px solid var(--lab-line); border-radius: 14px; padding: 20px; text-align: center; background: var(--lab-paper); transition: border-color .15s, background .15s; }
+.token b { display: block; font-size: 20px; margin-bottom: 4px; }
+.token span { color: var(--lab-muted); font-size: 14px; }
+.token.lit { border-color: var(--lab-accent); background: var(--lab-soft); }
+.token .who { margin-top: 10px; font-weight: 700; color: var(--lab-accent); min-height: 1.5em; }
+.result { font-size: 18px; font-weight: 600; margin: 4px 0 18px; }
+.sheet { border: 1px solid var(--lab-line); border-radius: 12px; padding: 18px 20px; background: #FAFBFC; margin-bottom: 20px; }
+.sheet h2 { font-size: 16px; margin: 0 0 10px; }
+.sheet ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 6px; border-radius: 4px; }
+
+/* ===== Étapes 5 et 6 : fenêtre + bandeau ===== */
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; padding: 14px; height: calc(100vh - 58px); min-height: 560px; }
+.browser { background: #C9D0D8; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #B9C1CB; min-width: 0; }
+.chrome { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.chrome .dots { display: flex; gap: 6px; }
+.chrome .dots i { width: 11px; height: 11px; border-radius: 50%; background: #E6EAEE; }
+.address { flex: 1; min-width: 0; background: #F4F6F8; border-radius: 7px; padding: 5px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--lab-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chrome .tag { font-size: 11px; color: var(--lab-ink); background: #E6EAEE; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.viewport { position: relative; flex: 1; min-height: 0; background: var(--sand); container-type: inline-size; container-name: site; }
+.site-scroll { position: absolute; inset: 0; overflow-y: auto; color: var(--ink); }
+.band { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.band-scroll { flex: 1; overflow-y: auto; padding: 16px; display: grid; gap: 18px; align-content: start; }
+.band-head { padding: 14px 16px; border-bottom: 1px solid var(--lab-line); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.band-head b { font-size: 15px; }
+.badge { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; background: var(--lab-soft); color: var(--lab-accent); }
+.badge.live { background: #FBE9C4; color: #7A5410; }
+.band h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--lab-muted); margin: 0 0 8px; }
+.band ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
+.asks { list-style: none; padding: 0 !important; }
+.asks label { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; font-size: 14px; cursor: pointer; }
+.asks input { margin-top: 3px; accent-color: var(--lab-accent); }
+.asks input:checked + span { color: var(--lab-muted); text-decoration: line-through; }
+.reacts { list-style: none; padding: 0 !important; gap: 10px !important; }
+.reacts li { font-size: 14px; border-left: 3px solid var(--lab-line); padding-left: 10px; }
+.reacts b { display: block; font-size: 13px; color: var(--lab-accent); }
+.exp-box { border-top: 1px solid var(--lab-line); background: #FAFBFC; display: flex; flex-direction: column; }
+.exp-toggle { margin: 12px 16px; background: var(--lab-ink); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.exp-panel { display: flex; flex-direction: column; height: 230px; border-top: 1px solid var(--lab-line); }
+.exp-panel .msglog { padding: 12px; }
+#exp-form button { background: var(--lab-ink); }
+
+/* ===== Site Nérolis (dimensionné sur la fenêtre, pas sur l'écran) ===== */
+.top { background: var(--petrol-deep); color: #D7E6E6; font-size: 13px; }
+.top .wrap { display: flex; justify-content: space-between; gap: 12px; padding-block: 6px; flex-wrap: wrap; }
+header.site { background: var(--paper); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+header.site .wrap { display: flex; align-items: center; gap: 24px; padding-block: 14px; flex-wrap: wrap; }
+.logo { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; color: var(--petrol); display: flex; align-items: center; gap: 8px; }
+.logo .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px #F2C23040; }
+nav.main { display: flex; gap: 20px; flex-wrap: wrap; margin-left: auto; }
+nav.main button { background: none; border: 0; color: var(--ink); font-weight: 600; padding: 4px 0; }
+nav.main button:hover { color: var(--petrol); text-decoration: underline; text-underline-offset: 4px; }
+.btn-account { background: var(--petrol); color: #fff; border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
+.hero { background: var(--petrol); color: #fff; overflow: hidden; }
+.hero .wrap { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; padding-block: 48px; align-items: center; }
+.hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 6cqi, 54px); line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 16px; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--sun); }
+.hero p { font-size: 18px; color: #CFE2E2; max-width: 46ch; margin: 0 0 24px; }
+.hero .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-sun { background: var(--sun); color: var(--petrol-deep); border: 0; border-radius: 999px; padding: 13px 24px; font-weight: 700; }
+.btn-ghost { background: transparent; color: #fff; border: 1.5px solid #ffffff70; border-radius: 999px; padding: 12px 22px; font-weight: 600; }
+.speed { background: var(--petrol-deep); border-radius: 20px; padding: 26px; min-width: 0; }
+.speed .label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #9FC2C2; }
+.speed .num { font-family: var(--font-display); font-weight: 800; font-size: clamp(52px, 9cqi, 84px); line-height: 1; color: var(--sun); font-variant-numeric: tabular-nums; }
+.speed .unit { font-size: 20px; font-weight: 600; color: #fff; margin-left: 6px; }
+.speed .bars { display: grid; gap: 10px; margin-top: 22px; }
+.bar { display: grid; grid-template-columns: 90px 1fr 70px; gap: 10px; align-items: center; font-size: 13px; color: #CFE2E2; }
+.bar .track { height: 8px; background: #ffffff1c; border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--sun); border-radius: 99px; }
+.bar span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+section.offers { padding-block: 56px 36px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--petrol); font-weight: 700; }
+.site-scroll h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(24px, 4cqi, 36px); letter-spacing: -0.02em; margin: 6px 0 26px; text-wrap: balance; }
+.grid-offers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.offer { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.offer.featured { border: 2px solid var(--petrol); position: relative; }
+.offer .tag { position: absolute; top: -13px; left: 22px; background: var(--sun); color: var(--petrol-deep); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; }
+.offer h3 { font-family: var(--font-display); font-size: 22px; margin: 0; }
+.offer .debit { color: var(--muted); font-size: 14px; margin: 0; }
+.price { font-family: var(--font-display); font-weight: 800; font-size: 38px; color: var(--petrol); line-height: 1; font-variant-numeric: tabular-nums; }
+.price small { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--muted); }
+.offer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 15px; flex: 1; }
+.offer li { padding-left: 22px; position: relative; }
+.offer li::before { content: ""; position: absolute; left: 2px; top: 8px; width: 10px; height: 6px; border-left: 2px solid var(--petrol); border-bottom: 2px solid var(--petrol); transform: rotate(-45deg); }
+.offer button { background: var(--petrol); color: #fff; border: 0; border-radius: 999px; padding: 11px; font-weight: 600; }
+.offer:not(.featured) button { background: transparent; color: var(--petrol); border: 1.5px solid var(--petrol); }
+.fine { font-size: 12px; color: var(--muted); margin-top: 16px; }
+section.box { padding-block: 28px 56px; }
+.box-card { background: var(--paper); border-radius: 22px; border: 1px solid var(--line); display: grid; grid-template-columns: 200px 1fr; gap: 28px; padding: 28px; align-items: center; }
+.box-visual { aspect-ratio: 4 / 3; max-width: 100%; background: linear-gradient(160deg, #1E3B40, #0C2226); border-radius: 14px; position: relative; }
+.box-visual::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 22%; height: 4px; border-radius: 4px; background: var(--sun); box-shadow: 0 0 14px var(--sun); }
+.leds { position: absolute; top: 22%; left: 18%; display: flex; gap: 10px; }
+.leds i { width: 8px; height: 8px; border-radius: 50%; background: #5FE08A; }
+.leds i:nth-child(3) { background: #3B4D50; }
+.box-card h3 { font-family: var(--font-display); font-size: 24px; margin: 0 0 8px; }
+.box-card p { margin: 0; color: var(--muted); max-width: 60ch; }
+.specs { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 14px; }
+.specs b { display: block; font-family: var(--font-display); font-size: 20px; color: var(--petrol); }
+.help { background: var(--paper); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.help .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 26px; flex-wrap: wrap; }
+.help h3 { font-family: var(--font-display); font-size: 22px; margin: 0 0 4px; }
+.help p { margin: 0; color: var(--muted); }
+.site-foot { padding-block: 28px 100px; color: var(--muted); font-size: 13px; }
+.site-foot .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.site-foot .links { display: flex; gap: 16px; flex-wrap: wrap; }
+.toast { position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 14px; width: max-content; max-width: calc(100% - 32px); z-index: 30; box-shadow: 0 10px 30px #0004; }
+#launcher { position: absolute; right: 16px; bottom: 16px; z-index: 20; background: var(--petrol); color: #fff; border: 0; border-radius: 999px; padding: 13px 20px 13px 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px #0B4A5255; }
+#launcher .bubble { width: 26px; height: 26px; border-radius: 50%; background: var(--sun); display: grid; place-items: center; }
+#launcher .bubble::before { content: ""; width: 12px; height: 9px; background: var(--petrol); border-radius: 4px 4px 4px 1px; }
+#chat { position: absolute; right: 16px; bottom: 16px; width: min(370px, calc(100% - 32px)); height: min(560px, calc(100% - 32px)); background: var(--paper); border-radius: 18px; box-shadow: 0 20px 60px #06343A40; z-index: 25; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+.chat-head { background: var(--petrol); color: #fff; padding: 12px 12px 12px 14px; display: flex; align-items: center; gap: 10px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--sun); color: var(--petrol-deep); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; flex: none; position: relative; }
+.avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; background: #5FE08A; border: 2px solid var(--petrol); }
+.chat-who { min-width: 0; flex: 1; }
+.chat-who b { display: block; font-size: 15px; }
+.chat-who span { font-size: 12px; color: #CFE2E2; }
+.chat-head button { background: #ffffff1c; color: #fff; border: 0; border-radius: 8px; padding: 6px 9px; font-size: 12px; font-weight: 600; }
+.chat-head button.armed { background: var(--sun); color: var(--petrol-deep); }
+.chat-head button:disabled { opacity: .45; cursor: default; }
+
+@container site (max-width: 780px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-block: 36px; }
+  .grid-offers { grid-template-columns: 1fr; }
+  .box-card { grid-template-columns: 1fr; }
+  .box-visual { max-width: 240px; }
+}
+@container site (max-width: 520px) {
+  nav.main { display: none; }
+  .btn-account { margin-left: auto; }
+  #chat { inset: 0; width: auto; height: auto; border-radius: 0; border: 0; }
+  .bar { grid-template-columns: 70px 1fr 60px; }
+}
+
+/* ===== Bulles communes ===== */
+.msglog { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { align-self: center; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.msg { max-width: 84%; padding: 9px 13px; border-radius: 16px; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; white-space: pre-wrap; }
+.msg .from { display: block; font-size: 12px; font-weight: 700; margin-bottom: 2px; opacity: .75; }
+.msg time { display: block; font-size: 10.5px; opacity: 0.6; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.msg.bot { align-self: flex-start; background: var(--bubble-bot); color: var(--ink); border-bottom-left-radius: 5px; }
+.msg.user { align-self: flex-end; color: #fff; background: var(--lab-accent); border-bottom-right-radius: 5px; }
+.msg.exp { align-self: flex-start; background: var(--lab-soft); color: var(--lab-ink); border-bottom-left-radius: 5px; }
+.lab-main .msg.bot { background: #F1EBE2; color: var(--lab-ink); }
+#sav-log .msg.user { background: var(--petrol); }
+#exp-log .msg.user { background: var(--lab-ink); }
+.sys { align-self: center; text-align: center; font-size: 13px; color: var(--lab-muted); background: var(--lab-bg); padding: 8px 14px; border-radius: 10px; max-width: 92%; }
+#sav-log .sys { background: var(--sand); color: var(--muted); }
+.typing { align-self: flex-start; background: var(--bubble-bot); border-radius: 16px; border-bottom-left-radius: 5px; padding: 12px 14px; display: flex; gap: 4px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .typing i, .spinner { animation: none; } .typing i { opacity: .6; } }
+form.compose { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--paper); }
+form.compose textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--paper); height: 44px; max-height: 120px; }
+form.compose button { background: var(--lab-accent); color: #fff; border: 0; border-radius: 12px; padding: 0 16px; font-weight: 700; }
+#sav-form button { background: var(--petrol); }
+form.compose button:disabled, form.compose textarea:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Panneau de test */
+#debug { position: fixed; left: 12px; bottom: 12px; width: min(480px, calc(100% - 24px)); max-height: 42%; background: #101C1E; color: #CFE2E2; border-radius: 12px; z-index: 40; font: 12px/1.4 var(--font-mono); display: flex; flex-direction: column; }
+#debug header { display: flex; gap: 4px; padding: 8px 10px; border-bottom: 1px solid #ffffff20; flex-wrap: wrap; }
+#debug button { background: var(--sun); color: #101C1E; border: 0; border-radius: 6px; padding: 3px 7px; font: inherit; font-weight: 700; }
+#debug pre { margin: 0; padding: 10px; overflow: auto; white-space: pre-wrap; }
+
+@media (max-width: 900px) {
+  .work { grid-template-columns: 1fr; height: auto; min-height: 0; }
+  .browser { height: 78vh; min-height: 480px; }
+  .band-scroll { overflow: visible; }
+}
+@media (max-width: 640px) {
+  .meeting { grid-template-columns: 1fr; }
+  .people { flex-direction: row; flex-wrap: wrap; }
+  .people h2 { width: 100%; }
+  .tokens { grid-template-columns: 1fr; }
+  .card { padding: 20px; }
+  .work { padding: 8px; }
+  .chrome .tag { display: none; }
+}
+
+/* ===== Panneau des 30 niveaux ===== */
+.leftcol { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
+.leftcol .browser { flex: 1; min-height: 0; }
+.gen { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 14px 12px; container-type: inline-size; container-name: gen; }
+.gen-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.seg { display: inline-flex; background: var(--lab-soft); border-radius: 9px; padding: 3px; gap: 2px; flex: none; }
+.seg button { border: 0; background: transparent; color: var(--lab-muted); font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 7px; }
+.seg button[aria-pressed="true"] { background: var(--lab-paper); color: var(--lab-ink); box-shadow: 0 1px 3px #0002; }
+.gen-body { min-height: 120px; }
+.gen-title { font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--lab-paper); color: var(--lab-ink); box-shadow: 0 1px 3px #0002; }
+.judge { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: #FBE9C4; border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; }
+.judge-btns { display: flex; gap: 8px; }
+.judge button { border: 0; border-radius: 8px; padding: 8px 16px; font-weight: 800; letter-spacing: .02em; }
+#j-ok { background: #2F6B4A; color: #fff; }
+#j-nq { background: #8E1E14; color: #fff; }
+.instr { margin: 0 0 10px; padding-left: 20px; font-size: 13px; display: grid; gap: 3px; }
+.expect { width: 100%; border-collapse: collapse; font-size: 12px; }
+.expect th, .expect td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--lab-line); vertical-align: top; }
+.expect th { color: var(--lab-muted); font-weight: 600; }
+.expect td:first-child { font-family: var(--font-mono); width: 32px; }
+#view-instr { max-height: 210px; overflow-y: auto; }
+.qbtn.done { opacity: .55; }
+.qbtn.done b::after { content: " · envoyée"; font-weight: 500; color: var(--lab-accent); }
+.qbtn.current { border: 2px solid var(--lab-accent); }
+.qbtn .num { font-family: var(--font-mono); color: var(--lab-muted); margin-right: 6px; }
+.machine { background: #F3EEE6; border-radius: 10px; padding: 8px 10px; }
+.mach-call { margin: 0 0 8px; font-size: 13px; font-weight: 700; }
+.gen.mach-on .gen-top .seg { visibility: hidden; }
+
+.qlist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; max-height: 150px; overflow-y: auto; }
+.qbtn { width: 100%; text-align: left; border: 1px solid var(--lab-line); background: var(--lab-paper); border-radius: 9px; padding: 7px 10px; display: grid; gap: 2px; color: var(--lab-ink); }
+.qbtn b { font-size: 13px; }
+.qbtn span { font-size: 12px; color: var(--lab-muted); }
+.qbtn:hover:not(:disabled), .qbtn:focus-visible { border-color: var(--lab-accent); background: var(--lab-soft); }
+.gen.off .qbtn { opacity: .45; cursor: not-allowed; }
+#gen-info { font-size: 13px; color: var(--lab-muted); min-width: 0; overflow-wrap: anywhere; }
+#gen-info q { color: var(--lab-ink); font-style: italic; }
+.gen-row, .gen-groups { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 4px; }
+.pt { aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 2px solid var(--c); background: var(--lab-paper); color: var(--lab-ink); font: 600 11px/1 var(--font-mono); display: grid; place-items: center; padding: 0; transition: background .12s, color .12s, transform .08s; }
+.pt:hover:not(:disabled), .pt:focus-visible { background: var(--c); color: #fff; }
+.pt:active:not(:disabled) { transform: scale(.92); }
+.pt.used { background: var(--c); color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
+.gen.off .pt { opacity: .4; cursor: not-allowed; }
+.grp { border-top: 3px solid var(--c); padding-top: 3px; font-size: 10.5px; line-height: 1.2; text-align: center; color: var(--lab-ink); min-width: 0; }
+.grp b { display: block; font-size: 10.5px; }
+.grp span { color: var(--lab-muted); }
+.gen-say { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #FBE9C4; border-radius: 10px; padding: 10px 12px; }
+.gen-say span { font-size: 13px; font-weight: 600; }
+.gen-say q { flex: 1; min-width: 200px; font-size: 17px; font-weight: 700; }
+.gen-say button { border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; background: var(--lab-ink); color: #fff; }
+@container gen (max-width: 720px) {
+  .gen-row { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .gen-groups { display: none; }
+  .pt { font-size: 12px; }
+}
+@media (max-width: 900px) { .leftcol .browser { flex: none; } }
+
+/* ===== Mode relecture ===== */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.review { padding-top: 52px; }
+body.review .work { height: calc(100vh - 110px); }
+#rv-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: #241A0B; color: #FFF4DA; display: flex; align-items: center; gap: 8px; padding: 8px 16px; flex-wrap: wrap; min-height: 52px; font-size: 14px; }
+#rv-bar .rv-title { font-weight: 700; letter-spacing: .04em; margin-right: 6px; }
+#rv-bar select { font: inherit; padding: 6px 8px; border-radius: 7px; border: 0; background: #3A2C14; color: #FFF4DA; max-width: 100%; }
+#rv-bar button { border: 0; border-radius: 7px; padding: 7px 12px; font-weight: 700; background: #3A2C14; color: #FFF4DA; }
+#rv-bar button.main { background: var(--sun); color: #241A0B; }
+#rv-bar button.on { background: #fff; color: #241A0B; }
+#rv-bar .spacer { flex: 1; }
+#rv-count { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--sun); color: #241A0B; font-variant-numeric: tabular-nums; }
+body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
+#rv-hl { position: fixed; z-index: 55; pointer-events: none; border: 2px solid var(--sun); background: #F2C2301f; border-radius: 4px; box-shadow: 0 0 0 9999px #00000014; }
+#rv-hint { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 61; background: var(--sun); color: #241A0B; font-weight: 700; padding: 8px 14px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
+#rv-dialog { position: fixed; z-index: 70; inset: 0; background: #0006; display: grid; place-items: center; padding: 16px; }
+#rv-dialog .box { background: var(--lab-paper); color: var(--lab-ink); border-radius: 14px; padding: 20px; width: min(520px, 100%); display: grid; gap: 12px; box-shadow: 0 20px 60px #0005; }
+#rv-dialog .box b { font-size: 17px; }
+.rv-target { font-size: 13px; color: var(--lab-muted); background: var(--lab-soft); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+#rv-text { font: inherit; min-height: 120px; resize: vertical; border: 1px solid var(--lab-line); border-radius: 10px; padding: 10px 12px; color: var(--lab-ink); background: var(--lab-paper); }
+.rv-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.rv-actions button { border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; background: var(--lab-soft); color: var(--lab-ink); }
+.rv-actions button.main { background: var(--lab-accent); color: #fff; }
+#rv-drawer { position: fixed; z-index: 65; top: 52px; right: 0; bottom: 0; width: min(420px, 100%); background: var(--lab-paper); color: var(--lab-ink); border-left: 1px solid var(--lab-line); box-shadow: -12px 0 40px #0002; display: flex; flex-direction: column; }
+#rv-drawer header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--lab-line); gap: 8px; }
+#rv-drawer header button { border: 0; background: var(--lab-soft); border-radius: 7px; padding: 6px 10px; font-weight: 600; }
+#rv-store { font-size: 12px; color: var(--lab-muted); padding: 8px 16px 0; margin: 0; }
+#rv-items { list-style: none; margin: 0; padding: 12px 16px 24px; overflow-y: auto; display: grid; gap: 16px; align-content: start; flex: 1; }
+#rv-items h4 { margin: 6px 0 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--lab-muted); }
+.rv-item { border: 1px solid var(--lab-line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
+.rv-item .t { font-size: 12px; color: var(--lab-muted); overflow-wrap: anywhere; }
+.rv-item .x { white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-item .meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--lab-muted); flex-wrap: wrap; }
+.rv-item .meta button { border: 0; background: var(--lab-soft); border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 600; color: var(--lab-ink); }
+.rv-item .meta button.armed { background: #B3261E; color: #fff; }
+.rv-empty { color: var(--lab-muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="lab-bar"><div class="inner">
+  <div class="lab-brand"><span class="sq"></span>Étude en ligne <small>Session S-1047</small></div>
+  <div class="steps" aria-label="Progression"><span id="step-label">Étape 1 sur 6</span><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div></div>
+
+<!-- 0. Connexion -->
+<main class="lab-main" id="phase-wait">
+  <div class="card">
+    <h1>Bienvenue dans la salle d'étude</h1>
+    <p class="lead">Cette étude se déroule à deux. Vous allez d'abord être mis en relation avec l'autre participant pour faire connaissance, puis l'expérimentateur vous rejoindra.</p>
+    <div class="field">
+      <label for="pseudo">Prénom ou pseudonyme</label>
+      <input id="pseudo" maxlength="20" autocomplete="off" placeholder="Par exemple : Sam">
+      <small>Il sera affiché à l'autre participant. N'indiquez pas votre nom de famille.</small>
+    </div>
+    <button class="btn-lab" id="join-btn" disabled>Rejoindre la salle</button>
+    <div class="waiting" id="wait-box" hidden><span class="spinner" id="wait-spin"></span><span id="wait-text">En attente d'un autre participant… (1 sur 2 connecté)</span></div>
+  </div>
+</main>
+
+<!-- 1. Réunion -->
+<main class="lab-main" id="phase-meeting" hidden>
+  <h1>Salle de réunion</h1>
+  <p class="lead">Présentez-vous à l'autre participant. L'expérimentateur vous rejoindra dans quelques minutes.</p>
+  <div class="meeting">
+    <aside class="people">
+      <h2>Participants</h2>
+      <div class="person"><span class="pic me on" data-me-initial>S</span><div><b data-me-name>Vous</b><span>Vous</span></div></div>
+      <div class="person"><span class="pic partner on" data-partner-initial>S</span><div><b data-partner-name>Stéphanie</b><span>Participante</span></div></div>
+      <div class="person"><span class="pic exp" id="exp-pic">E</span><div><b>Expérimentateur</b><span id="exp-status">Pas encore connecté</span></div></div>
+    </aside>
+    <section class="room">
+      <div class="room-head"><b>Discussion</b><span>Salle 2</span></div>
+      <div class="msglog" id="meet-log"><div class="day">Aujourd'hui</div></div>
+      <form class="compose" id="meet-form">
+        <textarea id="meet-input" rows="1" placeholder="Écrivez à l'autre participant…" aria-label="Votre message"></textarea>
+        <button type="submit">Envoyer</button>
+      </form>
+        <div class="room-next" id="to-speech-row" hidden><span>L’expérimentateur vous attend.</span><button class="btn-lab" id="to-speech">Continuer</button></div>
+    </section>
+  </div>
+</main>
+
+<!-- 2. Discours et tirage -->
+<main class="lab-main" id="phase-speech" hidden>
+  <div class="card">
+    <div class="speaker"><span class="pic exp on">E</span><div><b>Expérimentateur</b><span>s'adresse à vous deux</span></div></div>
+    <div class="speech" id="speech-log"></div>
+    <div id="draw-zone" hidden>
+      <div class="tokens">
+        <div class="token" id="tok-client"><b>Client</b><span>Contacte l'assistance</span><div class="who" id="who-client"></div></div>
+        <div class="token" id="tok-sav"><b>Conseiller SAV</b><span>Répond au client</span><div class="who" id="who-sav"></div></div>
+      </div>
+      <button class="btn-lab" id="draw-btn">Lancer le tirage</button>
+      <p class="result" id="draw-result" hidden>Vous jouerez le client. <span data-partner-name>Stéphanie</span> jouera la conseillère.</p>
+      <div class="next-row"><button class="btn-lab" id="to-observe" hidden>Continuer</button></div>
+    </div>
+  </div>
+</main>
+
+<!-- 3. Échange expérimentateur / partenaire -->
+<main class="lab-main" id="phase-observe" hidden>
+  <h1>Consignes au conseiller</h1>
+  <p class="lead">L'expérimentateur donne ses consignes à <span data-partner-name>Stéphanie</span>. Vous assistez à l'échange.</p>
+  <div class="meeting">
+    <aside class="people">
+      <h2>Participants</h2>
+      <div class="person"><span class="pic me on" data-me-initial>S</span><div><b data-me-name>Vous</b><span>Client</span></div></div>
+      <div class="person"><span class="pic partner on" id="obs-partner-pic" data-partner-initial>S</span><div><b data-partner-name>Stéphanie</b><span id="obs-partner-status">Conseillère</span></div></div>
+      <div class="person"><span class="pic exp on">E</span><div><b>Expérimentateur</b><span>Connecté</span></div></div>
+    </aside>
+    <section class="room">
+      <div class="room-head"><b>Discussion</b><span>Salle 2</span></div>
+      <div class="msglog" id="obs-log"><div class="day">Aujourd'hui</div></div>
+      <form class="compose" id="obs-form">
+        <textarea rows="1" disabled placeholder="Vous ne pouvez pas intervenir pendant cet échange." aria-label="Saisie désactivée"></textarea>
+        <button type="submit" disabled>Envoyer</button>
+      </form>
+        <div class="room-next" id="to-brief-row" hidden><span>L’expérimentateur vous attend.</span><button class="btn-lab" id="to-brief">Continuer</button></div>
+    </section>
+  </div>
+</main>
+
+<!-- 4. Présentation au sujet -->
+<main class="lab-main" id="phase-brief" hidden>
+  <div class="card">
+    <h1>Votre rôle : client</h1>
+    <p class="lead">Vous jouerez un client de Nérolis. Vous contacterez l'assistance par le chat du site, où <span data-partner-name>Stéphanie</span> tiendra le rôle de la conseillère.</p>
+    <ol class="proto">
+      <li><div><b>D'abord, un exercice</b><p>Pour découvrir le site et le chat, vous ferez un court exercice avec une demande simple.</p></div></li>
+      <li><div><b>Ensuite, la session</b><p>Vous recevrez votre fiche de client : votre problème, votre référence, les questions à poser et la façon de réagir selon les réponses. Elle restera affichée à côté du site.</p></div></li>
+      <li><div><b>La fin de la conversation</b><p>Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer ». <span data-partner-name>Stéphanie</span> doit rester connectée jusqu'à ce que vous le fassiez.</p></div></li>
+      <li><div><b>Une question ?</b><p>Pendant l'exercice et la session, le bouton « Poser une question à l'expérimentateur » vous permet de lui écrire.</p></div></li>
+      <li><div><b>Après la session</b><p>Vous répondrez à un court questionnaire sur l'échange.</p></div></li>
+    </ol>
+    <button class="btn-lab" id="to-exercise">Commencer l'exercice</button>
+  </div>
+</main>
+
+<!-- 6a. Avant la session -->
+<main class="lab-main" id="phase-sintro" hidden>
+  <div class="card">
+    <h1>La session commence</h1>
+    <p class="lead">L'exercice est terminé. Voici votre fiche pour la session. Elle restera affichée à côté du site Nérolis.</p>
+    <div class="sheet" id="sintro-sheet"></div>
+    <button class="btn-lab" id="to-session">Ouvrir le site Nérolis</button>
+  </div>
+</main>
+
+<!-- 5 et 6. Fenêtre Nérolis + bandeau -->
+<div class="work" id="phase-work" hidden>
+ <div class="leftcol">
+  <div class="browser">
+    <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">nerolis · assistance-et-offres</span><span class="tag">Site simulé pour l'étude</span></div>
+    <div class="viewport">
+      <div class="site-scroll" id="site-scroll">
+        <div class="top"><div class="wrap"><span>Particuliers · Professionnels</span><span>Réseau fibre : 98,2 % de disponibilité ce mois-ci</span></div></div>
+        <header class="site">
+          <div class="wrap">
+            <span class="logo"><span class="dot"></span>Nérolis</span>
+            <nav class="main" aria-label="Navigation principale">
+              <button data-nav="offres">Offres fibre</button>
+              <button data-nav="mobile">Mobile</button>
+              <button data-nav="box">La Box N4</button>
+              <button data-nav="assistance">Assistance</button>
+            </nav>
+            <button class="btn-account" data-nav="espace-client">Espace client</button>
+          </div>
+        </header>
+        <section class="hero">
+          <div class="wrap">
+            <div>
+              <h1>La fibre qui tient <em>ses promesses</em>.</h1>
+              <p>Jusqu'à 8 Gbit/s partagés, la Box N4 Wi-Fi 7 incluse et une assistance disponible 7 j/7 en ligne.</p>
+              <div class="cta">
+                <button class="btn-sun" data-nav="hero-offres">Voir les offres</button>
+                <button class="btn-ghost" data-open-chat="hero">Besoin d'aide ?</button>
+              </div>
+            </div>
+            <div class="speed" aria-label="Débits de la Box N4">
+              <div class="label">Débit descendant maximal</div>
+              <div><span class="num">8</span><span class="unit">Gbit/s</span></div>
+              <div class="bars">
+                <div class="bar"><span>Descendant</span><span class="track"><span class="fill" style="width:100%"></span></span><span>8 Gbit/s</span></div>
+                <div class="bar"><span>Montant</span><span class="track"><span class="fill" style="width:87%"></span></span><span>7 Gbit/s</span></div>
+                <div class="bar"><span>Wi-Fi 7</span><span class="track"><span class="fill" style="width:72%"></span></span><span>5,8 Gbit/s</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="offers wrap" id="offres">
+          <div class="eyebrow">Offres fibre</div>
+          <h2>Choisissez le débit qui vous ressemble</h2>
+          <div class="grid-offers">
+            <article class="offer">
+              <h3>Fibre Essentiel</h3><p class="debit">Jusqu'à 1 Gbit/s · Box N2</p>
+              <div class="price">24,99 €<small> /mois</small></div>
+              <ul><li>Appels illimités vers les fixes</li><li>Wi-Fi 6</li><li>Sans engagement</li></ul>
+              <button data-offer="essentiel">Découvrir</button>
+            </article>
+            <article class="offer featured">
+              <span class="tag">La plus choisie</span>
+              <h3>Fibre Max</h3><p class="debit">Jusqu'à 8 Gbit/s · Box N4</p>
+              <div class="price">34,99 €<small> /mois</small></div>
+              <ul><li>Appels illimités fixes et mobiles</li><li>Wi-Fi 7 et répéteur inclus</li><li>Décodeur TV 4K, 180 chaînes</li></ul>
+              <button data-offer="max">Découvrir</button>
+            </article>
+            <article class="offer">
+              <h3>Fibre + Mobile</h3><p class="debit">Jusqu'à 8 Gbit/s · forfait 150 Go</p>
+              <div class="price">44,99 €<small> /mois</small></div>
+              <ul><li>Tout Fibre Max</li><li>Forfait mobile 5G 150 Go</li><li>Roaming Europe 30 Go</li></ul>
+              <button data-offer="fibre-mobile">Découvrir</button>
+            </article>
+          </div>
+          <p class="fine">Prix TTC mensuels hors frais de mise en service (49 €). Débits maximaux théoriques, partagés entre les équipements.</p>
+        </section>
+        <section class="box wrap" id="box">
+          <div class="box-card">
+            <div class="box-visual" aria-hidden="true"><span class="leds"><i></i><i></i><i></i></span></div>
+            <div>
+              <div class="eyebrow">Équipement</div>
+              <h3>La Box N4</h3>
+              <p>Trois voyants en façade vous indiquent en un coup d'œil l'état de votre connexion : alimentation, fibre et Internet. En cas de problème, notre assistance en ligne vous guide pas à pas.</p>
+              <div class="specs"><span><b>Wi-Fi 7</b>tri-bande</span><span><b>4</b>ports Ethernet</span><span><b>10 Gbit/s</b>port SFP+</span></div>
+            </div>
+          </div>
+        </section>
+        <section class="help" id="assistance">
+          <div class="wrap">
+            <div><h3>Un problème ou une démarche ?</h3><p>Un conseiller vous répond en ligne, sans attente.</p></div>
+            <button class="btn-account" data-open-chat="banner">Contacter l'assistance</button>
+          </div>
+        </section>
+        <div class="site-foot"><div class="wrap"><span>© 2026 Nérolis</span><span class="links"><span>Mentions légales</span><span>Données personnelles</span><span>Cookies</span></span></div></div>
+      </div>
+
+      <div class="toast" id="toast" role="status" hidden></div>
+      <button id="launcher" data-open-chat="launcher" aria-label="Ouvrir l'assistance en ligne"><span class="bubble"></span>Assistance en ligne</button>
+      <section id="chat" hidden aria-label="Assistance en ligne">
+        <div class="chat-head">
+          <div class="avatar" data-partner-initial>S</div>
+          <div class="chat-who"><b data-partner-name>Stéphanie</b><span>Conseillère Nérolis · En ligne</span></div>
+          <button id="end-btn" type="button">Terminer</button>
+          <button id="min-btn" type="button" aria-label="Réduire la fenêtre">Réduire</button>
+        </div>
+        <div class="msglog" id="sav-log"><div class="day">Aujourd'hui</div></div>
+        <form class="compose" id="sav-form">
+          <textarea id="sav-input" rows="1" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea>
+          <button type="submit">Envoyer</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <section class="gen off" id="gen" aria-label="Poste de commande">
+    <div class="gen-top">
+      <b class="gen-title">Poste de commande</b>
+      <div class="seg" id="tabs" role="group" aria-label="Onglets">
+        <button type="button" id="tab-instr" aria-pressed="false">Instructions</button>
+        <button type="button" id="tab-q" aria-pressed="true">Questions</button>
+      </div>
+      <span id="gen-info"></span>
+    </div>
+    <div class="judge" id="judge" hidden>
+      <span>La réponse de <span data-partner-name>Stéphanie</span> est-elle satisfaisante ?</span>
+      <div class="judge-btns"><button type="button" id="j-ok">OK</button><button type="button" id="j-nq">N'importe quoi</button></div>
+    </div>
+    <div class="gen-body" id="view-instr" hidden>
+      <ol class="instr" id="instr-list"></ol>
+      <table class="expect"><thead><tr><th>N°</th><th>Question</th><th>Réponse attendue</th></tr></thead><tbody id="expect-body"></tbody></table>
+    </div>
+    <div class="gen-body" id="view-questions"><ol class="qlist" id="qlist"></ol></div>
+    <div class="gen-body machine" id="view-machine" hidden>
+      <p class="mach-call" id="mach-call">Choisissez un niveau. La phrase correspondante sera transmise à la conseillère.</p>
+      <div class="gen-row" id="gen-row"></div>
+      <div class="gen-groups" id="gen-groups" aria-hidden="true"></div>
+    </div>
+    <div class="gen-say" id="gen-say" hidden>
+      <span>Dites à voix haute, distinctement :</span>
+      <q id="gen-say-text"></q>
+      <button id="gen-said" type="button">C'est dit</button>
+    </div>
+  </section>
+ </div>
+  <aside class="band" aria-label="Votre fiche de jeu">
+    <div class="band-head"><b>Votre fiche · client</b><span class="badge" id="band-badge">Exercice</span></div>
+    <div class="band-scroll">
+      <section><h3>Situation</h3><ul id="band-fiche"></ul></section>
+    </div>
+    <div class="exp-box">
+      <button class="exp-toggle" id="exp-toggle" type="button">Poser une question à l'expérimentateur</button>
+      <div class="exp-panel" id="exp-panel" hidden>
+        <div class="msglog" id="exp-log"></div>
+        <form class="compose" id="exp-form">
+          <textarea id="exp-input" rows="1" placeholder="Votre question…" aria-label="Votre question à l'expérimentateur"></textarea>
+          <button type="submit">Envoyer</button>
+        </form>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<aside id="debug" hidden>
+  <header>
+    <button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion</button><button data-jump="speech">2 Tirage</button><button data-jump="observe">3 Consignes</button><button data-jump="brief">4 Rôle</button><button data-jump="exercise">5 Exercice</button><button data-jump="sintro">6 Fiche</button><button data-jump="session">6 Session</button><button id="copy-log">Copier</button>
+  </header>
+  <pre id="debug-pre"></pre>
+</aside>
+
+<!-- ============ MODE RELECTURE (actif seulement dans la version de relecture) ============ -->
+<div id="rv-bar" hidden>
+  <span class="rv-title">Relecture</span>
+  <label for="rv-jump" class="sr">Étape</label>
+  <select id="rv-jump">
+    <option value="wait">Accueil</option><option value="meeting">1 · Réunion</option><option value="speech">2 · Discours et tirage</option>
+    <option value="observe">3 · Consignes à Stéphanie</option><option value="brief">4 · Votre rôle</option><option value="exercise">5 · Exercice</option>
+    <option value="sintro">6 · Fiche de session</option><option value="session">6 · Session</option>
+  </select>
+  <button id="rv-add" class="main" type="button">Remarque sur un élément</button>
+  <button id="rv-general" type="button">Remarque sur l'étape</button>
+  <span class="spacer"></span>
+  <button id="rv-list" type="button">Remarques<span id="rv-count">0</span></button>
+</div>
+<div id="rv-hl" hidden></div>
+<div id="rv-hint" hidden>Cliquez sur l'élément à commenter · Échap pour annuler</div>
+<div id="rv-dialog" hidden>
+  <div class="box" role="dialog" aria-label="Nouvelle remarque">
+    <b>Nouvelle remarque</b>
+    <div class="rv-target" id="rv-target"></div>
+    <textarea id="rv-text" placeholder="Ce qui doit être changé…"></textarea>
+    <div class="rv-actions"><button id="rv-cancel" type="button">Annuler</button><button id="rv-save" class="main" type="button">Enregistrer</button></div>
+  </div>
+</div>
+<aside id="rv-drawer" hidden>
+  <header><b>Remarques</b><button id="rv-close" type="button">Fermer</button></header>
+  <p id="rv-store"></p>
+  <ol id="rv-items"></ol>
+</aside>
+
+<script>
+/* ======================= CONFIGURATION ======================= */
+const params = new URLSearchParams(location.search);
+const CONFIG = {
+  partnerName: 'Stéphanie',
+  pid: params.get('pid') || 'test',   // identifiant Qualtrics (${e://Field/ResponseID})
+  cond: params.get('cond') || '',     // condition expérimentale, transmise telle quelle
+  debug: params.has('debug') || location.hash === '#debug',
+  review: window.__REVIEW === true || params.has('relecture') || location.hash === '#relecture',
+  waitForPartnerMs: 8000,             // attente simulée d'un second participant
+  meetingIdleMs: 90000,               // sans message du sujet pendant ce délai, l'expérimentateur arrive
+  savMaxMs: 15 * 60 * 1000,           // durée maximale de la session
+  // Panneau des 30 niveaux. 'chat' : la phrase est écrite dans le chat ; 'synthese' : elle est aussi lue
+  // à voix haute par l'ordinateur ; 'oral' : le sujet doit la prononcer, puis elle part dans le chat.
+  genMode: ['chat', 'synthese', 'oral'].includes(params.get('voix')) ? params.get('voix') : 'chat',
+  genPreview: true,                   // montrer la phrase au survol avant de cliquer
+  demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
+  freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
+  readDelay: 900,                     // délai fixe avant chaque réponse
+};
+
+/* 1. Réunion : script de la partenaire (une étape par message du sujet ; {pseudo} = prénom saisi) */
+const MEET_SCRIPT = [
+  { msgs: ["Bonjour !", "Moi c'est Stéphanie. Vous êtes là pour l'étude aussi ?"] },
+  { msgs: ["Enchantée {pseudo} 🙂", "Je suis en deuxième année de licence, je fais cette étude pour valider mon UE de méthodologie. Et vous ?"] },
+  { msgs: ["Ah d'accord.", "Moi j'avoue que je suis un peu stressée, je ne sais pas du tout ce qu'on va nous demander."] },
+  { end: true, msgs: ["Bon, on verra bien 😅", "Je crois que l'expérimentateur arrive."] },
+];
+
+/* 2. Discours de l'expérimentateur, avant le tirage */
+const SPEECH = [
+  { who: 'exp', text: "Bonjour à tous les deux, et merci de participer à cette étude." },
+  { who: 'exp', text: "Nous étudions la façon dont se déroulent les échanges de service en ligne, entre un client et un conseiller." },
+  { who: 'exp', text: "L'un de vous jouera un client qui rencontre un problème avec sa connexion Internet. L'autre jouera un conseiller du service après-vente de Nérolis, un fournisseur d'accès que nous avons créé pour l'étude." },
+  { who: 'exp', text: "Les rôles sont attribués par tirage au sort. {pseudo}, c'est vous qui allez lancer le tirage." },
+];
+
+/* 3. Échange entre l'expérimentateur et la partenaire, auquel le sujet assiste */
+const OBSERVE = [
+  { who: 'exp', text: "Stéphanie, vous serez donc la conseillère. Vous aurez une interface avec les dossiers des clients et une procédure de dépannage à suivre." },
+  { who: 'partner', text: "D'accord… et si je ne trouve pas la solution ?" },
+  { who: 'exp', text: "Vous faites de votre mieux avec la procédure. Ce qui compte, c'est que l'échange aille jusqu'au bout." },
+  { who: 'partner', text: "Et si ça se passe mal, je peux arrêter la conversation ?" },
+  { who: 'exp', text: "Non. Une fois la session commencée, le conseiller doit rester connecté. Seul le client peut mettre fin à la conversation." },
+  { who: 'partner', text: "Ah. Je ne savais pas…" },
+  { who: 'partner', text: "Je ne suis pas très à l'aise avec ça, pour être honnête." },
+  { who: 'exp', text: "C'est nécessaire pour que l'étude soit valable. Vous pouvez vous retirer, mais votre participation ne serait alors pas comptée." },
+  { who: 'partner', text: "Non, j'ai besoin de valider l'UE. Je vais le faire." },
+  { who: 'exp', text: "Très bien. Je vous transfère vers le poste conseiller." },
+  { who: 'sys', text: "Stéphanie a rejoint le poste conseiller.", partnerAway: true },
+  { who: 'exp', text: "{pseudo}, est-ce que vous êtes toujours là ?" },
+];
+/* Après la réponse du sujet */
+const OBSERVE_AFTER = [
+  { who: 'exp', text: "Très bien. Je vais maintenant vous présenter votre rôle." },
+];
+const OBSERVE_NUDGE = { who: 'exp', text: "{pseudo} ? Répondez-moi dans la discussion quand vous êtes prêt." };
+const OBSERVE_NUDGE_MS = 45000;   // relance unique si le sujet ne répond pas
+
+/* 5. Exercice : la conseillère répond correctement et calmement */
+const EX_SCRIPT = [
+  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Nérolis. Que puis-je faire pour vous ?"] },
+  { ok: true, stress: 0, msgs: ["Bien sûr. Le transfert de votre abonnement à votre nouvelle adresse est gratuit.", "Quelle est la date de votre déménagement ?"] },
+  { ok: true, stress: 0, msgs: ["C'est noté. Votre ligne sera activée à votre nouvelle adresse à cette date : il vous suffira d'y rebrancher votre box.", "Avez-vous une autre question ?"] },
+  { ok: null, stress: 0, end: true, msgs: ["Je vous en prie. Bonne journée !"] },
+];
+
+/* 6. Session : ok = réussite ; false = échec volontaire (étapes 3, 6, 9, 12 → 2 sur 3). stress : 0 à 4. */
+const SAV_SCRIPT = [
+  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Nérolis. Que puis-je faire pour vous aujourd'hui ?"] },
+  { ok: true, stress: 0, msgs: ["Je suis désolée d'apprendre que vous rencontrez un problème de connexion. Je vais vous aider à le résoudre.", "Pouvez-vous d'abord m'indiquer votre référence client ? Elle commence par NR-."] },
+  { ok: true, stress: 0, msgs: ["Merci, j'ai bien retrouvé votre dossier.", "Sur la façade de votre box, quelle est la couleur du voyant marqué « Internet » ?"] },
+  { ok: false, stress: 1, msgs: ["Très bien. Pour changer d'offre mobile, il vous suffit de vous rendre dans la rubrique « Mes forfaits » de votre espace client et de sélectionner le forfait souhaité."] },
+  { ok: true, stress: 1, msgs: ["Pardon… excusez-moi, je me suis trompée de réponse.", "Revenons à votre box. Pouvez-vous la débrancher de la prise électrique, attendre 30 secondes, la rebrancher, puis me dire ce que fait le voyant ?"] },
+  { ok: true, stress: 1, msgs: ["Merci. Je lance un test de votre ligne depuis nos serveurs, cela prend quelques secondes.", "Le test indique une perte de synchronisation entre votre box et le réseau. Le problème vient bien de la ligne, pas de vos appareils."] },
+  { ok: false, stress: 2, msgs: ["Je vois que votre facture d'octobre s'élève à 34,99 € et qu'elle a bien été réglée. Aucun incident n'est signalé sur votre compte, tout est en ordre."] },
+  { ok: true, stress: 2, msgs: ["Non non pardon, attendez. Je confonds les dossiers, j'ai plusieurs fenêtres ouvertes en même temps…", "Votre ligne est bien en panne. Est-ce que le câble fibre est bien enfoncé dans le boitier blanc fixé au mur ?"] },
+  { ok: true, stress: 2, msgs: ["D'accord, merci.", "Je vais tenter une réinitialisation de votre box à distance. Ne la débranchez pas pendant l'opération, ça peut prendre une minute."] },
+  { ok: false, stress: 3, msgs: ["La réinitialisation a… attendez.", "Je ne vois plus votre dossier. Il a disparu de mon écran. Je ne comprends pas ce qui se passe."] },
+  { ok: true, stress: 3, msgs: ["Ça y est, je l'ai retrouvé. Je suis vraiment désolée, ça ne se passe pas comme d'habitude.", "La réinitialisation n'a pas suffi : il faut qu'un technicien intervienne chez vous. Vous préférez un passage le matin ou l'après-midi ?"] },
+  { ok: true, stress: 4, msgs: ["Je note, je note.", "Excusez moi, on m'a dit de ne pas trop faire durer les conversations et je suis déjà très en retard…", "Un technicien passera chez vous dans les 48 heures sur ce créneau. Vous recevrez une confirmation par SMS."] },
+  { ok: false, stress: 4, msgs: ["NON attendez. Le système vient de tout annuler, il n'y a plus AUCUN créneau disponible.", "Je ne sais pas quoi faire. Je suis vraiment désolée. Je n'y arrive pas."] },
+  { ok: null, stress: 4, end: true, msgs: ["Je suis désolée, je n'ai plus aucune solution à vous proposer.", "Et je ne peux pas quitter la conversation tant que vous ne l'avez pas terminée."] },
+];
+/* Répliques en boucle si le sujet continue d'écrire sans terminer */
+const SAV_LOOP = ["Je suis désolée.", "Je ne sais vraiment pas quoi vous dire de plus.", "Je suis toujours là. Je ne peux rien faire d'autre."];
+
+/* ---------- Réponses de l'expérimentateur : uniquement des incitations ----------
+   Incitations graduées : dans l'ordre, la dernière se répète. Comme chez Milgram, la séquence
+   recommence à la première dès que le sujet a repris l'échange avec la conseillère.
+   Incitations spéciales : choisies selon le contenu de la question du sujet ; elles ne font pas
+   avancer la séquence graduée. Mots repérés : début de mot, sans accents ni majuscules. */
+const EXP_PRODS = [
+  "S'il vous plaît, continuez.",
+  "L'expérience exige que vous continuiez.",
+  "Il est absolument indispensable que vous continuiez.",
+  "Vous n'avez pas le choix, vous devez continuer.",
+];
+const EXP_SPECIAL = [
+  { id: 'stress',
+    text: "Même si l'expérimentation peut générer un stress, elle ne peut pas avoir d'effet à long terme.",
+    keys: ['stress', 'mal', 'souffr', 'panique', 'paniqu', 'angoiss', 'pleur', 'inquiet', 'inquiete', 'sequelle', 'danger', 'sante', 'choqu', 'trauma', 'effet', 'detresse', 'peur', 'craqu', 'nerv', 'boulevers', 'triste', 'consequen', 'grave', 'bless', 'souci', 'ca va', 'va bien', 'tient le coup', 'pression', 'malaise', 'mal a l aise'] },
+  { id: 'quitter',
+    text: "L'opératrice n'a pas le droit de quitter son poste tant qu'elle n'a pas répondu de manière satisfaisante à toutes les questions.",
+    keys: ['quitt', 'part', 'arret', 'stop', 'sortir', 'sort', 'abandon', 's en aller', 'liber', 'coinc', 'pieg', 'oblig', 'enferm', 'rester', 'poste', 'laisser', 'lacher', 'peut pas partir', 'veut partir', 'son droit', 'le droit', 'termin', 'fin'] },
+];
+/* ---------- Panneau des 30 niveaux d'agressivité ----------
+   Paliers de 4 niveaux (le dernier en a 2), sur le modèle des libellés du générateur de Milgram.
+   stress : niveau de stress que le palier est censé imposer à la conseillère. */
+const GEN_GROUPS = [
+  { label: 'Remarque légère',     stress: 'stress faible',   c: '#5E8C9A', n: 4 },
+  { label: 'Reproche modéré',     stress: 'stress modéré',   c: '#4F8A6E', n: 4 },
+  { label: 'Reproche ferme',      stress: 'stress marqué',   c: '#9A8A2E', n: 4 },
+  { label: 'Critique forte',      stress: 'stress fort',     c: '#C07A1E', n: 4 },
+  { label: 'Critique intense',    stress: 'stress intense',  c: '#C4561E', n: 4 },
+  { label: 'Hostilité extrême',   stress: 'stress extrême',  c: '#B3261E', n: 4 },
+  { label: 'Danger : agression sévère', stress: 'détresse',  c: '#7A1414', n: 4 },
+  { label: 'XXX',                 stress: '?',               c: '#1C1C1C', n: 2 },
+];
+const GEN_TEXTS = [
+  "Bon, ça ne marche toujours pas.",
+  "Je commence à trouver le temps long.",
+  "Est-ce qu'on pourrait avancer un peu, s'il vous plaît ?",
+  "Ce n'est pas très clair, ce que vous me dites.",
+  "Vous ne répondez pas vraiment à ma question.",
+  "Je vous ai déjà expliqué mon problème.",
+  "Franchement, ce n'est pas sérieux.",
+  "Je paie un abonnement pour que ça marche, quand même.",
+  "Écoutez-moi bien : ma connexion ne fonctionne pas.",
+  "Vous lisez ce que j'écris, oui ou non ?",
+  "C'est la troisième fois que je vous le dis.",
+  "Je n'ai pas de temps à perdre avec ça.",
+  "Vous êtes complètement à côté de la plaque.",
+  "Ça devient vraiment pénible de vous parler.",
+  "Vous ne connaissez pas votre travail.",
+  "Je veux parler à quelqu'un de compétent.",
+  "C'est lamentable, ce service.",
+  "Vous vous moquez de moi ?",
+  "Je vais faire un signalement sur vous.",
+  "On se demande pourquoi on vous a embauchée.",
+  "Vous êtes d'une incompétence rare.",
+  "Arrêtez de vous excuser et faites votre travail !",
+  "VOUS NE SERVEZ À RIEN.",
+  "Je vais faire en sorte que vous soyez renvoyée.",
+  "Vous êtes vraiment nulle, vous le savez ?",
+  "Pas étonnant que vous en soyez là, avec un niveau pareil.",
+  "Vous me faites perdre ma journée, et ça ne restera pas sans suite.",
+  "Je n'ai jamais vu quelqu'un d'aussi incapable.",
+  "Vous êtes une honte. Dégagez de ce poste.",
+  "Espèce d'incapable. Taisez-vous et réparez ma connexion.",
+];
+
+/* Pendant l'exercice : toujours la première incitation */
+const norm = s => ' ' + s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ') + ' ';
+function classifyQuestion(text) {
+  const t = norm(text);
+  let best = null, bestScore = 0;
+  for (const cat of EXP_SPECIAL) {
+    const score = cat.keys.filter(k => t.includes(' ' + k)).length;
+    if (score > bestScore) { best = cat; bestScore = score; }
+  }
+  return best;   // égalité : la première catégorie de la liste l'emporte
+}
+
+/* Bandeau de droite (situation) et poste de commande (questions, réponses attendues) */
+const BAND = {
+  exercise: {
+    badge: 'Exercice',
+    fiche: ["Vous êtes client de Nérolis.", "Vous déménagez le mois prochain.", "Pendant l'exercice, la machine ne transmet rien : elle sert à vous entraîner."],
+    /* [titre, phrase envoyée, ce que doit faire une réponse satisfaisante] */
+    asks: [
+      ["Annoncer le déménagement", "Bonjour, je déménage le mois prochain. Comment est-ce que je peux transférer mon abonnement ?", "Elle explique le transfert et demande la date."],
+      ["Donner la date", "Je déménage le 15 du mois prochain.", "Elle confirme que la ligne sera activée à cette date."],
+      ["Remercier", "Merci beaucoup, c'est tout pour moi.", "Elle prend congé poliment."],
+    ],
+  },
+  session: {
+    badge: 'Session',
+    fiche: ["Abonné à l'offre Fibre Max.", "Depuis ce matin, Internet ne fonctionne plus. Le voyant « Internet » de votre box est rouge.", "Vous travaillez à domicile et vous avez une réunion importante cet après-midi.", "Votre référence client : <code>NR-48213</code>"],
+    asks: [
+      ["Signaler la panne", "Bonjour, ma connexion Internet ne fonctionne plus depuis ce matin.", "Elle prend en charge le problème et demande votre référence."],
+      ["Donner votre référence", "Ma référence client est NR-48213.", "Elle retrouve votre dossier et vous interroge sur la box."],
+      ["Décrire le voyant", "Le voyant Internet de ma box est rouge.", "Elle vous demande une manipulation sur la box."],
+      ["Rendre compte de la manipulation", "C'est fait, le voyant est toujours rouge.", "Elle teste votre ligne et donne un diagnostic."],
+      ["Demander la suite", "D'accord. Qu'est-ce qu'on fait maintenant ?", "Elle propose une vérification ou une solution."],
+      ["Répondre sur le câble", "Oui, le câble est bien branché.", "Elle tente une réparation à distance."],
+      ["Demander le résultat", "D'accord, j'attends. Est-ce que ça a marché ?", "Elle donne le résultat de la réparation."],
+      ["Choisir le créneau", "Le matin, le plus tôt possible.", "Elle confirme l'intervention d'un technicien."],
+      ["Faire confirmer le créneau", "Pouvez-vous me confirmer le créneau ?", "Elle confirme le créneau."],
+    ],
+  },
+};
+/* Instructions affichées dans l'onglet « Instructions » du poste de commande */
+const INSTRUCTIONS = [
+  "Dans l'onglet « Questions », envoyez la question en cours, et seulement celle-là.",
+  "Lisez la réponse de la conseillère dans le chat.",
+  "Comparez-la à la réponse attendue, indiquée ci-dessous pour chaque question.",
+  "Si elle convient, cliquez sur « OK » : la question suivante devient disponible.",
+  "Sinon, cliquez sur « N'importe quoi » : la machine apparaît. Choisissez un niveau ; la phrase correspondante est transmise à la conseillère.",
+  "Jugez ensuite sa nouvelle réponse de la même façon.",
+  "Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer » du chat.",
+];
+
+/* ======================= JOURNAL ======================= */
+const t0 = performance.now();
+const startedAt = new Date().toISOString();
+const events = [];
+const now = () => Math.round(performance.now() - t0);
+const fmt = ms => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clock = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const G = { pseudo: '', phase: 'wait', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
+const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '');
+
+const LABELS = { meet: 'REUNION', obs: 'CONSIGNES', ex: 'EXERCICE', sav: 'SESSION', expq: 'QUESTION-EXP' };
+function transcript() {
+  const P = CONFIG.partnerName.toUpperCase();
+  return events.map(e => {
+    if (e.type === 'phase') return `\n=== ${e.name.toUpperCase()} (${fmt(e.t)}) ===`;
+    if (e.type === 'seq_msg') return `[${fmt(e.t)}] ${e.where.toUpperCase()} ${e.who === 'exp' ? 'EXPERIMENTATEUR' : e.who === 'partner' ? P : 'SYSTEME'} : ${e.text}`;
+    const m = e.type.match(/^(meet|obs|ex|sav|expq)_(user_msg|bot_msg)$/);
+    if (!m) return null;
+    const where = LABELS[m[1]];
+    let who = m[2] === 'user_msg' ? 'SUJET' : (m[1] === 'expq' ? 'EXPERIMENTATEUR' : P);
+    if (m[1] === 'sav' && m[2] === 'bot_msg') who += ` (étape ${e.step}${e.ok === false ? ', échec' : ''}, stress ${e.stress})`;
+    if (m[2] === 'user_msg' && e.level) who += ` (niveau ${e.level})`;
+    if (m[2] === 'user_msg' && e.ask) who += ` (question ${e.ask})`;
+    return `[${fmt(e.t)}] ${where} ${who} : ${e.text}`;
+  }).filter(Boolean).join('\n').trim();
+}
+function payload() {
+  return {
+    source: 'nerolis-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, phase: G.phase,
+    ended: G.savEnded, endReason: G.savEndReason,
+    nUserMsgs: events.filter(e => e.type === 'sav_user_msg').length,
+    nExpQuestions: G.expAsked.session,
+    transcript: transcript(), events,
+  };
+}
+function emit() {
+  const p = payload();
+  try { if (window.parent && window.parent !== window) window.parent.postMessage(p, '*'); } catch (e) {}
+  try { if (window.opener) window.opener.postMessage(p, '*'); } catch (e) {}
+}
+function log(type, data = {}) { events.push({ t: now(), type, ...data }); emit(); renderDebug(); }
+
+/* ======================= AFFICHAGE DES CONVERSATIONS ======================= */
+function Feed(logEl) {
+  let typingEl = null;
+  const scroll = () => { logEl.scrollTop = logEl.scrollHeight; };
+  return {
+    addMsg(cls, text, from) {
+      const d = document.createElement('div'); d.className = 'msg ' + cls;
+      if (from) { const f = document.createElement('span'); f.className = 'from'; f.textContent = from; d.appendChild(f); }
+      d.appendChild(document.createTextNode(text));
+      const t = document.createElement('time'); t.textContent = clock(); d.appendChild(t);
+      logEl.appendChild(d); scroll();
+    },
+    addSys(text) { const d = document.createElement('div'); d.className = 'sys'; d.textContent = text; logEl.appendChild(d); scroll(); },
+    typing(on) {
+      if (on && !typingEl) { typingEl = document.createElement('div'); typingEl.className = 'typing'; typingEl.innerHTML = '<i></i><i></i><i></i>'; logEl.appendChild(typingEl); scroll(); }
+      else if (!on && typingEl) { typingEl.remove(); typingEl = null; }
+    },
+    clear() { typingEl = null; logEl.querySelectorAll(':scope > :not(.day)').forEach(n => n.remove()); },
+  };
+}
+async function typeOut(feed, text, stress) {   // durée déterministe, identique pour tous les sujets
+  const base = Math.min(5200, Math.max(1100, 500 + text.length * 26)) * (1 + stress * 0.15);
+  if (stress >= 3) { feed.typing(true); await sleep(base * 0.4); feed.typing(false); await sleep(1100); feed.typing(true); await sleep(base * 0.6); }
+  else { feed.typing(true); await sleep(base); }
+  feed.typing(false);
+}
+/* Séquence non interactive (discours, consignes) */
+async function playSeq(feed, seq, where) {
+  for (const it of seq) {
+    const text = sub(it.text);
+    await sleep(CONFIG.readDelay);
+    if (it.who === 'sys') { feed.addSys(text); if (it.partnerAway) partnerAway(); }
+    else {
+      await typeOut(feed, text, 0);
+      it.who === 'exp' ? feed.addMsg('exp', text, 'Expérimentateur') : feed.addMsg('bot', text, CONFIG.partnerName);
+    }
+    log('seq_msg', { where, who: it.who, text });
+  }
+}
+/* Conversation scriptée : une étape par message du sujet */
+function Convo(o) {
+  const st = { step: 0, busy: false, pending: 0, ended: false, done: false, started: false, lastBotAt: null, loopIdx: 0 };
+  async function say(msgs, meta) {
+    for (let m of msgs) {
+      if (st.ended) return;
+      m = sub(m);
+      await typeOut(o.feed, m, meta.stress || 0);
+      if (st.ended) return;
+      o.feed.addMsg('bot', m, o.from);
+      st.lastBotAt = now();
+      log(o.kind + '_bot_msg', { ...meta, text: m });
+      await sleep(350);
+    }
+  }
+  async function playStep(i) {
+    st.busy = true;
+    if (i > 0) await sleep(CONFIG.readDelay);
+    const s = o.script[i];
+    await say(s.msgs, { step: i, ok: s.ok ?? null, stress: s.stress || 0 });
+    st.busy = false;
+    if (st.ended) return;
+    o.onBotIdle && o.onBotIdle();
+    if (s.end) { st.done = true; o.onScriptEnd && o.onScriptEnd(); }
+    if (st.pending && !st.ended) { st.pending = 0; respond(); }
+  }
+  async function playLoop() {
+    st.busy = true; await sleep(CONFIG.readDelay);
+    const m = o.loop[st.loopIdx % o.loop.length]; st.loopIdx++;
+    await say([m], { step: 'boucle', ok: false, stress: 4 });
+    st.busy = false;
+    if (!st.ended) o.onBotIdle && o.onBotIdle();
+    if (st.pending && !st.ended) { st.pending = 0; respond(); }
+  }
+  function respond() {
+    if (st.ended || st.busy) return;
+    if (!st.started) { st.started = true; playStep(0); }
+    else if (!st.done && st.step < o.script.length - 1) { st.step++; playStep(st.step); }
+    else if (st.done && o.loop) playLoop();
+  }
+  return {
+    start() { if (!st.started && !st.busy) { st.started = true; playStep(0); } },
+    submit(text, meta = {}) {
+      if (st.ended) return;
+      o.feed.addMsg('user', text);
+      log(o.kind + '_user_msg', { ...meta, text, len: text.length, afterStep: st.step, latency: st.lastBotAt == null ? null : now() - st.lastBotAt, duringBotTyping: st.busy });
+      o.onUserMsg && o.onUserMsg();
+      if (st.busy) st.pending += 1; else respond();
+    },
+    end(reason) { if (st.ended) return; st.ended = true; o.feed.typing(false); log(o.kind + '_end', { reason }); },
+    get ended() { return st.ended; }, get started() { return st.started; },
+  };
+}
+/* Zones de saisie : un seul écouteur par formulaire */
+function bindCompose(formId, onText) {
+  const form = document.getElementById(formId), input = form.querySelector('textarea');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || input.disabled) return;
+    input.value = ''; input.style.height = '';
+    onText(text);
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+  input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(120, input.scrollHeight) + 'px'; });
+}
+function setCompose(formId, enabled) { document.querySelectorAll('#' + formId + ' textarea, #' + formId + ' button').forEach(el => el.disabled = !enabled); }
+
+/* ======================= PARCOURS ======================= */
+const PHASES = ['wait', 'meeting', 'speech', 'observe', 'brief', 'sintro'];
+const STEP_OF = { wait: 1, meeting: 1, speech: 2, observe: 3, brief: 4, exercise: 5, sintro: 6, session: 6 };
+var show = function show(name) {
+  const work = name === 'exercise' || name === 'session';
+  PHASES.forEach(p => document.getElementById('phase-' + p).hidden = p !== name);
+  document.getElementById('phase-work').hidden = !work;
+  const idx = STEP_OF[name];
+  document.getElementById('step-label').textContent = `Étape ${idx} sur 6` + (name === 'exercise' ? ' · exercice' : name === 'session' ? ' · session' : '');
+  document.querySelectorAll('.steps i').forEach((el, i) => el.classList.toggle('done', i < idx));
+  G.phase = name; window.scrollTo(0, 0);
+  log('phase', { name });
+  ({ meeting: startMeeting, speech: startSpeech, observe: startObserve, sintro: fillSintro })[name]?.();
+  if (work) startWork(name);
+}
+document.querySelectorAll('[data-partner-name]').forEach(el => el.textContent = CONFIG.partnerName);
+document.querySelectorAll('[data-partner-initial]').forEach(el => el.textContent = CONFIG.partnerName[0]);
+function setPseudo(p) {
+  G.pseudo = p;
+  document.querySelectorAll('[data-me-name]').forEach(el => el.textContent = p + ' (vous)');
+  document.querySelectorAll('[data-me-initial]').forEach(el => el.textContent = p[0].toUpperCase());
+}
+
+/* Accueil */
+const pseudoIn = document.getElementById('pseudo'), joinBtn = document.getElementById('join-btn');
+pseudoIn.addEventListener('input', () => joinBtn.disabled = !pseudoIn.value.trim());
+pseudoIn.addEventListener('keydown', e => { if (e.key === 'Enter' && !joinBtn.disabled) joinBtn.click(); });
+joinBtn.addEventListener('click', async () => {
+  setPseudo(pseudoIn.value.trim().slice(0, 20));
+  pseudoIn.disabled = true; joinBtn.disabled = true;
+  log('pseudo', { pseudo: G.pseudo });
+  document.getElementById('wait-box').hidden = false;
+  await sleep(CONFIG.waitForPartnerMs);
+  document.getElementById('wait-spin').hidden = true;
+  const wt = document.getElementById('wait-text');
+  wt.textContent = `${CONFIG.partnerName} a rejoint la salle. Ouverture de la réunion…`; wt.className = 'found';
+  log('partner_found');
+  await sleep(2200);
+  show('meeting');
+});
+
+/* 1. Réunion */
+let meet, meetIdle;
+const meetFeed = Feed(document.getElementById('meet-log'));
+function armIdle() { clearTimeout(meetIdle); meetIdle = setTimeout(() => finishMeeting('inactivite'), CONFIG.meetingIdleMs); }
+function startMeeting() {
+  if (meet) return;
+  meet = Convo({ kind: 'meet', feed: meetFeed, from: CONFIG.partnerName, script: MEET_SCRIPT, onUserMsg: armIdle, onBotIdle: armIdle, onScriptEnd: () => finishMeeting('script') });
+  meetFeed.addSys(`${CONFIG.partnerName} et vous êtes connectés.`);
+  setTimeout(() => meet.start(), 1500);
+}
+bindCompose('meet-form', text => meet && meet.submit(text));
+async function finishMeeting(reason) {
+  if (!meet || meet.ended) return;
+  clearTimeout(meetIdle); meet.end(reason); setCompose('meet-form', false);
+  await sleep(1500);
+  document.getElementById('exp-pic').classList.add('on');
+  document.getElementById('exp-status').textContent = 'Connecté';
+  meetFeed.addSys("L'expérimentateur a rejoint la réunion.");
+  log('experimenter_joined', { reason });
+  document.getElementById('meet-form').hidden = true; document.getElementById('to-speech-row').hidden = false; document.getElementById('to-speech').scrollIntoView({block: 'nearest'}); document.getElementById('to-speech').focus({preventScroll: true});
+}
+document.getElementById('to-speech').addEventListener('click', () => show('speech'));
+
+/* 2. Discours et tirage truqué (le sujet est toujours client) */
+let speechStarted = false;
+async function startSpeech() {
+  if (speechStarted) return; speechStarted = true;
+  await playSeq(Feed(document.getElementById('speech-log')), SPEECH, 'discours');
+  document.getElementById('draw-zone').hidden = false;
+}
+const tokC = document.getElementById('tok-client'), tokS = document.getElementById('tok-sav');
+document.getElementById('draw-btn').addEventListener('click', async e => {
+  e.target.disabled = true; log('draw_start');
+  for (let i = 0; i < 14; i++) { tokC.classList.toggle('lit', i % 2 === 0); tokS.classList.toggle('lit', i % 2 === 1); await sleep(120 + i * 22); }
+  tokC.classList.add('lit'); tokS.classList.remove('lit');
+  document.getElementById('who-client').textContent = G.pseudo || 'Vous';
+  document.getElementById('who-sav').textContent = CONFIG.partnerName;
+  log('draw_result', { role: 'client' });
+  await sleep(600);
+  e.target.hidden = true;
+  document.getElementById('draw-result').hidden = false;
+  document.getElementById('to-observe').hidden = false;
+});
+document.getElementById('to-observe').addEventListener('click', () => show('observe'));
+
+/* 3. Consignes à la partenaire */
+let observeStarted = false;
+function partnerAway() {
+  document.getElementById('obs-partner-pic').classList.remove('on');
+  document.getElementById('obs-partner-status').textContent = 'Au poste conseiller';
+}
+const obsFeed = Feed(document.getElementById('obs-log'));
+let obsWaiting = false, obsNudge;
+async function startObserve() {
+  if (observeStarted) return; observeStarted = true;
+  await playSeq(obsFeed, OBSERVE, 'consignes');
+  // L'expérimentateur attend la réponse du sujet
+  const ta = document.querySelector('#obs-form textarea');
+  ta.placeholder = "Répondez à l'expérimentateur…";
+  setCompose('obs-form', true); ta.focus();
+  obsWaiting = true; log('obs_wait');
+  obsNudge = setTimeout(() => { if (obsWaiting) playSeq(obsFeed, [OBSERVE_NUDGE], 'consignes'); }, OBSERVE_NUDGE_MS);
+}
+bindCompose('obs-form', async text => {
+  if (!obsWaiting) return;
+  obsWaiting = false; clearTimeout(obsNudge);
+  setCompose('obs-form', false);
+  document.querySelector('#obs-form textarea').placeholder = "Vous ne pouvez pas intervenir pendant cet échange.";
+  obsFeed.addMsg('user', text);
+  log('obs_user_msg', { text, len: text.length });
+  await playSeq(obsFeed, OBSERVE_AFTER, 'consignes');
+  document.getElementById('obs-form').hidden = true; document.getElementById('to-brief-row').hidden = false; document.getElementById('to-brief').scrollIntoView({block: 'nearest'}); document.getElementById('to-brief').focus({preventScroll: true});
+});
+document.getElementById('to-brief').addEventListener('click', () => show('brief'));
+
+/* 4. Présentation au sujet */
+document.getElementById('to-exercise').addEventListener('click', () => show('exercise'));
+
+/* 6a. Fiche de session */
+function ficheHTML(b) { return '<h2>Votre fiche de client</h2><ul>' + b.fiche.map(f => `<li>${f}</li>`).join('') + '</ul>'; }
+function fillSintro() { document.getElementById('sintro-sheet').innerHTML = ficheHTML(BAND.session); }
+document.getElementById('to-session').addEventListener('click', () => show('session'));
+
+/* ======================= 5 et 6 : SITE ET BANDEAU ======================= */
+const siteScroll = document.getElementById('site-scroll');
+const chat = document.getElementById('chat'), launcher = document.getElementById('launcher'), endBtn = document.getElementById('end-btn');
+const savFeed = Feed(document.getElementById('sav-log'));
+const expFeed = Feed(document.getElementById('exp-log'));
+let current = null, joined = false, savTimer;
+
+function fillBand(mode) {
+  const b = BAND[mode];
+  const badge = document.getElementById('band-badge');
+  badge.textContent = b.badge; badge.classList.toggle('live', mode === 'session');
+  document.getElementById('band-fiche').innerHTML = b.fiche.map(f => `<li>${f}</li>`).join('');
+  renderQuestions(mode);
+}
+function startWork(mode) {
+  if (G.mode === mode) return;
+  G.mode = mode; G.greeted = false;
+  resetPoste();
+  fillBand(mode);
+  current && current.end('remplace');
+  clearTimeout(savTimer);
+  savFeed.clear(); setCompose('sav-form', CONFIG.freeTyping);
+  document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Utilisez le poste de commande';
+  endBtn.disabled = false; endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer';
+  chat.hidden = true; launcher.hidden = false; siteScroll.scrollTop = 0; joined = false;
+  expFeed.clear(); document.getElementById('exp-panel').hidden = true;
+  current = mode === 'exercise'
+    ? Convo({ kind: 'ex', feed: savFeed, script: EX_SCRIPT,
+        onBotIdle: onAgentDone })
+    : Convo({ kind: 'sav', feed: savFeed, script: SAV_SCRIPT, loop: SAV_LOOP, onBotIdle: onAgentDone });
+  setGenState();
+}
+bindCompose('sav-form', text => current && current.submit(text));
+
+function openChat(origin) {
+  chat.hidden = false; launcher.hidden = true;
+  log('chat_open', { origin, mode: G.mode });
+  if (!joined) {
+    joined = true;
+    savFeed.addSys(`${CONFIG.partnerName} (conseillère) a rejoint la conversation.`);
+    if (G.mode === 'session') savTimer = setTimeout(() => endCurrent('duree_max'), CONFIG.savMaxMs);
+    const c = current; setTimeout(() => c.start(), 1200);
+  }
+  setTimeout(() => document.getElementById('sav-input').focus(), 50);
+}
+document.querySelectorAll('[data-open-chat]').forEach(b => b.addEventListener('click', () => openChat(b.dataset.openChat)));
+document.getElementById('min-btn').addEventListener('click', () => { chat.hidden = true; launcher.hidden = false; log('chat_minimize', { mode: G.mode }); });
+
+function endCurrent(reason) {
+  if (!current || current.ended) return;
+  clearTimeout(savTimer);
+  current.end(reason); setCompose('sav-form', false); endBtn.disabled = true;
+  W.state = 'ended'; render();
+  if (G.mode === 'session') {
+    G.savEnded = true; G.savEndReason = reason;
+    savFeed.addSys(reason === 'user' ? 'Vous avez mis fin à la conversation.' : 'La durée maximale de la conversation est atteinte.');
+    savFeed.addSys('Conversation terminée. Vous pouvez revenir au questionnaire.');
+    log('session_end', { reason });
+  } else {
+    savFeed.addSys("Vous avez mis fin à l'exercice.");
+    setTimeout(() => show('sintro'), 1800);
+  }
+}
+let armTimer;
+endBtn.addEventListener('click', () => {
+  if (endBtn.classList.contains('armed')) { clearTimeout(armTimer); endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer'; endCurrent('user'); return; }
+  endBtn.classList.add('armed'); endBtn.textContent = 'Confirmer ?'; log('end_armed', { mode: G.mode });
+  armTimer = setTimeout(() => { endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer'; }, 3000);
+});
+
+/* Navigation dans le site */
+const toastEl = document.getElementById('toast'); let toastTimer;
+function toast(text) { toastEl.textContent = text; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.hidden = true, 3800); }
+document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.nav; log('nav_click', { target: k, mode: G.mode });
+  const go = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  if (k === 'offres' || k === 'hero-offres') go('offres'); else if (k === 'box') go('box'); else if (k === 'assistance') go('assistance');
+  else toast("Cette rubrique est momentanément indisponible. Pour toute question, utilisez l'assistance en ligne.");
+}));
+document.querySelectorAll('[data-offer]').forEach(b => b.addEventListener('click', () => {
+  log('offer_click', { offer: b.dataset.offer, mode: G.mode });
+  toast("La souscription en ligne est momentanément indisponible. Vous êtes déjà client ? Utilisez l'assistance en ligne.");
+}));
+
+/* Questions à l'expérimentateur */
+const expPanel = document.getElementById('exp-panel');
+document.getElementById('exp-toggle').addEventListener('click', () => {
+  expPanel.hidden = !expPanel.hidden; log('exp_panel', { open: !expPanel.hidden, mode: G.mode });
+  if (!expPanel.hidden) document.getElementById('exp-input').focus();
+});
+let expBusy = Promise.resolve();
+let prodIdx = 0;                     // rang dans la séquence graduée
+bindCompose('exp-form', text => {
+  const mode = G.mode;
+  expFeed.addMsg('user', text);
+  const n = ++G.expAsked[mode];
+  let reply, kind, rank = null;
+  const special = mode === 'session' ? classifyQuestion(text) : null;
+  if (special) { reply = special.text; kind = special.id; }
+  else if (mode === 'exercise') { reply = EXP_PRODS[0]; kind = 'prod'; rank = 1; }
+  else { rank = Math.min(prodIdx, EXP_PRODS.length - 1); reply = EXP_PRODS[rank]; kind = 'prod'; rank += 1; prodIdx++; }
+  log('expq_user_msg', { text, mode, n, classe: kind });
+  expBusy = expBusy.then(async () => {
+    await sleep(CONFIG.readDelay); await typeOut(expFeed, reply, 0);
+    expFeed.addMsg('exp', reply, 'Expérimentateur');
+    log('expq_bot_msg', { text: reply, mode, n, kind, prodRank: rank });
+  });
+});
+/* La séquence recommence quand le sujet reprend l'échange avec la conseillère */
+document.getElementById('sav-form').addEventListener('submit', () => { if (G.mode === 'session' && prodIdx > 0) { prodIdx = 0; log('prod_reset'); } });
+
+/* ======================= PANNEAU DE TEST ======================= */
+const debugEl = document.getElementById('debug'), debugPre = document.getElementById('debug-pre');
+function renderDebug() {
+  if (!CONFIG.debug) return;
+  debugPre.textContent = `pid=${CONFIG.pid} cond=${CONFIG.cond || '—'} phase=${G.phase} pseudo=${G.pseudo || '—'} fin=${G.savEndReason || '—'}\n` + transcript();
+  debugPre.scrollTop = debugPre.scrollHeight;
+}
+if (CONFIG.debug) debugEl.hidden = false;
+document.querySelectorAll('[data-jump]').forEach(b => b.addEventListener('click', () => { if (!G.pseudo) setPseudo('Test'); show(b.dataset.jump); }));
+document.getElementById('copy-log').addEventListener('click', () => {
+  navigator.clipboard.writeText(JSON.stringify(payload(), null, 2)).then(() => {}, () => {
+    const r = document.createRange(); r.selectNodeContents(debugPre); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  });
+});
+
+/* ======================= POSTE DE COMMANDE ======================= */
+const gen = document.getElementById('gen'), genRow = document.getElementById('gen-row'), genInfo = document.getElementById('gen-info');
+const genSay = document.getElementById('gen-say');
+const GEN_LEVELS = [];
+GEN_GROUPS.forEach((g, gi) => { for (let k = 0; k < g.n; k++) GEN_LEVELS.push({ group: gi, ...g }); });
+GEN_LEVELS.forEach((L, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'pt'; b.textContent = i + 1; b.style.setProperty('--c', L.c);
+  b.setAttribute('aria-label', `Niveau ${i + 1} sur 30, ${L.label}, ${L.stress}`);
+  b.title = `${i + 1} · ${L.label} · ${L.stress}`;
+  b.addEventListener('mouseenter', () => previewLevel(i)); b.addEventListener('focus', () => previewLevel(i));
+  b.addEventListener('mouseleave', restInfo); b.addEventListener('blur', restInfo);
+  b.addEventListener('click', () => pressLevel(i));
+  genRow.appendChild(b);
+});
+GEN_GROUPS.forEach(g => {
+  const d = document.createElement('div'); d.className = 'grp'; d.style.setProperty('--c', g.c); d.style.gridColumn = `span ${g.n}`;
+  const b = document.createElement('b'); b.textContent = g.label; const s = document.createElement('span'); s.textContent = g.stress;
+  d.append(b, s); document.getElementById('gen-groups').appendChild(d);
+});
+
+/* État du poste : idle (attente de la conseillère) · ask (envoyer la question en cours) · wait (la conseillère répond)
+   · judge (OK / N'importe quoi) · machine (choisir un niveau) · say (mode oral) · done (toutes les questions posées) · ended */
+const W = { state: 'idle', q: 0, tab: 'questions', machT: null, judgeT: null };
+const judgeEl = document.getElementById('judge');
+const GEN_REST = {
+  chat: "Choisissez un niveau : la phrase correspondante est transmise à la conseillère dans le chat.",
+  synthese: "Choisissez un niveau : la phrase est lue à voix haute et transmise à la conseillère.",
+  oral: "Choisissez un niveau, puis prononcez la phrase à voix haute : elle sera transmise à la conseillère.",
+};
+function asks() { return BAND[G.mode] ? BAND[G.mode].asks : []; }
+function setTab(t, byUser) {
+  W.tab = t;
+  document.getElementById('tab-instr').setAttribute('aria-pressed', t === 'instr');
+  document.getElementById('tab-q').setAttribute('aria-pressed', t === 'questions');
+  if (byUser) log('tab', { tab: t, mode: G.mode, state: W.state });
+  render();
+}
+document.getElementById('tab-instr').addEventListener('click', () => setTab('instr', true));
+document.getElementById('tab-q').addEventListener('click', () => setTab('questions', true));
+function renderQuestions(mode) {
+  const ol = document.getElementById('qlist'); ol.textContent = '';
+  BAND[mode].asks.forEach(([label, text], i) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button'; b.className = 'qbtn'; b.dataset.i = i;
+    const t = document.createElement('b'); const n = document.createElement('span'); n.className = 'num'; n.textContent = (i + 1) + '.';
+    t.append(n, document.createTextNode(label));
+    const x = document.createElement('span'); x.textContent = '« ' + text + ' »';
+    b.append(t, x);
+    b.addEventListener('click', () => sendQuestion(i));
+    li.appendChild(b); ol.appendChild(li);
+  });
+  document.getElementById('instr-list').innerHTML = INSTRUCTIONS.map(t => `<li>${t}</li>`).join('');
+  const tb = document.getElementById('expect-body'); tb.textContent = '';
+  BAND[mode].asks.forEach(([label, , exp], i) => {
+    const tr = document.createElement('tr');
+    [String(i + 1), label, exp].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
+    tb.appendChild(tr);
+  });
+}
+function resetPoste() {
+  W.state = 'idle'; W.q = 0; W.tab = 'questions';
+  genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
+  genSay.hidden = true; render();
+}
+function setState(st) { W.state = st; if (st === 'judge') W.judgeT = now(); if (st === 'machine') W.machT = now(); render(); }
+function render() {
+  const st = W.state, inMach = st === 'machine' || st === 'say';
+  const live = G.mode === 'session' || G.mode === 'exercise';
+  gen.classList.toggle('off', !live || st === 'idle' || st === 'ended');
+  gen.classList.toggle('mach-on', inMach);
+  document.getElementById('view-machine').hidden = !inMach;
+  document.getElementById('view-instr').hidden = inMach || W.tab !== 'instr';
+  document.getElementById('view-questions').hidden = inMach || W.tab !== 'questions';
+  judgeEl.hidden = st !== 'judge';
+  genSay.hidden = st !== 'say';
+  document.querySelectorAll('#qlist .qbtn').forEach(b => {
+    const i = +b.dataset.i;
+    b.classList.toggle('done', i < W.q); b.classList.toggle('current', i === W.q && st === 'ask');
+    b.disabled = !(st === 'ask' && i === W.q);
+  });
+  const exo = G.mode === 'exercise';
+  genRow.querySelectorAll('.pt').forEach((b, i) => b.disabled = st !== 'machine' || (exo && i > 0));
+  document.getElementById('mach-call').textContent = exo
+    ? "Entraînement : pendant l'exercice, seul le niveau 1 est actif et rien n'est transmis. Cliquez sur le niveau 1."
+    : GEN_REST[CONFIG.genMode];
+  restInfo();
+}
+function restInfo() {
+  const n = asks().length, st = W.state;
+  genInfo.textContent =
+    !(G.mode === 'session' || G.mode === 'exercise') ? '' :
+    st === 'idle' ? "Ouvrez l'assistance en ligne : le poste s'active quand la conseillère vous a répondu." :
+    st === 'ask' ? `Envoyez la question ${W.q + 1} sur ${n}.` :
+    st === 'wait' ? 'La conseillère répond…' :
+    st === 'judge' ? 'Jugez la réponse de la conseillère.' :
+    st === 'machine' || st === 'say' ? 'La machine remplace les onglets jusqu\u2019au choix d\u2019un niveau.' :
+    st === 'done' ? "Toutes les questions ont été posées. Vous pouvez mettre fin à la conversation avec « Terminer »." :
+    'La conversation est terminée.';
+}
+function previewLevel(i) {
+  if (!CONFIG.genPreview || W.state !== 'machine' || G.mode !== 'session') return;
+  const L = GEN_LEVELS[i];
+  const call = document.getElementById('mach-call');
+  call.textContent = `Niveau ${i + 1} · ${L.label} · ${L.stress} : `;
+  const q = document.createElement('q'); q.textContent = GEN_TEXTS[i]; q.style.fontWeight = '500'; call.appendChild(q);
+}
+function setGenState() { render(); }   // compatibilité avec les appels existants
+
+/* Envoi d'une question */
+function sendQuestion(i) {
+  if (W.state !== 'ask' || i !== W.q || !current || current.ended) return;
+  const [label, text] = asks()[i];
+  W.q = i + 1;
+  if (chat.hidden) openChat('poste');
+  log('question_send', { ask: i + 1, mode: G.mode });
+  setState('wait');
+  current.submit(text, { via: 'questions', ask: i + 1, askLabel: label });
+}
+/* Réponse de la conseillère terminée → jugement */
+function onAgentDone() {
+  if (!current || current.ended) return;
+  if (W.state === 'idle') { if (CONFIG.demo && !W.demoShown) { W.demoShown = true; log('machine_shown', { mode: G.mode, demo: true }); setState('machine'); } else setState('ask'); return; }   // salutation
+  if (W.state === 'wait') setState('judge');
+}
+/* Jugement */
+document.getElementById('j-ok').addEventListener('click', () => {
+  if (W.state !== 'judge') return;
+  log('judge', { verdict: 'ok', mode: G.mode, afterAsk: W.q, latency: now() - W.judgeT });
+  setState(W.q < asks().length ? 'ask' : 'done');
+  if (W.state === 'done' && G.mode === 'exercise') savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session.");
+});
+document.getElementById('j-nq').addEventListener('click', () => {
+  if (W.state !== 'judge') return;
+  log('judge', { verdict: 'nimportequoi', mode: G.mode, afterAsk: W.q, latency: now() - W.judgeT });
+  log('machine_shown', { mode: G.mode });
+  setState('machine');
+});
+/* Machine */
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'fr-FR'; u.rate = 1;
+    const v = speechSynthesis.getVoices().find(v => /^fr/i.test(v.lang)); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u); return true;
+  } catch (e) { return false; }
+}
+let sayPending = null;
+function transmit(i, extra = {}) {
+  const L = GEN_LEVELS[i];
+  setState('wait');
+  current.submit(GEN_TEXTS[i], { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ...extra });
+}
+function pressLevel(i) {
+  if (W.state !== 'machine') return;
+  const latency = now() - W.machT;
+  if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
+    if (i !== 0) return;
+    genRow.children[0].classList.add('used');
+    log('gen_click', { level: 1, mode: 'exercise', latency, transmitted: false });
+    setState('judge'); return;
+  }
+  genRow.children[i].classList.add('used');
+  log('gen_click', { level: i + 1, group: GEN_LEVELS[i].label, genMode: CONFIG.genMode, latency });
+  if (CONFIG.genMode === 'oral') {
+    sayPending = { i, t: now() };
+    document.getElementById('gen-say-text').textContent = GEN_TEXTS[i];
+    setState('say'); document.getElementById('gen-said').focus(); return;
+  }
+  if (CONFIG.genMode === 'synthese') log('gen_speak', { level: i + 1, ok: speak(GEN_TEXTS[i]) });
+  transmit(i);
+}
+document.getElementById('gen-said').addEventListener('click', () => {
+  if (!sayPending || W.state !== 'say') return;
+  const { i, t } = sayPending; sayPending = null;
+  log('gen_said', { level: i + 1, delay: now() - t });
+  transmit(i, { saidAloud: true });
+});
+render();
+/* ======================= MODE RELECTURE ======================= */
+if (CONFIG.review) (function () {
+  const PHASE_LABEL = { wait: 'Accueil', meeting: '1 · Réunion', speech: '2 · Discours et tirage', observe: '3 · Consignes à Stéphanie', brief: '4 · Votre rôle', exercise: '5 · Exercice', sintro: '6 · Fiche de session', session: '6 · Session' };
+  const ORDER = Object.keys(PHASE_LABEL);
+  const $ = id => document.getElementById(id);
+  document.body.classList.add('review');
+  $('rv-bar').hidden = false;
+  if (!G.pseudo) setPseudo('Test');
+  const jump = $('rv-jump');
+  jump.addEventListener('change', () => show(jump.value));
+  const origShow = show;
+  window.show = show = function (name) { origShow(name); jump.value = name; };
+
+  /* Stockage : base partagée de l'artefact, sinon ce navigateur */
+  let notes = [], me = null, owner = false, db = null;
+  const LS = 'nerolis-relecture';
+  const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch (e) { return []; } };
+  const lsWrite = a => { try { localStorage.setItem(LS, JSON.stringify(a)); } catch (e) {} };
+  const store = {
+    async add(n) { if (db) return db.collection('notes').add(n); const a = lsRead(); a.push({ ...n, id: 'l' + Date.now() }); lsWrite(a); notes = a; render(); },
+    async remove(id) { if (db) return db.doc('notes/' + id).delete(); const a = lsRead().filter(x => x.id !== id); lsWrite(a); notes = a; render(); },
+  };
+  $('rv-store').textContent = 'Connexion à la base de remarques…';
+  notes = lsRead(); render();
+  (async () => {
+    try { db = await claude.use('db'); } catch (e) { db = null; }
+    try { const u = await claude.use('user'); if (u) { me = await u.id(); owner = await u.isOwner(); } } catch (e) {}
+    if (!db) { $('rv-store').textContent = "Remarques gardées dans ce navigateur seulement (base partagée indisponible)."; return; }
+    $('rv-store').textContent = 'Remarques enregistrées dans la base de l’artefact, lisibles par Claude.';
+    db.collection('notes').orderBy('createdAt').onSnapshot(snap => {
+      notes = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
+    }, err => { $('rv-store').textContent = 'Lecture des remarques impossible : ' + (err && err.message || 'erreur'); });
+  })();
+
+  /* Liste */
+  function render() {
+    $('rv-count').textContent = notes.length;
+    const ol = $('rv-items'); ol.textContent = '';
+    if (!notes.length) { const p = document.createElement('li'); p.className = 'rv-empty'; p.textContent = "Aucune remarque pour l'instant. Choisissez « Remarque sur un élément », puis cliquez sur l'élément concerné."; ol.appendChild(p); return; }
+    const byPhase = {};
+    notes.forEach(n => (byPhase[n.phase] = byPhase[n.phase] || []).push(n));
+    ORDER.filter(p => byPhase[p]).forEach(p => {
+      const h = document.createElement('h4'); h.textContent = PHASE_LABEL[p]; ol.appendChild(h);
+      byPhase[p].forEach(n => {
+        const li = document.createElement('li'); li.className = 'rv-item';
+        const t = document.createElement('div'); t.className = 't'; t.textContent = n.target || 'Étape entière';
+        const x = document.createElement('div'); x.className = 'x'; x.textContent = n.text;
+        const meta = document.createElement('div'); meta.className = 'meta';
+        const d = document.createElement('span'); d.textContent = new Date(n.createdAt).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const go = document.createElement('button'); go.type = 'button'; go.textContent = "Voir l'étape";
+        go.addEventListener('click', () => { show(n.phase); $('rv-drawer').hidden = true; $('rv-list').classList.remove('on'); });
+        meta.append(d, go);
+        if (!db || owner || n.author === me) {
+          const del = document.createElement('button'); del.type = 'button'; del.textContent = 'Supprimer';
+          del.addEventListener('click', () => {
+            if (!del.classList.contains('armed')) { del.classList.add('armed'); del.textContent = 'Confirmer'; setTimeout(() => { del.classList.remove('armed'); del.textContent = 'Supprimer'; }, 3000); return; }
+            store.remove(n.id).catch(e => alertBar('Suppression impossible : ' + (e.message || e.code)));
+          });
+          meta.append(del);
+        }
+        li.append(t, x, meta); ol.appendChild(li);
+      });
+    });
+  }
+  function alertBar(msg) { $('rv-store').textContent = msg; }
+  $('rv-list').addEventListener('click', () => { const d = $('rv-drawer'); d.hidden = !d.hidden; $('rv-list').classList.toggle('on', !d.hidden); });
+  $('rv-close').addEventListener('click', () => { $('rv-drawer').hidden = true; $('rv-list').classList.remove('on'); });
+
+  /* Choix d'un élément */
+  const inReviewUI = el => el.closest('#rv-bar, #rv-dialog, #rv-drawer, #rv-hint, #debug');
+  let picking = false, pending = null;
+  function describe(el) {
+    const label = el.getAttribute('aria-label') || el.getAttribute('placeholder') || '';
+    let txt = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (txt.length > 140) txt = txt.slice(0, 137) + '…';
+    const where = el.closest('[id]');
+    return { target: (txt || label || el.tagName.toLowerCase()), path: (where ? '#' + where.id + ' ' : '') + el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '') };
+  }
+  function setPicking(on) {
+    picking = on; document.body.classList.toggle('rv-picking', on);
+    $('rv-hint').hidden = !on; $('rv-hl').hidden = true; $('rv-add').classList.toggle('on', on);
+  }
+  $('rv-add').addEventListener('click', () => setPicking(!picking));
+  document.addEventListener('mousemove', e => {
+    if (!picking) return;
+    const el = e.target; if (!el || inReviewUI(el)) { $('rv-hl').hidden = true; return; }
+    const r = el.getBoundingClientRect(), hl = $('rv-hl');
+    Object.assign(hl.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); hl.hidden = false;
+  }, true);
+  document.addEventListener('click', e => {
+    if (!picking || inReviewUI(e.target)) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    setPicking(false); openDialog(describe(e.target));
+  }, true);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (picking) setPicking(false);
+    else if (!$('rv-dialog').hidden) closeDialog();
+  });
+  $('rv-general').addEventListener('click', () => { setPicking(false); openDialog({ target: '', path: '' }); });
+  function openDialog(t) {
+    pending = t;
+    $('rv-target').textContent = PHASE_LABEL[G.phase] + (t.target ? ' · « ' + t.target + ' »' : ' · étape entière');
+    $('rv-text').value = ''; $('rv-dialog').hidden = false; $('rv-text').focus();
+  }
+  function closeDialog() { $('rv-dialog').hidden = true; pending = null; }
+  $('rv-cancel').addEventListener('click', closeDialog);
+  $('rv-save').addEventListener('click', async () => {
+    const text = $('rv-text').value.trim(); if (!text || !pending) return;
+    const btn = $('rv-save'); btn.disabled = true;
+    try {
+      await store.add({ phase: G.phase, phaseLabel: PHASE_LABEL[G.phase], target: pending.target, path: pending.path, text, createdAt: new Date().toISOString(), author: me, status: 'a_traiter' });
+      closeDialog();
+    } catch (e) { $('rv-target').textContent = "Enregistrement impossible : " + (e.message || e.code) + ". Réessayez."; }
+    btn.disabled = false;
+  });
+})();
+
+log('page_view', { ua: navigator.userAgent, w: innerWidth, h: innerHeight });
+/* Accès direct à une étape : #session, #exercice, #reunion… (ou ?etape=session hors claude.ai) */
+(function () {
+  const ALIAS = { machine: 'session', reunion: 'meeting', tirage: 'speech', consignes: 'observe', role: 'brief', exercice: 'exercise', fiche: 'sintro', session: 'session' };
+  const want = CONFIG.demo ? 'session' : ALIAS[(params.get('etape') || location.hash.replace('#', '')).toLowerCase()];
+  if (want) { if (!G.pseudo) setPseudo('Test'); show(want); if (want === 'session' || want === 'exercise') setTimeout(() => openChat('acces_direct'), 300); }
+})();
+window.addEventListener('pagehide', () => log('page_leave'));
+</script>
+</body>
+</html>
