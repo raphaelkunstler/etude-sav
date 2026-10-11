@@ -12,6 +12,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | `machine.html` | Une démonstration qui ouvre directement la session, sans passer par les étapes précédentes. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
 | `maquette.html` | Une version de travail pour l'architecture du site : une barre violette en haut permet d'aller directement à n'importe quelle étape, et chaque échange (réunion, consignes, exercice, session) se joue instantanément avec des réponses types du sujet. Générée par le même script. |
 | `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, colonne des commentaires du client à droite, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
+| `reactions-stephanie.md` | La liste lisible des répliques de Stéphanie : réaction à chacun des 30 niveaux de la machine (avec le stress, la demande d'arrêt et le refus), salutation, fin de session. Fichier généré à partir d'`index.html` par `scripts/build_reactions.py` : ne pas le modifier à la main. |
 | `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
 | `qcm/qcm-neolia.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
@@ -97,7 +98,7 @@ Tous les textes et réglages sont en tête du dernier `<script>` de `index.html`
 - `GEN_SHOW` et `punStyle()` : la forme sous laquelle chaque phrase occupe tout l'écran du sujet après un clic sur la machine (30 panneaux gradués, du Times New Roman 12 points aux lettres découpées) ; durée réglée par `CONFIG.punitionMs` ;
 - `QINSTR` : les consignes en tête de la fenêtre « Questions ».
 
-Après une modification d'`index.html`, régénérez la démonstration et la maquette : `python3 scripts/build_machine.py`.
+Après une modification d'`index.html`, régénérez la démonstration et la maquette : `python3 scripts/build_machine.py`. Après une modification des répliques de Stéphanie, régénérez aussi leur liste : `python3 scripts/build_reactions.py`.
 
 ## QCM de l'écran agent
 
