@@ -2,7 +2,7 @@
 
 ## 1. Héberger le site
 
-Le fichier `neolia-standalone.html` est une page statique autonome, sans serveur ni API. Il suffit de la mettre en ligne en HTTPS : GitHub Pages, serveur web de l'université, Netlify, etc. On obtient une adresse du type `https://exemple.org/neolia.html`.
+Le fichier `index.html` est une page statique autonome, sans serveur ni API. Il est publié par GitHub Pages à l'adresse `https://raphaelkunstler.github.io/etude-sav/`. Il pourrait aussi être placé sur un serveur web de l'université.
 
 Pour tester hors Qualtrics, ajoutez `?debug` à l'adresse. Un panneau affiche alors le journal en direct.
 
@@ -23,11 +23,11 @@ Créez une question **Text / Graphic**. Dans l'éditeur HTML du texte de la ques
 
 ```html
 <iframe id="neolia"
-  src="https://exemple.org/neolia.html?pid=${e://Field/ResponseID}&cond=${e://Field/cond}"
+  src="https://raphaelkunstler.github.io/etude-sav/?pid=${e://Field/ResponseID}&cond=${e://Field/cond}"
   style="width:100%; height:720px; border:0; border-radius:8px;"></iframe>
 ```
 
-Remplacez l'adresse par la vôtre. Retirez `&cond=…` si vous n'avez pas de condition.
+Retirez `&cond=…` si vous n'avez pas de condition.
 
 ## 4. Le JavaScript de la question
 
