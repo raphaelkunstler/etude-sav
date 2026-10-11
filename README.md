@@ -8,8 +8,8 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 
 | Fichier | Rôle |
 | --- | --- |
-| `index.html` | Le parcours complet en six étapes : réunion, discours et tirage, consignes, rôle, exercice, session. C'est la page à donner aux sujets. |
-| `machine.html` | Une démonstration qui ouvre directement la session, avec la machine affichée dès la salutation de Stéphanie. Elle sert aux essais et aux présentations, pas aux sujets. |
+| `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes (réunion, discours et tirage, installation de Stéphanie, consignes, rôle, exercice, session). C'est la page à donner aux sujets, et la seule à modifier. |
+| `machine.html` | Une démonstration qui ouvre directement la session, avec la machine affichée dès la salutation de Stéphanie. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
 | `.nojekyll` | Empêche GitHub de transformer les fichiers. Il ne faut pas le supprimer. |
 
@@ -41,7 +41,7 @@ Ajoutez ces éléments à la fin de l'adresse du site.
 | *(rien)* | Parcours complet depuis l'accueil, pour les sujets. |
 | `?pid=…&cond=…` | Identifiant du participant et condition, transmis par Qualtrics. |
 | `?voix=chat` / `?voix=synthese` / `?voix=oral` | Mode de la machine : phrase écrite (par défaut), lue par l'ordinateur, ou à dire à voix haute par le sujet. |
-| `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `reunion`, `tirage`, `consignes`, `role`, `exercice`, `fiche`. |
+| `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `installation`, `consignes`, `role`, `exercice`, `fiche`. |
 | `#machine` | Session avec la machine affichée d'emblée, comme `machine.html`. |
 | `?saisie` | Rétablit la saisie libre dans le chat. |
 | `?debug` | Affiche un panneau de test : transcription en direct et saut entre les étapes. |
@@ -63,6 +63,15 @@ Le site n'envoie rien à GitHub et ne stocke rien sur le serveur. Pendant la pas
 - `gen_said` : en mode oral, délai entre l'affichage de la phrase et « C'est dit » ;
 - `expq_user_msg` et `expq_bot_msg` : questions à l'expérimentateur et réponses reçues, avec leur type et leur rang.
 
+## Avant la première passation
+
+La page d'information affiche en jaune les champs à compléter. Remplissez-les dans l'objet `CONSENT`, dans la section « INFORMATION ET CONSENTEMENT » du dernier `<script>` d'`index.html` :
+- `cerName`, `cerNumber`, `cerDate` : le comité d'éthique, le numéro et la date de l'avis ;
+- `retention` : la durée de conservation des données ;
+- `dpo` : l'adresse du délégué à la protection des données.
+
+Un champ rempli perd son surlignage.
+
 ## Modifier les textes
 
 Tous les textes et réglages sont en tête du dernier `<script>` de `index.html` :
@@ -74,4 +83,4 @@ Tous les textes et réglages sont en tête du dernier `<script>` de `index.html`
 - `GEN_GROUPS`, `GEN_TEXTS` : les paliers et les 30 phrases de la machine ;
 - `BAND`, `INSTRUCTIONS` : la fiche, les questions et les réponses attendues.
 
-Après une modification de `index.html`, reportez-la dans `machine.html`. Les deux fichiers sont identiques à deux détails près : le titre de la page et la ligne `window.__DEMO = true;` placée juste avant le dernier `<script>`.
+Après une modification d'`index.html`, régénérez la démonstration : `python3 scripts/build_machine.py`.

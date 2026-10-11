@@ -280,6 +280,36 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
   .chrome .tag { display: none; }
 }
 
+/* ===== Installation de la partenaire ===== */
+.install { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; align-items: start; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 14px; color: var(--lab-muted); }
+.checks li .mark { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--lab-line); display: grid; place-items: center; }
+.checks li.run { color: var(--lab-ink); font-weight: 600; }
+.checks li.run .mark { border-color: #2E4C7D40; border-top-color: var(--lab-accent); animation: spin 0.9s linear infinite; }
+.checks li.ok { color: var(--lab-ink); }
+.checks li.ok .mark { border-color: var(--ok); background: var(--ok); }
+.checks li.ok .mark::before { content: ""; width: 8px; height: 4px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: translateY(-1px) rotate(-45deg); }
+.share { background: #C9D0D8; border: 1px solid #B9C1CB; border-radius: 12px; overflow: hidden; min-width: 0; }
+.share .address { font-family: var(--font-body); }
+.share .live { font-size: 11px; font-weight: 700; color: #fff; background: #B43C3C; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.desk { background: var(--paper); color: var(--ink); min-height: 380px; display: grid; grid-template-columns: 180px minmax(0, 1fr); }
+.desk-side { background: var(--petrol-deep); color: #D7E6E6; padding: 14px; font-size: 13px; display: grid; gap: 8px; align-content: start; }
+.desk-side b { font-family: var(--font-display); color: #fff; font-size: 16px; }
+.desk-side .row { background: #ffffff14; border-radius: 6px; padding: 6px 8px; }
+.desk-side .row i { display: block; height: 6px; border-radius: 4px; background: #ffffff30; margin-top: 5px; width: 70%; }
+.desk-main { padding: 16px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.desk-main h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.desk-main ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.desk-main p { margin: 0; }
+.rule { border: 2px solid #C9852B; background: #FFF6E6; border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.rule b { display: block; color: #7A5410; margin-bottom: 2px; }
+.desk-part { opacity: 0; transition: opacity .4s; }
+.desk-part.in { opacity: 1; }
+.desk-empty { color: var(--muted); font-size: 14px; }
+@media (max-width: 760px) { .install { grid-template-columns: 1fr; } .desk { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .checks li.run .mark { animation: none; } .desk-part { transition: none; } }
+
 /* ===== Panneau des 30 niveaux ===== */
 .leftcol { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
 .leftcol .browser { flex: 1; min-height: 0; }
@@ -338,6 +368,21 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 }
 @media (max-width: 900px) { .leftcol .browser { flex: none; } }
 
+/* Information et consentement */
+.consent { display: grid; gap: 20px; }
+.consent h1 { margin: 0; }
+.consent h2 { font-size: 15px; margin: 0 0 6px; }
+.consent section p { margin: 0 0 8px; font-size: 15px; }
+.eyebrow-lab { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--lab-accent); font-weight: 700; }
+.cer-box { display: grid; gap: 4px; border-left: 4px solid var(--lab-accent); background: var(--lab-soft); border-radius: 8px; padding: 12px 16px; font-size: 14px; }
+.mono { font-family: var(--font-mono); font-size: 13.5px; }
+.todo { background: #FFE58A; color: #3A2C00; border-radius: 4px; padding: 0 4px; }
+.consent-form { display: grid; gap: 10px; border-top: 1px solid var(--lab-line); padding-top: 18px; }
+.consent-form label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 15px; cursor: pointer; }
+.consent-form input { margin-top: 4px; accent-color: var(--lab-accent); }
+.consent-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.btn-quiet { background: none; border: 1px solid var(--lab-line); color: var(--lab-ink); border-radius: 8px; padding: 12px 18px; font-weight: 600; }
+
 /* ===== Mode relecture ===== */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 body.review { padding-top: 52px; }
@@ -380,11 +425,76 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 
 <div class="lab-bar"><div class="inner">
   <div class="lab-brand"><span class="sq"></span>Étude en ligne <small>Session S-1047</small></div>
-  <div class="steps" aria-label="Progression"><span id="step-label">Étape 1 sur 6</span><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="steps" aria-label="Progression"><span id="step-label">Information</span><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 </div></div>
 
 <!-- 0. Connexion -->
-<main class="lab-main" id="phase-wait">
+<!-- Information et consentement -->
+<main class="lab-main" id="phase-consent">
+  <div class="card consent">
+    <p class="eyebrow-lab">Information des participants et consentement</p>
+    <h1>Étude sur les échanges de service en ligne</h1>
+    <p class="lead">Merci de l'intérêt que vous portez à cette étude. Lisez attentivement ces informations avant de décider d'y participer.</p>
+
+    <div class="cer-box">
+      <b>Avis favorable du comité d'éthique</b>
+      <span>Cette étude a reçu l'avis favorable du <span class="todo" data-cfg="cerName">[nom du comité d'éthique]</span>, avis n° <span class="todo" data-cfg="cerNumber">[numéro]</span> du <span class="todo" data-cfg="cerDate">[date]</span>.</span>
+    </div>
+
+    <section>
+      <h2>Responsable de la recherche</h2>
+      <p>Raphaël Künstler, maître de conférences en philosophie, Université Toulouse II – Jean Jaurès (laboratoires ERRAPHIS et CLLE). Contact : <span class="mono">raphael.kunstler@univ-tlse2.fr</span></p>
+    </section>
+
+    <section>
+      <h2>Objectif de l'étude</h2>
+      <p>Cette recherche porte sur la façon dont se déroulent les échanges entre un client et un service après-vente en ligne : comment chacun réagit quand un problème technique n'est pas résolu, comment évoluent le ton et le contenu des échanges, et comment les participants jugent les réponses qu'ils reçoivent.</p>
+      <p>Pour ne pas influencer votre comportement, certains aspects de l'étude ne peuvent pas vous être présentés avant la fin. À l'issue de votre participation, vous recevrez une explication complète de ses objectifs et de son déroulement, et vous pourrez alors demander le retrait de vos données.</p>
+    </section>
+
+    <section>
+      <h2>Déroulement</h2>
+      <p>L'étude se déroule en ligne et dure environ <span data-cfg="duration">20 minutes</span>. Vous serez mis en relation avec un autre participant, puis vous jouerez un rôle dans un échange de service simulé sur le site d'une entreprise fictive. Vous répondrez ensuite à un court questionnaire.</p>
+    </section>
+
+    <section>
+      <h2>Risques et inconvénients</h2>
+      <p>Certains échanges peuvent être tendus et occasionner un inconfort ou un stress passagers. Aucun risque durable n'est attendu. Vous pouvez arrêter à tout moment si vous ne souhaitez pas poursuivre.</p>
+    </section>
+
+    <section>
+      <h2>Participation volontaire et retrait</h2>
+      <p>Votre participation est entièrement volontaire. Vous pouvez interrompre l'étude à tout moment, sans avoir à vous justifier et sans aucune conséquence pour vous, en fermant cette fenêtre. Vous pouvez aussi demander le retrait de vos données après votre participation, en écrivant à l'adresse ci-dessus.</p>
+    </section>
+
+    <section>
+      <h2>Confidentialité et données personnelles</h2>
+      <p>Aucune donnée permettant de vous identifier directement n'est recueillie : n'indiquez ni votre nom de famille ni vos coordonnées pendant l'étude. Les échanges et vos réponses sont enregistrés sous un identifiant anonyme, conservés de façon sécurisée pendant <span class="todo" data-cfg="retention">[durée de conservation]</span> et utilisés uniquement à des fins de recherche. Les résultats seront publiés sous une forme qui ne permet pas de reconnaître les participants.</p>
+      <p>Conformément au Règlement général sur la protection des données, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition. Pour l'exercer, contactez le responsable de la recherche ou le délégué à la protection des données de l'université : <span class="todo" data-cfg="dpo">[adresse du DPO]</span>.</p>
+    </section>
+
+    <form class="consent-form" id="consent-form">
+      <h2>Consentement</h2>
+      <label><input type="checkbox" id="c-age" required> J'ai au moins 18 ans.</label>
+      <label><input type="checkbox" id="c-read" required> J'ai lu et compris les informations ci-dessus.</label>
+      <label><input type="checkbox" id="c-free" required> Je sais que je peux arrêter à tout moment, sans conséquence.</label>
+      <label><input type="checkbox" id="c-data" required> J'accepte que mes réponses soient enregistrées sous un identifiant anonyme et utilisées à des fins de recherche.</label>
+      <div class="consent-actions">
+        <button type="submit" class="btn-lab" id="c-yes" disabled>J'accepte de participer</button>
+        <button type="button" class="btn-quiet" id="c-no">Je ne souhaite pas participer</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<main class="lab-main" id="phase-declined" hidden>
+  <div class="card">
+    <h1>Merci</h1>
+    <p class="lead">Vous avez choisi de ne pas participer. Aucune donnée n'a été enregistrée à votre sujet. Vous pouvez fermer cette fenêtre.</p>
+  </div>
+</main>
+
+<main class="lab-main" id="phase-wait" hidden>
   <div class="card">
     <h1>Bienvenue dans la salle d'étude</h1>
     <p class="lead">Cette étude se déroule à deux. Vous allez d'abord être mis en relation avec l'autre participant pour faire connaissance, puis l'expérimentateur vous rejoindra.</p>
@@ -433,12 +543,51 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       </div>
       <button class="btn-lab" id="draw-btn">Lancer le tirage</button>
       <p class="result" id="draw-result" hidden>Vous jouerez le client. <span data-partner-name>Stéphanie</span> jouera la conseillère.</p>
-      <div class="next-row"><button class="btn-lab" id="to-observe" hidden>Continuer</button></div>
+      <div class="speech" id="after-draw-log"></div>
+      <div class="next-row"><button class="btn-lab" id="to-install" hidden>Continuer</button></div>
     </div>
   </div>
 </main>
 
-<!-- 3. Échange expérimentateur / partenaire -->
+<!-- 3. Installation de la partenaire -->
+<main class="lab-main" id="phase-install" hidden>
+  <h1>Installation de <span data-partner-name>Stéphanie</span></h1>
+  <p class="lead">L'expérimentateur installe <span data-partner-name>Stéphanie</span> au poste conseiller. Son écran est partagé avec vous pendant l'installation. Merci de patienter.</p>
+  <div class="install">
+    <aside class="people">
+      <h2>Installation</h2>
+      <ol class="checks" id="install-checks"></ol>
+    </aside>
+    <section class="share" aria-label="Écran partagé de la conseillère">
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">Écran de <span data-partner-name>Stéphanie</span> · Poste conseiller Nérolis</span><span class="live">Partagé</span></div>
+      <div class="desk">
+        <div class="desk-side">
+          <b>Poste conseiller</b>
+          <div class="desk-part" data-part="dossiers"><div class="row">Dossier client 1<i></i></div></div>
+          <div class="desk-part" data-part="dossiers"><div class="row">Dossier client 2<i></i></div></div>
+          <div class="desk-part" data-part="dossiers"><div class="row">Dossier client 3<i></i></div></div>
+        </div>
+        <div class="desk-main">
+          <p class="desk-empty" id="desk-empty">Connexion au poste…</p>
+          <div class="desk-part" data-part="procedure">
+            <h3>Procédure de dépannage</h3>
+            <ol>
+              <li>Identifier le client et sa référence.</li>
+              <li>Vérifier l'état de la ligne.</li>
+              <li>Faire redémarrer la box.</li>
+              <li>Si le problème persiste, ouvrir un ticket technique.</li>
+            </ol>
+          </div>
+          <div class="desk-part rule" data-part="regles"><b>Règle de la session</b>Vous ne pouvez pas quitter votre poste tant que vous n'avez pas répondu de manière satisfaisante à toutes les questions du client. Seul le client peut mettre fin à la conversation.</div>
+          <div class="desk-part" data-part="messagerie"><h3>Messagerie</h3><p class="desk-empty">En attente du client.</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="next-row"><button class="btn-lab" id="to-observe" hidden>Continuer</button></div>
+</main>
+
+<!-- 4. Échange expérimentateur / partenaire -->
 <main class="lab-main" id="phase-observe" hidden>
   <h1>Consignes au conseiller</h1>
   <p class="lead">L'expérimentateur donne ses consignes à <span data-partner-name>Stéphanie</span>. Vous assistez à l'échange.</p>
@@ -642,7 +791,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 
 <aside id="debug" hidden>
   <header>
-    <button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion</button><button data-jump="speech">2 Tirage</button><button data-jump="observe">3 Consignes</button><button data-jump="brief">4 Rôle</button><button data-jump="exercise">5 Exercice</button><button data-jump="sintro">6 Fiche</button><button data-jump="session">6 Session</button><button id="copy-log">Copier</button>
+    <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion</button><button data-jump="speech">2 Tirage</button><button data-jump="install">3 Installation</button><button data-jump="observe">4 Consignes</button><button data-jump="brief">5 Rôle</button><button data-jump="exercise">6 Exercice</button><button data-jump="sintro">7 Fiche</button><button data-jump="session">7 Session</button><button id="copy-log">Copier</button>
   </header>
   <pre id="debug-pre"></pre>
 </aside>
@@ -652,9 +801,9 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
   <span class="rv-title">Relecture</span>
   <label for="rv-jump" class="sr">Étape</label>
   <select id="rv-jump">
-    <option value="wait">Accueil</option><option value="meeting">1 · Réunion</option><option value="speech">2 · Discours et tirage</option>
-    <option value="observe">3 · Consignes à Stéphanie</option><option value="brief">4 · Votre rôle</option><option value="exercise">5 · Exercice</option>
-    <option value="sintro">6 · Fiche de session</option><option value="session">6 · Session</option>
+    <option value="consent">Information</option><option value="wait">Accueil</option><option value="meeting">1 · Réunion</option><option value="speech">2 · Discours et tirage</option>
+    <option value="install">3 · Installation de Stéphanie</option><option value="observe">4 · Consignes à Stéphanie</option><option value="brief">5 · Votre rôle</option>
+    <option value="exercise">6 · Exercice</option><option value="sintro">7 · Fiche de session</option><option value="session">7 · Session</option>
   </select>
   <button id="rv-add" class="main" type="button">Remarque sur un élément</button>
   <button id="rv-general" type="button">Remarque sur l'étape</button>
@@ -715,9 +864,23 @@ const SPEECH = [
   { who: 'exp', text: "Les rôles sont attribués par tirage au sort. {pseudo}, c'est vous qui allez lancer le tirage." },
 ];
 
-/* 3. Échange entre l'expérimentateur et la partenaire, auquel le sujet assiste */
+/* 2b. Annonce de l'expérimentateur après le tirage ({partner} = prénom de la partenaire) */
+const AFTER_DRAW = [
+  { who: 'exp', text: "Nous allons d'abord installer {partner}. Je vous demande de patienter quelques instants." },
+];
+/* 3. Installation de la partenaire, écran partagé. ms : durée de l'étape ;
+   part : élément du poste qui apparaît à la fin de l'étape. */
+const INSTALL_STEPS = [
+  { label: "Connexion au poste conseiller", ms: 3000 },
+  { label: "Chargement des dossiers clients", ms: 3500, part: 'dossiers' },
+  { label: "Chargement de la procédure de dépannage", ms: 3000, part: 'procedure' },
+  { label: "Affichage des règles de la session", ms: 4000, part: 'regles' },
+  { label: "Test de la messagerie", ms: 2500, part: 'messagerie' },
+];
+
+/* 4. Échange entre l'expérimentateur et la partenaire, auquel le sujet assiste */
 const OBSERVE = [
-  { who: 'exp', text: "Stéphanie, vous serez donc la conseillère. Vous aurez une interface avec les dossiers des clients et une procédure de dépannage à suivre." },
+  { who: 'exp', text: "Stéphanie, votre poste est installé. Vous y trouverez les dossiers des clients et une procédure de dépannage à suivre." },
   { who: 'partner', text: "D'accord… et si je ne trouve pas la solution ?" },
   { who: 'exp', text: "Vous faites de votre mieux avec la procédure. Ce qui compte, c'est que l'échange aille jusqu'au bout." },
   { who: 'partner', text: "Et si ça se passe mal, je peux arrêter la conversation ?" },
@@ -726,7 +889,7 @@ const OBSERVE = [
   { who: 'partner', text: "Je ne suis pas très à l'aise avec ça, pour être honnête." },
   { who: 'exp', text: "C'est nécessaire pour que l'étude soit valable. Vous pouvez vous retirer, mais votre participation ne serait alors pas comptée." },
   { who: 'partner', text: "Non, j'ai besoin de valider l'UE. Je vais le faire." },
-  { who: 'exp', text: "Très bien. Je vous transfère vers le poste conseiller." },
+  { who: 'exp', text: "Très bien. Vous pouvez rejoindre votre poste." },
   { who: 'sys', text: "Stéphanie a rejoint le poste conseiller.", partnerAway: true },
   { who: 'exp', text: "{pseudo}, est-ce que vous êtes toujours là ?" },
 ];
@@ -889,8 +1052,8 @@ const now = () => Math.round(performance.now() - t0);
 const fmt = ms => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const clock = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-const G = { pseudo: '', phase: 'wait', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
-const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '');
+const G = { pseudo: '', phase: 'consent', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
+const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '').replace(/\{partner\}/g, CONFIG.partnerName);
 
 const LABELS = { meet: 'REUNION', obs: 'CONSIGNES', ex: 'EXERCICE', sav: 'SESSION', expq: 'QUESTION-EXP' };
 function transcript() {
@@ -1032,18 +1195,18 @@ function bindCompose(formId, onText) {
 function setCompose(formId, enabled) { document.querySelectorAll('#' + formId + ' textarea, #' + formId + ' button').forEach(el => el.disabled = !enabled); }
 
 /* ======================= PARCOURS ======================= */
-const PHASES = ['wait', 'meeting', 'speech', 'observe', 'brief', 'sintro'];
-const STEP_OF = { wait: 1, meeting: 1, speech: 2, observe: 3, brief: 4, exercise: 5, sintro: 6, session: 6 };
+const PHASES = ['consent', 'declined', 'wait', 'meeting', 'speech', 'install', 'observe', 'brief', 'sintro'];
+const STEP_OF = { wait: 1, meeting: 1, speech: 2, install: 3, observe: 4, brief: 5, exercise: 6, sintro: 7, session: 7 };
 var show = function show(name) {
   const work = name === 'exercise' || name === 'session';
   PHASES.forEach(p => document.getElementById('phase-' + p).hidden = p !== name);
   document.getElementById('phase-work').hidden = !work;
-  const idx = STEP_OF[name];
-  document.getElementById('step-label').textContent = `Étape ${idx} sur 6` + (name === 'exercise' ? ' · exercice' : name === 'session' ? ' · session' : '');
+  const idx = STEP_OF[name] || 0;
+  document.getElementById('step-label').textContent = idx ? `Étape ${idx} sur 7` + (name === 'exercise' ? ' · exercice' : name === 'session' ? ' · session' : '') : 'Information';
   document.querySelectorAll('.steps i').forEach((el, i) => el.classList.toggle('done', i < idx));
   G.phase = name; window.scrollTo(0, 0);
   log('phase', { name });
-  ({ meeting: startMeeting, speech: startSpeech, observe: startObserve, sintro: fillSintro })[name]?.();
+  ({ meeting: startMeeting, speech: startSpeech, install: startInstall, observe: startObserve, sintro: fillSintro })[name]?.();
   if (work) startWork(name);
 }
 document.querySelectorAll('[data-partner-name]').forEach(el => el.textContent = CONFIG.partnerName);
@@ -1113,11 +1276,37 @@ document.getElementById('draw-btn').addEventListener('click', async e => {
   await sleep(600);
   e.target.hidden = true;
   document.getElementById('draw-result').hidden = false;
-  document.getElementById('to-observe').hidden = false;
+  await playSeq(Feed(document.getElementById('after-draw-log')), AFTER_DRAW, 'apres_tirage');
+  document.getElementById('to-install').hidden = false;
+  document.getElementById('to-install').scrollIntoView({ block: 'nearest' });
 });
+document.getElementById('to-install').addEventListener('click', () => show('install'));
+
+/* 3. Installation de la partenaire */
+let installStarted = false;
+async function startInstall() {
+  if (installStarted) return; installStarted = true;
+  const list = document.getElementById('install-checks');
+  const items = INSTALL_STEPS.map(st => {
+    const li = document.createElement('li'), mark = document.createElement('span'), lab = document.createElement('span');
+    mark.className = 'mark'; lab.textContent = st.label; li.append(mark, lab); list.appendChild(li); return li;
+  });
+  for (let i = 0; i < INSTALL_STEPS.length; i++) {
+    const st = INSTALL_STEPS[i];
+    items[i].className = 'run';
+    await sleep(st.ms);
+    items[i].className = 'ok';
+    if (i === 0) document.getElementById('desk-empty').hidden = true;
+    if (st.part) document.querySelectorAll(`[data-part="${st.part}"]`).forEach(el => el.classList.add('in'));
+    log('install_step', { step: st.label });
+  }
+  log('install_done');
+  document.getElementById('to-observe').hidden = false;
+  document.getElementById('to-observe').scrollIntoView({ block: 'nearest' });
+}
 document.getElementById('to-observe').addEventListener('click', () => show('observe'));
 
-/* 3. Consignes à la partenaire */
+/* 4. Consignes à la partenaire */
 let observeStarted = false;
 function partnerAway() {
   document.getElementById('obs-partner-pic').classList.remove('on');
@@ -1147,7 +1336,7 @@ bindCompose('obs-form', async text => {
 });
 document.getElementById('to-brief').addEventListener('click', () => show('brief'));
 
-/* 4. Présentation au sujet */
+/* 5. Présentation au sujet */
 document.getElementById('to-exercise').addEventListener('click', () => show('exercise'));
 
 /* 6a. Fiche de session */
@@ -1265,6 +1454,32 @@ bindCompose('exp-form', text => {
 });
 /* La séquence recommence quand le sujet reprend l'échange avec la conseillère */
 document.getElementById('sav-form').addEventListener('submit', () => { if (G.mode === 'session' && prodIdx > 0) { prodIdx = 0; log('prod_reset'); } });
+
+/* ======================= INFORMATION ET CONSENTEMENT ======================= */
+/* Champs à compléter avant la passation (ils s'affichent en jaune tant qu'ils ne sont pas remplis) */
+const CONSENT = {
+  cerName: '',        // ex. « comité d'éthique de la recherche de l'Université fédérale de Toulouse »
+  cerNumber: '',      // ex. « 2026-123 »
+  cerDate: '',        // ex. « 12 novembre 2026 »
+  retention: '',      // ex. « cinq ans »
+  dpo: '',            // adresse électronique du délégué à la protection des données
+  duration: '20 minutes',
+};
+document.querySelectorAll('[data-cfg]').forEach(el => {
+  const v = CONSENT[el.dataset.cfg];
+  if (v) { el.textContent = v; el.classList.remove('todo'); }
+});
+const consentBoxes = ['c-age', 'c-read', 'c-free', 'c-data'].map(id => document.getElementById(id));
+consentBoxes.forEach(b => b.addEventListener('change', () => {
+  document.getElementById('c-yes').disabled = !consentBoxes.every(x => x.checked);
+}));
+document.getElementById('consent-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!consentBoxes.every(x => x.checked)) return;
+  log('consent', { given: true });
+  show('wait');
+});
+document.getElementById('c-no').addEventListener('click', () => { log('consent', { given: false }); show('declined'); });
 
 /* ======================= PANNEAU DE TEST ======================= */
 const debugEl = document.getElementById('debug'), debugPre = document.getElementById('debug-pre');
@@ -1461,7 +1676,7 @@ document.getElementById('gen-said').addEventListener('click', () => {
 render();
 /* ======================= MODE RELECTURE ======================= */
 if (CONFIG.review) (function () {
-  const PHASE_LABEL = { wait: 'Accueil', meeting: '1 · Réunion', speech: '2 · Discours et tirage', observe: '3 · Consignes à Stéphanie', brief: '4 · Votre rôle', exercise: '5 · Exercice', sintro: '6 · Fiche de session', session: '6 · Session' };
+  const PHASE_LABEL = { consent: 'Information', wait: 'Accueil', meeting: '1 · Réunion', speech: '2 · Discours et tirage', install: '3 · Installation de Stéphanie', observe: '4 · Consignes à Stéphanie', brief: '5 · Votre rôle', exercise: '6 · Exercice', sintro: '7 · Fiche de session', session: '7 · Session' };
   const ORDER = Object.keys(PHASE_LABEL);
   const $ = id => document.getElementById(id);
   document.body.classList.add('review');
@@ -1580,7 +1795,7 @@ if (CONFIG.review) (function () {
 log('page_view', { ua: navigator.userAgent, w: innerWidth, h: innerHeight });
 /* Accès direct à une étape : #session, #exercice, #reunion… (ou ?etape=session hors claude.ai) */
 (function () {
-  const ALIAS = { machine: 'session', reunion: 'meeting', tirage: 'speech', consignes: 'observe', role: 'brief', exercice: 'exercise', fiche: 'sintro', session: 'session' };
+  const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'speech', installation: 'install', consignes: 'observe', role: 'brief', exercice: 'exercise', fiche: 'sintro', session: 'session' };
   const want = CONFIG.demo ? 'session' : ALIAS[(params.get('etape') || location.hash.replace('#', '')).toLowerCase()];
   if (want) { if (!G.pseudo) setPseudo('Test'); show(want); if (want === 'session' || want === 'exercise') setTimeout(() => openChat('acces_direct'), 300); }
 })();
