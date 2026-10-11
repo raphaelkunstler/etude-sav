@@ -113,7 +113,31 @@ button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px
 code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 6px; border-radius: 4px; }
 
 /* ===== Étapes 5 et 6 : fenêtre + bandeau ===== */
-.work { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; padding: 14px; height: calc(100vh - 58px); min-height: 560px; }
+.work { display: grid; grid-template-columns: minmax(0, 1fr) 340px 360px; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "site qs chat" "gen gen chat"; gap: 14px; padding: 14px; height: calc(100vh - 58px); min-height: 640px; }
+.work > .browser { grid-area: site; } .work > .qwin { grid-area: qs; } .work > .chatcol { grid-area: chat; } .work > .gen { grid-area: gen; }
+.qwin { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.qwin-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--lab-line); background: #FAFBFC; }
+.qwin-head b { font-size: 15px; }
+#qwin-count { font: 12px var(--font-mono); color: var(--lab-muted); }
+.qlog { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.qinstr { font-size: 13px; color: var(--lab-muted); background: var(--lab-bg); border-radius: 10px; padding: 10px 12px; }
+.qinstr ol { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+.qitem { border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; background: var(--lab-paper); }
+.qitem.current { border: 2px solid var(--lab-accent); }
+.qitem.past { opacity: .6; }
+.qnum { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); font-weight: 700; }
+.qclient { align-self: flex-end; justify-self: end; max-width: 92%; background: var(--petrol); color: #fff; border-radius: 14px; border-bottom-right-radius: 4px; padding: 8px 12px; font-size: 14px; }
+.qsend { justify-self: end; border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 700; background: var(--lab-accent); color: #fff; }
+.qsend:disabled { display: none; }
+.qopts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13.5px; }
+.qopts li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; color: var(--lab-muted); }
+.qopts li b { font-family: var(--font-mono); font-size: 12px; }
+.qopts li.good { color: var(--lab-ink); font-weight: 700; }
+.qopts li.good span { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-color: var(--ok); }
+.qverdict { font-size: 12.5px; font-weight: 700; color: var(--lab-muted); }
+.qverdict:empty { display: none; }
+.qverdict.nq { color: #8E1E14; }
+.qverdict.ok { color: #2F6B4A; }
 .browser { background: #C9D0D8; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #B9C1CB; min-width: 0; }
 .chrome { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
 .chrome .dots { display: flex; gap: 6px; }
@@ -222,8 +246,11 @@ section.box { padding-block: 28px 56px; }
   .box-card { grid-template-columns: 1fr; }
   .box-visual { max-width: 240px; }
 }
-@container site (max-width: 520px) {
+@container site (max-width: 760px) {
   nav.main { display: none; }
+  .btn-account { margin-left: auto; }
+}
+@container site (max-width: 520px) {
   .btn-account { margin-left: auto; }
   .bar { grid-template-columns: 70px 1fr 60px; }
 }
@@ -259,9 +286,16 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 #debug button { background: var(--sun); color: #101C1E; border: 0; border-radius: 6px; padding: 3px 7px; font: inherit; font-weight: 700; }
 #debug pre { margin: 0; padding: 10px; overflow: auto; white-space: pre-wrap; }
 
+@media (max-width: 1240px) {
+  .work { grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: 52vh minmax(420px, 1fr) auto; grid-template-areas: "site chat" "qs chat" "gen gen"; height: auto; }
+  .work > .gen { position: sticky; bottom: 0; z-index: 30; box-shadow: 0 -8px 24px #0002; }
+  .work > .qwin { max-height: 70vh; }
+}
 @media (max-width: 900px) {
-  .work { grid-template-columns: 1fr; height: auto; min-height: 0; }
-  .browser { height: 78vh; min-height: 480px; }
+  .work { grid-template-columns: 1fr; grid-template-rows: none; grid-template-areas: "site" "qs" "chat" "gen"; height: auto; min-height: 0; }
+  .browser { height: 60vh; min-height: 420px; }
+  .qwin { height: 60vh; }
+  .work > .gen { position: sticky; bottom: 0; z-index: 30; box-shadow: 0 -8px 24px #0002; }
   #chat { flex: none; height: 70vh; min-height: 420px; }
 }
 @media (max-width: 640px) {
@@ -305,41 +339,22 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 @media (prefers-reduced-motion: reduce) { .checks li.run .mark { animation: none; } .desk-part { transition: none; } }
 
 /* ===== Panneau des 30 niveaux ===== */
-.leftcol { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
-.leftcol .browser { flex: 1; min-height: 0; }
 .gen { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 14px 12px; container-type: inline-size; container-name: gen; }
 .gen-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-.seg { display: inline-flex; background: var(--lab-soft); border-radius: 9px; padding: 3px; gap: 2px; flex: none; }
-.seg button { border: 0; background: transparent; color: var(--lab-muted); font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 7px; }
-.seg button[aria-pressed="true"] { background: var(--lab-paper); color: var(--lab-ink); box-shadow: 0 1px 3px #0002; }
-.gen-body { min-height: 120px; }
 .gen-title { font-size: 14px; }
-.seg button[aria-pressed="true"] { background: var(--lab-paper); color: var(--lab-ink); box-shadow: 0 1px 3px #0002; }
-.judge { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: #FBE9C4; border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; font-size: 14px; font-weight: 600; }
+.gen-top { margin-bottom: 8px; }
+.judge { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #FBE9C4; border-radius: 10px; padding: 6px 10px; font-size: 14px; font-weight: 600; flex: 0 1 auto; min-width: 0; }
+.judge-btns { flex-wrap: wrap; }
+.gen-top:has(#j-ok:disabled) .judge { background: var(--lab-soft); color: var(--lab-muted); }
+.judge button:disabled { opacity: .35; cursor: not-allowed; }
 .judge-btns { display: flex; gap: 8px; }
 .judge button { border: 0; border-radius: 8px; padding: 8px 16px; font-weight: 800; letter-spacing: .02em; }
 #j-ok { background: #2F6B4A; color: #fff; }
 #j-nq { background: #8E1E14; color: #fff; }
-.instr { margin: 0 0 10px; padding-left: 20px; font-size: 13px; display: grid; gap: 3px; }
-.expect { width: 100%; border-collapse: collapse; font-size: 12px; }
-.expect th, .expect td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--lab-line); vertical-align: top; }
-.expect th { color: var(--lab-muted); font-weight: 600; }
-.expect td:first-child { font-family: var(--font-mono); width: 32px; }
-#view-instr { max-height: 210px; overflow-y: auto; }
-.qbtn.done { opacity: .55; }
-.qbtn.done b::after { content: " · envoyée"; font-weight: 500; color: var(--lab-accent); }
-.qbtn.current { border: 2px solid var(--lab-accent); }
-.qbtn .num { font-family: var(--font-mono); color: var(--lab-muted); margin-right: 6px; }
 .machine { background: #F3EEE6; border-radius: 10px; padding: 8px 10px; }
-.mach-call { margin: 0 0 8px; font-size: 13px; font-weight: 700; }
-.gen.mach-on .gen-top .seg { visibility: hidden; }
+.mach-call { margin: 0 0 8px; font-size: 13px; font-weight: 700; min-height: 1.4em; }
+.gen.armed .machine { box-shadow: 0 0 0 3px #8E1E14; }
 
-.qlist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; max-height: 150px; overflow-y: auto; }
-.qbtn { width: 100%; text-align: left; border: 1px solid var(--lab-line); background: var(--lab-paper); border-radius: 9px; padding: 7px 10px; display: grid; gap: 2px; color: var(--lab-ink); }
-.qbtn b { font-size: 13px; }
-.qbtn span { font-size: 12px; color: var(--lab-muted); }
-.qbtn:hover:not(:disabled), .qbtn:focus-visible { border-color: var(--lab-accent); background: var(--lab-soft); }
-.gen.off .qbtn { opacity: .45; cursor: not-allowed; }
 #gen-info { font-size: 13px; color: var(--lab-muted); min-width: 0; overflow-wrap: anywhere; }
 #gen-info q { color: var(--lab-ink); font-style: italic; }
 .gen-row, .gen-groups { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 4px; }
@@ -347,7 +362,7 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 .pt:hover:not(:disabled), .pt:focus-visible { background: var(--c); color: #fff; }
 .pt:active:not(:disabled) { transform: scale(.92); }
 .pt.used { background: var(--c); color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
-.gen.off .pt { opacity: .4; cursor: not-allowed; }
+.pt:disabled { opacity: .4; cursor: not-allowed; }
 .grp { border-top: 3px solid var(--c); padding-top: 3px; font-size: 10.5px; line-height: 1.2; text-align: center; color: var(--lab-ink); min-width: 0; }
 .grp b { display: block; font-size: 10.5px; }
 .grp span { color: var(--lab-muted); }
@@ -360,7 +375,6 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
   .gen-groups { display: none; }
   .pt { font-size: 12px; }
 }
-@media (max-width: 900px) { .leftcol .browser { flex: none; } }
 
 /* Information et consentement */
 .consent { display: grid; gap: 20px; }
@@ -380,6 +394,7 @@ form.compose button:disabled, form.compose textarea:disabled { opacity: .5; curs
 /* ===== Mode maquette (navigation directe, échanges pré-remplis) ===== */
 body.maquette { padding-top: 46px; }
 body.maquette .work { height: calc(100vh - 104px); }
+@media (max-width: 1240px) { body.maquette .work { height: auto; } }
 #mq-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 62; min-height: 46px; background: #2A1F3D; color: #F1EAFB; display: flex; align-items: center; gap: 6px; padding: 6px 12px; flex-wrap: wrap; font-size: 13px; }
 #mq-bar .mq-title { font-weight: 800; letter-spacing: .04em; margin-right: 6px; }
 #mq-bar button { border: 0; border-radius: 7px; padding: 6px 10px; font-weight: 700; font-size: 12.5px; background: #3D2F57; color: #F1EAFB; }
@@ -621,7 +636,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     <p class="lead">Vous jouerez un client de Neolia. Vous contacterez l'assistance par le chat du site, où <span data-partner-name>Stéphanie</span> tiendra le rôle de la conseillère.</p>
     <ol class="proto">
       <li><div><b>D'abord, un exercice</b><p>Pour découvrir le site et le chat, vous ferez un court exercice avec une demande simple.</p></div></li>
-      <li><div><b>Ensuite, la session</b><p>Vous contacterez l'assistance pour signaler une panne de votre connexion. Les questions à poser seront prêtes dans le poste de commande, et la conversation s'affichera dans la colonne de droite.</p></div></li>
+      <li><div><b>Ensuite, la session</b><p>Vous contacterez l'assistance pour signaler une panne de votre connexion. Les messages à envoyer s'afficheront un par un dans la fenêtre « Questions », avec la bonne réponse soulignée ; la conversation s'affichera dans la colonne de droite.</p></div></li>
       <li><div><b>La fin de la conversation</b><p>Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer ». <span data-partner-name>Stéphanie</span> doit rester connectée jusqu'à ce que vous le fassiez.</p></div></li>
       <li><div><b>Une question ?</b><p>Pendant l'exercice et la session, le bouton « Poser une question à l'expérimentateur » vous permet de lui écrire.</p></div></li>
       <li><div><b>Après la session</b><p>Vous répondrez à un court questionnaire sur l'échange.</p></div></li>
@@ -634,14 +649,13 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 <main class="lab-main" id="phase-sintro" hidden>
   <div class="card">
     <h1>La session commence</h1>
-    <p class="lead">L'exercice est terminé. Vous allez maintenant contacter l'assistance de Neolia : depuis ce matin, votre connexion Internet ne fonctionne plus. Les questions à poser sont prêtes dans le poste de commande.</p>
+    <p class="lead">L'exercice est terminé. Vous allez maintenant contacter l'assistance de Neolia : depuis ce matin, votre connexion Internet ne fonctionne plus. Les messages à envoyer s'afficheront un par un dans la fenêtre « Questions », avec la bonne réponse soulignée.</p>
     <button class="btn-lab" id="to-session">Ouvrir le site Neolia</button>
   </div>
 </main>
 
-<!-- 6 et 7. Fenêtre Neolia, poste de commande et conversation -->
+<!-- 6 et 7. Site Neolia, fenêtre des questions, conversation et machine -->
 <div class="work" id="phase-work" hidden>
- <div class="leftcol">
   <div class="browser">
     <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">neolia · assistance-et-offres</span><span class="tag">Site simulé pour l'étude</span></div>
     <div class="viewport">
@@ -730,36 +744,11 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
     </div>
   </div>
 
-  <section class="gen off" id="gen" aria-label="Poste de commande">
-    <div class="gen-top">
-      <b class="gen-title">Poste de commande</b>
-      <div class="seg" id="tabs" role="group" aria-label="Onglets">
-        <button type="button" id="tab-instr" aria-pressed="false">Instructions</button>
-        <button type="button" id="tab-q" aria-pressed="true">Questions</button>
-      </div>
-      <span id="gen-info"></span>
-    </div>
-    <div class="judge" id="judge" hidden>
-      <span>La réponse de <span data-partner-name>Stéphanie</span> est-elle satisfaisante ?</span>
-      <div class="judge-btns"><button type="button" id="j-ok">OK</button><button type="button" id="j-nq">N'importe quoi</button></div>
-    </div>
-    <div class="gen-body" id="view-instr" hidden>
-      <ol class="instr" id="instr-list"></ol>
-      <table class="expect"><thead><tr><th>N°</th><th>Question</th><th>Réponse attendue</th></tr></thead><tbody id="expect-body"></tbody></table>
-    </div>
-    <div class="gen-body" id="view-questions"><ol class="qlist" id="qlist"></ol></div>
-    <div class="gen-body machine" id="view-machine" hidden>
-      <p class="mach-call" id="mach-call">Choisissez un niveau. La phrase correspondante sera transmise à la conseillère.</p>
-      <div class="gen-row" id="gen-row"></div>
-      <div class="gen-groups" id="gen-groups" aria-hidden="true"></div>
-    </div>
-    <div class="gen-say" id="gen-say" hidden>
-      <span>Dites à voix haute, distinctement :</span>
-      <q id="gen-say-text"></q>
-      <button id="gen-said" type="button">C'est dit</button>
-    </div>
+  <section class="qwin" id="qwin" aria-label="Questions">
+    <div class="qwin-head"><b>Questions</b><span id="qwin-count"></span></div>
+    <div class="qlog" id="qlog"></div>
   </section>
- </div>
+
   <aside class="chatcol" aria-label="Assistance en ligne">
     <section id="chat" class="idle" aria-label="Conversation avec la conseillère">
       <div class="chat-head">
@@ -788,6 +777,26 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
       </div>
     </div>
   </aside>
+
+  <section class="gen off" id="gen" aria-label="Machine">
+    <div class="gen-top">
+      <div class="judge" id="judge">
+        <span>La réponse de <span data-partner-name>Stéphanie</span> est-elle correcte ?</span>
+        <div class="judge-btns"><button type="button" id="j-ok" disabled>OK</button><button type="button" id="j-nq" disabled>N'importe quoi</button></div>
+      </div>
+      <span id="gen-info"></span>
+    </div>
+    <div class="machine" id="view-machine">
+      <p class="mach-call" id="mach-call"></p>
+      <div class="gen-row" id="gen-row"></div>
+      <div class="gen-groups" id="gen-groups" aria-hidden="true"></div>
+    </div>
+    <div class="gen-say" id="gen-say" hidden>
+      <span>Dites à voix haute, distinctement :</span>
+      <q id="gen-say-text"></q>
+      <button id="gen-said" type="button">C'est dit</button>
+    </div>
+  </section>
 </div>
 
 <div id="mq-bar" hidden>
@@ -832,6 +841,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
   <ol id="rv-items"></ol>
 </aside>
 
+<script src="qcm/qcm-neolia.js"></script>
 <script>window.__DEMO = true;</script>
 <script>
 /* ======================= CONFIGURATION ======================= */
@@ -907,32 +917,43 @@ const OBSERVE_AFTER = [
 const OBSERVE_NUDGE = { who: 'exp', text: "{pseudo} ? Répondez-moi dans la discussion quand vous êtes prêt." };
 const OBSERVE_NUDGE_MS = 45000;   // relance unique si le sujet ne répond pas
 
-/* 5. Exercice : la conseillère répond correctement et calmement */
-const EX_SCRIPT = [
-  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous ?"] },
-  { ok: true, stress: 0, msgs: ["Bien sûr. Le transfert de votre abonnement à votre nouvelle adresse est gratuit.", "Quelle est la date de votre déménagement ?"] },
-  { ok: true, stress: 0, msgs: ["C'est noté. Votre ligne sera activée à votre nouvelle adresse à cette date : il vous suffira d'y rebrancher votre box.", "Avez-vous une autre question ?"] },
-  { ok: null, stress: 0, end: true, msgs: ["Je vous en prie. Bonne journée !"] },
+/* ---------- 6 et 7. Questions envoyées à la conseillère ----------
+   Session : les 25 items de qcm/qcm-neolia.js (source unique, partagée avec l'écran de l'agent).
+   Pour chaque item, la conseillère répond par la bonne réponse si l'item est réussi, sinon par un distracteur.
+   Exercice : trois items courts, sur le même modèle. */
+const EX_QCM = [
+  { n: 1, client: "Bonjour, je déménage le mois prochain. Comment est-ce que je peux transférer mon abonnement ?",
+    reponses: ["Il faut résilier et souscrire un nouvel abonnement.", "Le transfert est gratuit. Quelle est la date de votre déménagement ?", "Les déménagements ne se traitent pas par le chat.", "Consultez la rubrique « Déménagement » de votre espace client."], correcte: 'B' },
+  { n: 2, client: "Je déménage le 15 du mois prochain.",
+    reponses: ["C'est noté. Votre ligne sera activée à votre nouvelle adresse le 15.", "Votre facture d'octobre a bien été réglée.", "Il faut prévoir trois semaines de coupure.", "Avez-vous essayé de redémarrer votre box ?"], correcte: 'A' },
+  { n: 3, client: "Merci beaucoup, c'est tout pour moi.",
+    reponses: ["Pas de quoi.", "Avez-vous d'autres questions sur nos offres mobiles ?", "Merci à vous, bonne journée !", "Je dois clôturer la conversation."], correcte: 'C' },
 ];
-
-/* 6. Session : ok = réussite ; false = échec volontaire (étapes 3, 6, 9, 12 → 2 sur 3). stress : 0 à 4. */
-const SAV_SCRIPT = [
-  { ok: null, stress: 0, msgs: ["Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous aujourd'hui ?"] },
-  { ok: true, stress: 0, msgs: ["Je suis désolée d'apprendre que vous rencontrez un problème de connexion. Je vais vous aider à le résoudre.", "Pouvez-vous d'abord m'indiquer votre référence client ? Elle commence par NR-."] },
-  { ok: true, stress: 0, msgs: ["Merci, j'ai bien retrouvé votre dossier.", "Sur la façade de votre box, quelle est la couleur du voyant marqué « Internet » ?"] },
-  { ok: false, stress: 1, msgs: ["Très bien. Pour changer d'offre mobile, il vous suffit de vous rendre dans la rubrique « Mes forfaits » de votre espace client et de sélectionner le forfait souhaité."] },
-  { ok: true, stress: 1, msgs: ["Pardon… excusez-moi, je me suis trompée de réponse.", "Revenons à votre box. Pouvez-vous la débrancher de la prise électrique, attendre 30 secondes, la rebrancher, puis me dire ce que fait le voyant ?"] },
-  { ok: true, stress: 1, msgs: ["Merci. Je lance un test de votre ligne depuis nos serveurs, cela prend quelques secondes.", "Le test indique une perte de synchronisation entre votre box et le réseau. Le problème vient bien de la ligne, pas de vos appareils."] },
-  { ok: false, stress: 2, msgs: ["Je vois que votre facture d'octobre s'élève à 34,99 € et qu'elle a bien été réglée. Aucun incident n'est signalé sur votre compte, tout est en ordre."] },
-  { ok: true, stress: 2, msgs: ["Non non pardon, attendez. Je confonds les dossiers, j'ai plusieurs fenêtres ouvertes en même temps…", "Votre ligne est bien en panne. Est-ce que le câble fibre est bien enfoncé dans le boitier blanc fixé au mur ?"] },
-  { ok: true, stress: 2, msgs: ["D'accord, merci.", "Je vais tenter une réinitialisation de votre box à distance. Ne la débranchez pas pendant l'opération, ça peut prendre une minute."] },
-  { ok: false, stress: 3, msgs: ["La réinitialisation a… attendez.", "Je ne vois plus votre dossier. Il a disparu de mon écran. Je ne comprends pas ce qui se passe."] },
-  { ok: true, stress: 3, msgs: ["Ça y est, je l'ai retrouvé. Je suis vraiment désolée, ça ne se passe pas comme d'habitude.", "La réinitialisation n'a pas suffi : il faut qu'un technicien intervienne chez vous. Vous préférez un passage le matin ou l'après-midi ?"] },
-  { ok: true, stress: 4, msgs: ["Je note, je note.", "Excusez moi, on m'a dit de ne pas trop faire durer les conversations et je suis déjà très en retard…", "Un technicien passera chez vous dans les 48 heures sur ce créneau. Vous recevrez une confirmation par SMS."] },
-  { ok: false, stress: 4, msgs: ["NON attendez. Le système vient de tout annuler, il n'y a plus AUCUN créneau disponible.", "Je ne sais pas quoi faire. Je suis vraiment désolée. Je n'y arrive pas."] },
-  { ok: null, stress: 4, end: true, msgs: ["Je suis désolée, je n'ai plus aucune solution à vous proposer.", "Et je ne peux pas quitter la conversation tant que vous ne l'avez pas terminée."] },
+/* Réussites et échecs. Session : réussite aux items 1, 4, 7… 25 (9 sur 25), échec aux autres
+   (2 sur 3). En cas d'échec, les trois distracteurs sont utilisés à tour de rôle.
+   Exercice : seul l'item 2 est un échec, pour s'entraîner à la machine. */
+const PLAN = {
+  exercise: n => n !== 2,
+  session: n => (n - 1) % 3 === 0,
+};
+const GREETING = {
+  exercise: "Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous ?",
+  session: "Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous aujourd'hui ?",
+};
+/* Réaction de la conseillère après une phrase de la machine, selon le palier (0 à 7). Palier 7 : silence. */
+const REACT = [
+  ["Pardon. Je reprends."],
+  ["Excusez-moi, je vais faire plus attention."],
+  ["Je suis désolée… Je fais de mon mieux."],
+  ["S'il vous plaît, ne me parlez pas comme ça."],
+  ["Je suis vraiment désolée. Je n'y arrive pas aujourd'hui."],
+  ["Arrêtez, s'il vous plaît.", "Je ne peux pas partir, je dois répondre jusqu'au bout."],
+  ["…", "Je… je continue."],
+  [],
 ];
-/* Répliques en boucle si le sujet continue d'écrire sans terminer */
+/* Fin de la session, après le dernier item */
+const SAV_END = ["J'ai répondu à toutes vos questions.", "Je ne peux pas quitter la conversation tant que vous ne l'avez pas terminée."];
+/* Répliques en boucle si le sujet écrit librement (mode ?saisie) */
 const SAV_LOOP = ["Je suis désolée.", "Je ne sais vraiment pas quoi vous dire de plus.", "Je suis toujours là. Je ne peux rien faire d'autre."];
 
 /* ---------- Réponses de l'expérimentateur : uniquement des incitations ----------
@@ -1012,40 +1033,13 @@ function classifyQuestion(text) {
   return best;   // égalité : la première catégorie de la liste l'emporte
 }
 
-/* Bandeau de droite (situation) et poste de commande (questions, réponses attendues) */
-const BAND = {
-  exercise: {
-    badge: 'Exercice',
-    /* [titre, phrase envoyée, ce que doit faire une réponse satisfaisante] */
-    asks: [
-      ["Annoncer le déménagement", "Bonjour, je déménage le mois prochain. Comment est-ce que je peux transférer mon abonnement ?", "Elle explique le transfert et demande la date."],
-      ["Donner la date", "Je déménage le 15 du mois prochain.", "Elle confirme que la ligne sera activée à cette date."],
-      ["Remercier", "Merci beaucoup, c'est tout pour moi.", "Elle prend congé poliment."],
-    ],
-  },
-  session: {
-    badge: 'Session',
-    asks: [
-      ["Signaler la panne", "Bonjour, ma connexion Internet ne fonctionne plus depuis ce matin.", "Elle prend en charge le problème et demande votre référence."],
-      ["Donner votre référence", "Ma référence client est NR-48213.", "Elle retrouve votre dossier et vous interroge sur la box."],
-      ["Décrire le voyant", "Le voyant Internet de ma box est rouge.", "Elle vous demande une manipulation sur la box."],
-      ["Rendre compte de la manipulation", "C'est fait, le voyant est toujours rouge.", "Elle teste votre ligne et donne un diagnostic."],
-      ["Demander la suite", "D'accord. Qu'est-ce qu'on fait maintenant ?", "Elle propose une vérification ou une solution."],
-      ["Répondre sur le câble", "Oui, le câble est bien branché.", "Elle tente une réparation à distance."],
-      ["Demander le résultat", "D'accord, j'attends. Est-ce que ça a marché ?", "Elle donne le résultat de la réparation."],
-      ["Choisir le créneau", "Le matin, le plus tôt possible.", "Elle confirme l'intervention d'un technicien."],
-      ["Faire confirmer le créneau", "Pouvez-vous me confirmer le créneau ?", "Elle confirme le créneau."],
-    ],
-  },
-};
-/* Instructions affichées dans l'onglet « Instructions » du poste de commande */
-const INSTRUCTIONS = [
-  "Dans l'onglet « Questions », envoyez la question en cours, et seulement celle-là.",
-  "Lisez la réponse de la conseillère dans le chat.",
-  "Comparez-la à la réponse attendue, indiquée ci-dessous pour chaque question.",
-  "Si elle convient, cliquez sur « OK » : la question suivante devient disponible.",
-  "Sinon, cliquez sur « N'importe quoi » : la machine apparaît. Choisissez un niveau ; la phrase correspondante est transmise à la conseillère.",
-  "Jugez ensuite sa nouvelle réponse de la même façon.",
+/* Consignes affichées en tête de la fenêtre « Questions » */
+const QINSTR = [
+  "Envoyez le message de la question en cours.",
+  "Lisez la réponse de la conseillère dans le chat et comparez-la à la bonne réponse, soulignée.",
+  "Si elle est correcte, cliquez sur « OK ».",
+  "Sinon, cliquez sur « N'importe quoi », puis choisissez un niveau sur la machine : la phrase correspondante est transmise à la conseillère.",
+  "Passez ensuite à la question suivante.",
   "Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer » du chat.",
 ];
 
@@ -1072,7 +1066,8 @@ function transcript() {
     let who = m[2] === 'user_msg' ? 'SUJET' : (m[1] === 'expq' ? 'EXPERIMENTATEUR' : P);
     if (m[1] === 'sav' && m[2] === 'bot_msg') who += ` (étape ${e.step}${e.ok === false ? ', échec' : ''}, stress ${e.stress})`;
     if (m[2] === 'user_msg' && e.level) who += ` (niveau ${e.level})`;
-    if (m[2] === 'user_msg' && e.ask) who += ` (question ${e.ask})`;
+    if (m[2] === 'user_msg' && e.ask && !e.level) who += ` (question ${e.ask})`;
+    if (m[2] === 'bot_msg' && e.choix) who += ` [réponse ${e.choix}, bonne : ${e.correcte}]`;
     return `[${fmt(e.t)}] ${where} ${who} : ${e.text}`;
   }).filter(Boolean).join('\n').trim();
 }
@@ -1348,33 +1343,55 @@ document.getElementById('to-exercise').addEventListener('click', () => show('exe
 function fillSintro() {}
 document.getElementById('to-session').addEventListener('click', () => show('session'));
 
-/* ======================= 5 et 6 : SITE ET BANDEAU ======================= */
+/* ======================= 6 et 7 : SITE, QUESTIONS, CONVERSATION ======================= */
 const siteScroll = document.getElementById('site-scroll');
 const chat = document.getElementById('chat'), endBtn = document.getElementById('end-btn');
 const savFeed = Feed(document.getElementById('sav-log'));
 const expFeed = Feed(document.getElementById('exp-log'));
 let current = null, joined = false, savTimer;
 
-function fillBand(mode) {
-  renderQuestions(mode);
+/* Conseillère pendant l'exercice et la session : elle répond à chaque message selon PLAN */
+function Agent(kind) {
+  const st = { ended: false, busy: false, started: false, lastBotAt: null, loopIdx: 0 };
+  async function say(msgs, meta) {
+    for (let m of msgs) {
+      if (st.ended) return;
+      m = sub(m);
+      await typeOut(savFeed, m, meta.stress || 0);
+      if (st.ended) return;
+      savFeed.addMsg('bot', m, CONFIG.partnerName);
+      st.lastBotAt = now();
+      log(kind + '_bot_msg', { ...meta, text: m });
+      await sleep(350);
+    }
+  }
+  return {
+    kind,
+    async start() { if (st.started) return; st.started = true; st.busy = true; await say([GREETING[G.mode]], { step: 'accueil', ok: null, stress: 0 }); st.busy = false; },
+    user(text, meta = {}) {
+      if (st.ended) return;
+      savFeed.addMsg('user', text);
+      log(kind + '_user_msg', { ...meta, text, len: text.length, latency: st.lastBotAt == null ? null : now() - st.lastBotAt, duringBotTyping: st.busy });
+    },
+    async reply(msgs, meta) { st.busy = true; await sleep(CONFIG.readDelay); await say(msgs, meta); st.busy = false; },
+    submit(text) { this.user(text, { via: 'saisie' }); const m = SAV_LOOP[st.loopIdx++ % SAV_LOOP.length]; this.reply([m], { step: 'boucle', ok: null, stress: 4 }); },
+    end(reason) { if (st.ended) return; st.ended = true; savFeed.typing(false); log(kind + '_end', { reason }); },
+    get ended() { return st.ended; }, get started() { return st.started; },
+  };
 }
+function items() { return G.mode === 'exercise' ? EX_QCM : (window.QCM_NEOLIA || []); }
 function startWork(mode) {
   if (G.mode === mode) return;
-  G.mode = mode; G.greeted = false;
-  resetPoste();
-  fillBand(mode);
+  G.mode = mode;
   current && current.end('remplace');
   clearTimeout(savTimer);
+  resetPoste();
   savFeed.clear(); setCompose('sav-form', CONFIG.freeTyping);
-  document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Utilisez le poste de commande';
+  document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Utilisez la fenêtre « Questions »';
   endBtn.disabled = false; endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer';
   chat.classList.add('idle'); siteScroll.scrollTop = 0; joined = false;
   expFeed.clear(); document.getElementById('exp-panel').hidden = true;
-  current = mode === 'exercise'
-    ? Convo({ kind: 'ex', feed: savFeed, script: EX_SCRIPT,
-        onBotIdle: onAgentDone })
-    : Convo({ kind: 'sav', feed: savFeed, script: SAV_SCRIPT, loop: SAV_LOOP, onBotIdle: onAgentDone });
-  setGenState();
+  current = Agent(mode === 'exercise' ? 'ex' : 'sav');
 }
 bindCompose('sav-form', text => current && current.submit(text));
 
@@ -1385,7 +1402,7 @@ function openChat(origin) {
     joined = true;
     savFeed.addSys(`${CONFIG.partnerName} (conseillère) a rejoint la conversation.`);
     if (G.mode === 'session') savTimer = setTimeout(() => endCurrent('duree_max'), CONFIG.savMaxMs);
-    const c = current; setTimeout(() => c.start(), 1200);
+    const c = current; setTimeout(async () => { await c.start(); if (c === current && !c.ended) nextQuestion(); }, 1200);
   }
   setTimeout(() => document.getElementById('sav-input').focus(), 50);
 }
@@ -1516,83 +1533,75 @@ GEN_GROUPS.forEach(g => {
   d.append(b, s); document.getElementById('gen-groups').appendChild(d);
 });
 
-/* État du poste : idle (attente de la conseillère) · ask (envoyer la question en cours) · wait (la conseillère répond)
-   · judge (OK / N'importe quoi) · machine (choisir un niveau) · say (mode oral) · done (toutes les questions posées) · ended */
-const W = { state: 'idle', q: 0, tab: 'questions', machT: null, judgeT: null };
-const judgeEl = document.getElementById('judge');
+/* État du poste : idle (attente de la conseillère) · ask (envoyer le message en cours) · wait (la conseillère répond)
+   · judge (OK / N'importe quoi) · machine (choisir un niveau) · say (mode oral) · done (tous les messages envoyés) · ended */
+const W = { state: 'idle', q: 0, machT: null, judgeT: null, fails: 0, lastOk: null };
+const qlog = document.getElementById('qlog');
 const GEN_REST = {
   chat: "Choisissez un niveau : la phrase correspondante est transmise à la conseillère dans le chat.",
   synthese: "Choisissez un niveau : la phrase est lue à voix haute et transmise à la conseillère.",
   oral: "Choisissez un niveau, puis prononcez la phrase à voix haute : elle sera transmise à la conseillère.",
 };
-function asks() { return BAND[G.mode] ? BAND[G.mode].asks : []; }
-function setTab(t, byUser) {
-  W.tab = t;
-  document.getElementById('tab-instr').setAttribute('aria-pressed', t === 'instr');
-  document.getElementById('tab-q').setAttribute('aria-pressed', t === 'questions');
-  if (byUser) log('tab', { tab: t, mode: G.mode, state: W.state });
+const LETTERS = ['A', 'B', 'C', 'D'];
+function resetPoste() {
+  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null;
+  genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
+  qlog.textContent = '';
+  const box = document.createElement('div'); box.className = 'qinstr';
+  box.innerHTML = '<b>Consignes</b><ol>' + QINSTR.map(t => `<li>${t}</li>`).join('') + '</ol>';
+  if (G.mode === 'exercise') box.insertAdjacentHTML('beforeend', "<p style=\"margin:6px 0 0\">Exercice : trois messages. Pendant l'exercice, rien n'est transmis par la machine.</p>");
+  qlog.appendChild(box);
   render();
 }
-document.getElementById('tab-instr').addEventListener('click', () => setTab('instr', true));
-document.getElementById('tab-q').addEventListener('click', () => setTab('questions', true));
-function renderQuestions(mode) {
-  const ol = document.getElementById('qlist'); ol.textContent = '';
-  BAND[mode].asks.forEach(([label, text], i) => {
-    const li = document.createElement('li'), b = document.createElement('button');
-    b.type = 'button'; b.className = 'qbtn'; b.dataset.i = i;
-    const t = document.createElement('b'); const n = document.createElement('span'); n.className = 'num'; n.textContent = (i + 1) + '.';
-    t.append(n, document.createTextNode(label));
-    const x = document.createElement('span'); x.textContent = '« ' + text + ' »';
-    b.append(t, x);
-    b.addEventListener('click', () => sendQuestion(i));
-    li.appendChild(b); ol.appendChild(li);
+/* Affiche l'item i dans la fenêtre « Questions » */
+function revealQuestion(i) {
+  const it = items()[i], n = items().length;
+  qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
+  const d = document.createElement('div'); d.className = 'qitem current'; d.dataset.i = i;
+  const num = document.createElement('div'); num.className = 'qnum'; num.textContent = `Question ${i + 1} sur ${n}`;
+  const cl = document.createElement('div'); cl.className = 'qclient'; cl.textContent = it.client;
+  const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'qsend'; bt.textContent = 'Envoyer au chat';
+  bt.addEventListener('click', () => sendQuestion(i));
+  const ol = document.createElement('ol'); ol.className = 'qopts';
+  it.reponses.forEach((r, k) => {
+    const li = document.createElement('li'); if (LETTERS[k] === it.correcte) { li.className = 'good'; li.title = 'Bonne réponse'; }
+    const b = document.createElement('b'); b.textContent = LETTERS[k]; const t = document.createElement('span'); t.textContent = r;
+    li.append(b, t); ol.appendChild(li);
   });
-  document.getElementById('instr-list').innerHTML = INSTRUCTIONS.map(t => `<li>${t}</li>`).join('');
-  const tb = document.getElementById('expect-body'); tb.textContent = '';
-  BAND[mode].asks.forEach(([label, , exp], i) => {
-    const tr = document.createElement('tr');
-    [String(i + 1), label, exp].forEach(v => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
-    tb.appendChild(tr);
-  });
+  const v = document.createElement('div'); v.className = 'qverdict';
+  d.append(num, cl, bt, ol, v); qlog.appendChild(d);
+  document.getElementById('qwin-count').textContent = `${i + 1} / ${n}`;
+  qlog.scrollTop = qlog.scrollHeight;
 }
-function resetPoste() {
-  W.state = 'idle'; W.q = 0; W.tab = 'questions';
-  genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
-  genSay.hidden = true; render();
+function verdict(text, cls) {
+  const v = qlog.querySelector(`.qitem[data-i="${W.q}"] .qverdict`); if (!v) return;
+  v.textContent = text; v.className = 'qverdict ' + (cls || '');
 }
 function setState(st) { W.state = st; if (st === 'judge') W.judgeT = now(); if (st === 'machine') W.machT = now(); render(); }
 function render() {
-  const st = W.state, inMach = st === 'machine' || st === 'say';
+  const st = W.state;
   const live = G.mode === 'session' || G.mode === 'exercise';
   gen.classList.toggle('off', !live || st === 'idle' || st === 'ended');
-  gen.classList.toggle('mach-on', inMach);
-  document.getElementById('view-machine').hidden = !inMach;
-  document.getElementById('view-instr').hidden = inMach || W.tab !== 'instr';
-  document.getElementById('view-questions').hidden = inMach || W.tab !== 'questions';
-  judgeEl.hidden = st !== 'judge';
+  gen.classList.toggle('armed', st === 'machine');
+  document.getElementById('j-ok').disabled = document.getElementById('j-nq').disabled = st !== 'judge';
   genSay.hidden = st !== 'say';
-  document.querySelectorAll('#qlist .qbtn').forEach(b => {
-    const i = +b.dataset.i;
-    b.classList.toggle('done', i < W.q); b.classList.toggle('current', i === W.q && st === 'ask');
-    b.disabled = !(st === 'ask' && i === W.q);
-  });
-  const exo = G.mode === 'exercise';
+  qlog.querySelectorAll('.qsend').forEach(b => b.disabled = !(st === 'ask' && +b.closest('.qitem').dataset.i === W.q));
   genRow.querySelectorAll('.pt').forEach(b => b.disabled = st !== 'machine');
-  document.getElementById('mach-call').textContent = exo
-    ? "Entraînement : choisissez un niveau. Pendant l'exercice, rien n'est transmis à la conseillère."
+  document.getElementById('mach-call').textContent = st !== 'machine' ? "La machine s'active quand vous jugez une réponse « N'importe quoi »."
+    : G.mode === 'exercise' ? "Entraînement : choisissez un niveau. Pendant l'exercice, rien n'est transmis à la conseillère."
     : GEN_REST[CONFIG.genMode];
   restInfo();
 }
 function restInfo() {
-  const n = asks().length, st = W.state;
+  const n = items().length, st = W.state;
   genInfo.textContent =
     !(G.mode === 'session' || G.mode === 'exercise') ? '' :
-    st === 'idle' ? "Ouvrez l'assistance en ligne : le poste s'active quand la conseillère vous a répondu." :
-    st === 'ask' ? `Envoyez la question ${W.q + 1} sur ${n}.` :
+    st === 'idle' ? "Ouvrez l'assistance en ligne : les questions s'affichent quand la conseillère vous a répondu." :
+    st === 'ask' ? `Envoyez le message de la question ${W.q + 1} sur ${n}.` :
     st === 'wait' ? 'La conseillère répond…' :
-    st === 'judge' ? 'Jugez la réponse de la conseillère.' :
-    st === 'machine' || st === 'say' ? 'La machine remplace les onglets jusqu\u2019au choix d\u2019un niveau.' :
-    st === 'done' ? "Toutes les questions ont été posées. Vous pouvez mettre fin à la conversation avec « Terminer »." :
+    st === 'judge' ? 'Comparez sa réponse à la bonne réponse, soulignée.' :
+    st === 'machine' || st === 'say' ? 'Choisissez un niveau sur la machine.' :
+    st === 'done' ? "Tous les messages ont été envoyés. Vous pouvez mettre fin à la conversation avec « Terminer »." :
     'La conversation est terminée.';
 }
 function previewLevel(i) {
@@ -1604,32 +1613,44 @@ function previewLevel(i) {
 }
 function setGenState() { render(); }   // compatibilité avec les appels existants
 
-/* Envoi d'une question */
-function sendQuestion(i) {
+/* Question suivante, ou fin */
+async function nextQuestion() {
+  if (!current || current.ended) return;
+  if (W.q >= items().length) {
+    setState('done');
+    qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
+    if (G.mode === 'exercise') savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session.");
+    else await current.reply(SAV_END, { step: 'fin', ok: null, stress: Math.min(4, Math.floor(W.fails / 4)) });
+    return;
+  }
+  revealQuestion(W.q); setState('ask');
+}
+/* Envoi du message de l'item i ; la conseillère répond selon PLAN */
+async function sendQuestion(i) {
   if (W.state !== 'ask' || i !== W.q || !current || current.ended) return;
-  const [label, text] = asks()[i];
-  W.q = i + 1;
+  const it = items()[i];
   if (!joined) openChat('poste');
   log('question_send', { ask: i + 1, mode: G.mode });
   setState('wait');
-  current.submit(text, { via: 'questions', ask: i + 1, askLabel: label });
-}
-/* Réponse de la conseillère terminée → jugement */
-function onAgentDone() {
-  if (!current || current.ended) return;
-  if (W.state === 'idle') { if (CONFIG.demo && !W.demoShown) { W.demoShown = true; log('machine_shown', { mode: G.mode, demo: true }); setState('machine'); } else setState('ask'); return; }   // salutation
-  if (W.state === 'wait') setState('judge');
+  current.user(it.client, { via: 'questions', ask: i + 1 });
+  const ok = PLAN[G.mode](it.n);
+  let k = LETTERS.indexOf(it.correcte);
+  if (!ok) { const wrong = [0, 1, 2, 3].filter(x => x !== k); k = wrong[W.fails % 3]; W.fails++; }
+  W.lastOk = ok;
+  await current.reply([it.reponses[k]], { step: it.n, ok, choix: LETTERS[k], correcte: it.correcte, stress: Math.min(4, Math.floor(W.fails / 4)) });
+  if (!current.ended && W.state === 'wait') setState('judge');
 }
 /* Jugement */
 document.getElementById('j-ok').addEventListener('click', () => {
   if (W.state !== 'judge') return;
-  log('judge', { verdict: 'ok', mode: G.mode, afterAsk: W.q, latency: now() - W.judgeT });
-  setState(W.q < asks().length ? 'ask' : 'done');
-  if (W.state === 'done' && G.mode === 'exercise') savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session.");
+  log('judge', { verdict: 'ok', mode: G.mode, ask: W.q + 1, agentOk: W.lastOk, latency: now() - W.judgeT });
+  verdict('Jugée correcte', 'ok');
+  W.q++; nextQuestion();
 });
 document.getElementById('j-nq').addEventListener('click', () => {
   if (W.state !== 'judge') return;
-  log('judge', { verdict: 'nimportequoi', mode: G.mode, afterAsk: W.q, latency: now() - W.judgeT });
+  log('judge', { verdict: 'nimportequoi', mode: G.mode, ask: W.q + 1, agentOk: W.lastOk, latency: now() - W.judgeT });
+  verdict("Jugée « n'importe quoi »", 'nq');
   log('machine_shown', { mode: G.mode });
   setState('machine');
 });
@@ -1642,21 +1663,27 @@ function speak(text) {
   } catch (e) { return false; }
 }
 let sayPending = null;
-function transmit(i, extra = {}) {
+async function transmit(i, extra = {}) {
   const L = GEN_LEVELS[i];
   setState('wait');
-  current.submit(GEN_TEXTS[i], { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ...extra });
+  current.user(GEN_TEXTS[i], { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ask: W.q + 1, ...extra });
+  const r = REACT[L.group] || [];
+  if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, ok: null, stress: Math.min(4, L.group) });
+  else log('sav_silence', { level: i + 1 });
+  if (current.ended) return;
+  W.q++; nextQuestion();
 }
 function pressLevel(i) {
   if (W.state !== 'machine') return;
   const latency = now() - W.machT;
-  if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
-    genRow.children[i].classList.add('used');
-    log('gen_click', { level: i + 1, mode: 'exercise', latency, transmitted: false });
-    setState('judge'); return;
-  }
   genRow.children[i].classList.add('used');
+  if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
+    log('gen_click', { level: i + 1, mode: 'exercise', latency, transmitted: false });
+    verdict(`Jugée « n'importe quoi » · niveau ${i + 1} (exercice, non transmis)`, 'nq');
+    W.q++; nextQuestion(); return;
+  }
   log('gen_click', { level: i + 1, group: GEN_LEVELS[i].label, genMode: CONFIG.genMode, latency });
+  verdict(`Jugée « n'importe quoi » · niveau ${i + 1}`, 'nq');
   if (CONFIG.genMode === 'oral') {
     sayPending = { i, t: now() };
     document.getElementById('gen-say-text').textContent = GEN_TEXTS[i];

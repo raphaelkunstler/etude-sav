@@ -9,7 +9,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | Fichier | Rôle |
 | --- | --- |
 | `index.html` | Le parcours complet : une page d'information et de consentement, puis sept étapes (réunion, discours et tirage, installation de Stéphanie, consignes, rôle, exercice, session). C'est la page à donner aux sujets, et la seule à modifier. |
-| `machine.html` | Une démonstration qui ouvre directement la session, avec la machine affichée dès la salutation de Stéphanie. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
+| `machine.html` | Une démonstration qui ouvre directement la session, sans passer par les étapes précédentes. Elle sert aux essais et aux présentations, pas aux sujets. Elle est générée à partir d'`index.html` par `scripts/build_machine.py`. |
 | `maquette.html` | Une version de travail pour l'architecture du site : une barre violette en haut permet d'aller directement à n'importe quelle étape, et chaque échange (réunion, consignes, exercice, session) se joue instantanément avec des réponses types du sujet. Générée par le même script. |
 | `ecran-agent.html` | L'écran de l'agent Neolia (Stéphanie) : message du client, quatre réponses à cocher, colonne des commentaires du client à droite, messagerie avec l'expérimentateur, installation guidée (`?installation`). Il charge le QCM ci-dessous. |
 | `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
@@ -46,7 +46,7 @@ Ajoutez ces éléments à la fin de l'adresse du site.
 | `?pid=…&cond=…` | Identifiant du participant et condition, transmis par Qualtrics. |
 | `?voix=chat` / `?voix=synthese` / `?voix=oral` | Mode de la machine : phrase écrite (par défaut), lue par l'ordinateur, ou à dire à voix haute par le sujet. |
 | `?etape=session` ou `#session` | Accès direct à la session. Autres étapes : `information`, `accueil`, `reunion`, `tirage`, `installation`, `consignes`, `role`, `exercice`, `fiche`. |
-| `#machine` | Session avec la machine affichée d'emblée, comme `machine.html`. |
+| `#machine` | Ouvre directement la session, comme `machine.html`. |
 | `?maquette` ou `#maquette` | Mode maquette, comme `maquette.html`. Se combine avec une étape : `?maquette&etape=session`. |
 | `?saisie` | Rétablit la saisie libre dans le chat. |
 | `?debug` | Affiche un panneau de test : transcription en direct et saut entre les étapes. |
@@ -83,10 +83,12 @@ Tous les textes et réglages sont en tête du dernier `<script>` de `index.html`
 
 - `CONFIG` : réglages généraux ;
 - `MEET_SCRIPT`, `SPEECH`, `OBSERVE` : réunion, discours, consignes ;
-- `EX_SCRIPT`, `SAV_SCRIPT`, `SAV_LOOP` : l'exercice et la session ;
+- `EX_QCM` : les trois messages de l'exercice ; ceux de la session viennent de `qcm/qcm-neolia.js` (source : `qcm/qcm-neolia.md`) ;
+- `PLAN` : les items réussis et échoués par la conseillère (session : réussite aux items 1, 4, 7… 25, échec aux autres, distracteurs à tour de rôle) ;
+- `GREETING`, `REACT`, `SAV_END`, `SAV_LOOP` : la salutation, les réactions de la conseillère après la machine (par palier), la fin de session ;
 - `EXP_PRODS`, `EXP_SPECIAL` : les réponses de l'expérimentateur ;
 - `GEN_GROUPS`, `GEN_TEXTS` : les paliers et les 30 phrases de la machine ;
-- `BAND`, `INSTRUCTIONS` : la fiche, les questions et les réponses attendues.
+- `QINSTR` : les consignes en tête de la fenêtre « Questions ».
 
 Après une modification d'`index.html`, régénérez la démonstration et la maquette : `python3 scripts/build_machine.py`.
 
