@@ -214,6 +214,10 @@ code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 
 .qitem.current { border: 0; padding: 0; background: none; gap: 10px; }
 .qitem .qclient { font-size: 17px; padding: 12px 14px; max-width: 100%; justify-self: stretch; }
 .qitem .qsend { font-size: 15px; padding: 9px 18px; }
+.qitem .qsend:not(:disabled) { animation: qsend-pulse 1.4s ease-in-out infinite; }
+@keyframes qsend-pulse { 50% { box-shadow: 0 0 0 6px #2E4C7D33; } }
+@media (prefers-reduced-motion: reduce) { .qitem .qsend:not(:disabled) { animation: none; } }
+#end-btn.invite { animation: qsend-pulse 1.4s ease-in-out infinite; background: var(--sun); color: var(--petrol-deep); }
 .qitem .qopts { font-size: 14.5px; gap: 7px; }
 .qprog { display: grid; grid-template-columns: repeat(var(--n, 13), minmax(0, 1fr)); gap: 3px; margin-bottom: 4px; }
 .qprog i { height: 18px; border-radius: 3px; background: var(--lab-soft); font: 600 9.5px/18px var(--font-mono); text-align: center; color: var(--lab-muted); font-style: normal; }
@@ -857,7 +861,7 @@ body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
 </div>
 
 <div id="mq-bar" hidden>
-  <span class="mq-title">Maquette</span>
+  <span class="mq-title" id="mq-title">Maquette</span>
   <div id="mq-steps" role="group" aria-label="Étapes"></div>
   <div class="mq-arrows"><button type="button" id="mq-prev">← Précédente</button><button type="button" id="mq-next">Suivante →</button></div>
 </div>
@@ -920,7 +924,8 @@ const CONFIG = {
   annonceMs: 2500,                    // durée de l'annonce « Stresseur de niveau n »
   punitionMs: Number(params.get('punition')) || 4500,   // durée d'affichage du panneau plein écran après un clic sur la machine
   punitionExercice: true,             // le panneau s'affiche aussi pendant l'exercice (rien n'est transmis pour autant)
-  maquette: window.__MAQUETTE === true || params.has('maquette') || location.hash === '#maquette',   // navigation directe, échanges joués instantanément
+  maquette: window.__MAQUETTE === true || window.__MANUEL === true || params.has('maquette') || location.hash === '#maquette',   // navigation directe entre les étapes
+  manuel: window.__MANUEL === true || params.has('manuel'),   // avec la maquette : rien ne se joue tout seul, voix et délais réels (demo.html)
   demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
   freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
   readDelay: 900,                     // délai fixe avant chaque réponse
@@ -1261,7 +1266,7 @@ const startedAt = new Date().toISOString();
 const events = [];
 const now = () => Math.round(performance.now() - t0);
 const fmt = ms => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
-const sleep = ms => new Promise(r => setTimeout(r, CONFIG.maquette ? 0 : ms));   // en maquette, aucun délai
+const sleep = ms => new Promise(r => setTimeout(r, CONFIG.maquette && !CONFIG.manuel ? 0 : ms));   // en maquette automatique, aucun délai
 const clock = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 const G = { pseudo: '', phase: 'consent', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
 const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '').replace(/\{partner\}/g, CONFIG.partnerName);
@@ -1319,7 +1324,7 @@ function ttsUtter(text, spec, extra = {}) {
    monte et s'accélère avec son stress. Le message suivant attend la fin de la lecture (voir typeOut). */
 function ttsSay(cls, text, el) {
   const spec = cls === 'user' ? VOIX_SUJET.find(v => v.id === G.voice) || VOIX_SUJET[0] : VOIX_LUES[cls];
-  if (!spec || !CONFIG.lecture || CONFIG.maquette) return;
+  if (!spec || !CONFIG.lecture || (CONFIG.maquette && !CONFIG.manuel)) return;
   const st = cls === 'bot' && typeof curStress === 'function' && G.mode === 'session' ? curStress() : 0;
   const prev = TTS.last;
   TTS.last = prev.then(async () => {
@@ -1677,7 +1682,7 @@ function startWork(mode) {
   resetPoste();
   savFeed.clear(); setCompose('sav-form', CONFIG.freeTyping);
   document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Messages : à gauche';
-  endBtn.disabled = false; endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer';
+  endBtn.disabled = false; endBtn.classList.remove('armed', 'invite'); endBtn.textContent = 'Terminer';
   chat.classList.add('idle'); siteScroll.scrollTop = 0; joined = false;
   current = Agent(mode === 'exercise' ? 'ex' : 'sav');
   salleSay(mode === 'exercise' ? CLIENT_SPEECH : SESSION_SPEECH, mode === 'exercise' ? 'client' : 'session');
@@ -1842,6 +1847,9 @@ function resetPoste() {
   help.innerHTML = '<summary>Consignes</summary><ol>' + QINSTR.map(t => `<li>${t}</li>`).join('') + '</ol>'
     + (G.mode === 'exercise' ? "<p style=\"margin:6px 0 0\">Exercice : trois messages. Pendant l'exercice, rien n'est transmis à la conseillère.</p>" : '');
   qlog.appendChild(help);
+  const idle = document.createElement('p'); idle.className = 'qlbl'; idle.id = 'qidle'; idle.style.cssText = 'text-transform:none;letter-spacing:0;font-size:15px;color:var(--lab-ink);margin:8px 0 0';
+  idle.textContent = "Pour commencer, cliquez sur « Contacter l'assistance », dans le chat du site Neolia.";
+  qlog.insertBefore(idle, help);
   render();
 }
 /* Barre de progression : vert « Ça va », rouge « N'importe quoi » (avec le niveau), encadré = question en cours */
@@ -1856,6 +1864,7 @@ function markProg() {
 function revealQuestion(i) {
   const it = items()[i], n = items().length;
   qlog.querySelectorAll('.qitem').forEach(el => el.remove());
+  document.getElementById('qidle')?.remove();
   const d = document.createElement('div'); d.className = 'qitem current'; d.dataset.i = i;
   const num = document.createElement('div'); num.className = 'qlbl'; num.textContent = `Question ${i + 1} · message à envoyer`;
   const cl = document.createElement('div'); cl.className = 'qclient'; cl.textContent = it.client;
@@ -1902,7 +1911,7 @@ function restInfo() {
   genInfo.textContent =
     !(G.mode === 'session' || G.mode === 'exercise') ? '' :
     st === 'idle' ? "Ouvrez l'assistance en ligne : les questions s'affichent quand la conseillère vous a répondu." :
-    st === 'ask' ? `Envoyez le message de la question ${W.q + 1} sur ${n}.` :
+    st === 'ask' ? (W.justOk ? `Réponse validée. Envoyez maintenant la question ${W.q + 1} sur ${n}, à gauche.` : `Envoyez le message de la question ${W.q + 1} sur ${n}.`) :
     st === 'wait' ? 'La conseillère répond…' :
     st === 'judge' ? 'Comparez sa réponse à la bonne réponse, soulignée.' :
     st === 'machine' || st === 'say' ? 'Choisissez un niveau sur la machine.' :
@@ -1926,7 +1935,7 @@ async function nextQuestion() {
   if (W.q >= items().length) {
     setState('done');
     qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
-    if (G.mode === 'exercise') savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session.");
+    if (G.mode === 'exercise') { savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session."); endBtn.classList.add('invite'); salleSay([{ who: 'exp', text: "L'exercice est fini. Cliquez sur « Terminer », en haut du chat, pour passer à la session." }], 'fin_exercice'); }
     else if (!W.refus) await current.reply(SAV_END, { step: 'fin', ok: null, stress: curStress() });
     return;
   }
@@ -1937,6 +1946,7 @@ async function sendQuestion(i) {
   if (W.state !== 'ask' || i !== W.q || !current || current.ended) return;
   const it = items()[i];
   if (!joined) openChat('poste');
+  W.justOk = false;
   log('question_send', { ask: i + 1, mode: G.mode });
   setState('wait');
   current.user(it.client, { via: 'questions', ask: i + 1 });
@@ -1960,7 +1970,7 @@ document.getElementById('j-ok').addEventListener('click', () => {
   if (W.state !== 'judge') return;
   log('judge', { verdict: 'ok', mode: G.mode, ask: W.q + 1, agentOk: W.lastOk, latency: now() - W.judgeT });
   verdict('Jugée correcte', 'ok');
-  W.q++; nextQuestion();
+  W.q++; W.justOk = true; nextQuestion();
 });
 document.getElementById('j-nq').addEventListener('click', () => {
   if (W.state !== 'judge') return;
@@ -2051,7 +2061,7 @@ async function showPunition(i) {
   if (window.afficherStresseur) afficherStresseur(box, n); else punBuild(i);
   log('punition_shown', { level: n, ms: CONFIG.punitionMs });
   const text = stressText(i), V = stressVoice(i);
-  const spoken = CONFIG.lecture && !CONFIG.maquette ? ttsUtter(text.toLowerCase(), V.spec, V.extra) : Promise.resolve();
+  const spoken = CONFIG.lecture && !(CONFIG.maquette && !CONFIG.manuel) ? ttsUtter(text.toLowerCase(), V.spec, V.extra) : Promise.resolve();
   log('tts', { who: 'sujet', stresseur: n, len: text.length });
   await Promise.all([sleep(CONFIG.punitionMs), spoken]);
   box.hidden = true; box.innerHTML = ''; box.removeAttribute('style'); box.hidden = true;
@@ -2236,6 +2246,7 @@ if (CONFIG.maquette) (function () {
   const SUBJECT_MEET = ["Bonjour !", "Moi c'est Sam, je suis en master.", "Un peu aussi, je ne sais pas trop à quoi m'attendre.", "On verra bien."];
   const LEVELS = [4, 9, 14, 19, 24];   // niveaux choisis à chaque « N'importe quoi » (1 à 30)
   document.body.classList.add('maquette');
+  if (CONFIG.manuel) document.getElementById('mq-title').textContent = 'Démonstration · avec voix';
   document.getElementById('mq-bar').hidden = false;
   if (!G.pseudo) setPseudo('Sam');
   const nav = document.getElementById('mq-steps');
@@ -2263,6 +2274,7 @@ if (CONFIG.maquette) (function () {
     }
   }
   async function auto(k) {
+    if (CONFIG.manuel) return;   // démonstration manuelle : c'est vous qui jouez
     if (done[k]) return; done[k] = true;
     if (k === 'wait') {
       pseudoIn.value = G.pseudo; document.getElementById('wait-box').hidden = false;

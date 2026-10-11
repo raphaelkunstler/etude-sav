@@ -15,6 +15,7 @@ Le site n'a besoin d'aucun serveur, d'aucune base de données ni d'aucune clé d
 | `reactions-stephanie.md` | La liste lisible des répliques de Stéphanie : réaction à chacun des 30 niveaux de la machine (avec le stress, la demande d'arrêt et le refus), salutation, fin de session. Fichier généré à partir d'`index.html` par `scripts/build_reactions.py` : ne pas le modifier à la main. |
 | `qcm/qcm-neolia.md` | Le QCM de la conseillère : 25 messages du client, quatre réponses chacun (une bonne, trois distracteurs), et le corrigé. C'est la source à modifier. |
 | `qcm/qcm-neolia.js` | Le même QCM sous forme de données, lu par `ecran-agent.html`. Il est généré par `scripts/build_qcm.py`. |
+| `demo.html` | Démonstration à jouer soi-même : barre de navigation entre les étapes, voix et délais réels, rien ne se joue tout seul. Générée par `scripts/build_machine.py`. |
 | `integration-qualtrics.md` | La procédure d'intégration dans Qualtrics. |
 | `.nojekyll` | Empêche GitHub de transformer les fichiers. Il ne faut pas le supprimer. |
 

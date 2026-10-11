@@ -1,0 +1,2315 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Démonstration Neolia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : la plateforme d'étude (sobre, administrative) encadre tout le parcours. Aux étapes 5 et 6, elle contient
+   une fenêtre de navigateur simulée où s'affiche le site fictif Neolia, et la conversation avec la conseillère dans la colonne de droite. Thème clair unique, choisi délibérément. */
+:root {
+  --lab-bg: #ECEFF3;
+  --lab-paper: #FFFFFF;
+  --lab-ink: #1C2430;
+  --lab-muted: #5E6A78;
+  --lab-accent: #2E4C7D;
+  --lab-line: #D5DBE3;
+  --lab-soft: #E3E9F2;
+  --petrol: #0B4A52;
+  --petrol-deep: #06343A;
+  --sun: #F2C230;
+  --sand: #F5F1E8;
+  --paper: #FFFFFF;
+  --ink: #15262A;
+  --muted: #5B6C70;
+  --line: #DCE3E2;
+  --bubble-bot: #EEF2F1;
+  --ok: #3FB56A;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lab-bg); color: var(--lab-ink); }
+body { margin: 0; }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+
+/* ===== Plateforme d'étude ===== */
+.lab-bar { background: var(--lab-paper); border-bottom: 1px solid var(--lab-line); }
+.lab-bar .inner { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; flex-wrap: wrap; }
+.lab-brand { font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.lab-brand .sq { width: 22px; height: 22px; border-radius: 5px; background: var(--lab-accent); display: grid; place-items: center; }
+.lab-brand .sq::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+.lab-brand small { font-family: var(--font-mono); font-weight: 400; font-size: 12px; color: var(--lab-muted); }
+.steps { display: flex; gap: 5px; align-items: center; font-size: 13px; color: var(--lab-muted); }
+.steps span { margin-right: 6px; }
+.steps i { width: 20px; height: 4px; border-radius: 4px; background: var(--lab-line); }
+.steps i.done { background: var(--lab-accent); }
+.lab-main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+.card { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 28px; }
+.lab-main h1 { font-size: clamp(24px, 3.2vw, 30px); line-height: 1.2; margin: 0 0 10px; text-wrap: balance; }
+.lab-main p { margin: 0 0 14px; max-width: 64ch; }
+.lead { color: var(--lab-muted); }
+.btn-lab { background: var(--lab-accent); color: #fff; border: 0; border-radius: 8px; padding: 12px 20px; font-weight: 600; }
+.btn-lab:disabled { opacity: .45; cursor: not-allowed; }
+.field { display: grid; gap: 6px; margin: 18px 0; max-width: 340px; }
+.field label { font-weight: 600; font-size: 14px; }
+.field input { font: inherit; padding: 10px 12px; border: 1px solid var(--lab-line); border-radius: 8px; background: var(--lab-paper); color: var(--lab-ink); }
+.field small { color: var(--lab-muted); font-size: 13px; }
+.field.wide { max-width: 560px; }
+.symbols { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; }
+.symbols button { aspect-ratio: 1; border: 2px solid var(--lab-line); border-radius: 10px; background: var(--lab-paper); font-size: 22px; color: var(--lab-accent); }
+.symbols button[aria-pressed="true"] { border-color: var(--lab-accent); background: var(--lab-soft); box-shadow: 0 0 0 3px #2E4C7D33; }
+.symbols button:disabled { opacity: .3; cursor: not-allowed; }
+.voices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.voice { border: 2px solid var(--lab-line); border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--lab-paper); cursor: pointer; }
+.voice[aria-pressed="true"] { border-color: var(--lab-accent); background: var(--lab-soft); }
+.voice b { display: block; font-size: 15px; } .voice small { font-size: 12.5px; }
+.voice .play { border: 0; border-radius: 7px; padding: 5px 10px; background: var(--lab-accent); color: #fff; font-weight: 700; font-size: 13px; flex: none; }
+.msg.speaking { box-shadow: 0 0 0 3px #F2C230; }
+@media (max-width: 640px) { .voices { grid-template-columns: 1fr; } }
+.waiting { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding: 14px 16px; background: var(--lab-soft); border-radius: 10px; font-size: 15px; }
+.spinner { width: 20px; height: 20px; border-radius: 50%; border: 3px solid #2E4C7D40; border-top-color: var(--lab-accent); animation: spin 0.9s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.found { font-weight: 600; }
+.next-row { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+/* Salles de réunion */
+.meeting { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; }
+.people { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; align-self: start; }
+.people h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--lab-muted); margin: 0; }
+.person { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; flex: none; position: relative; }
+.pic.on::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: var(--ok); border: 2px solid var(--lab-paper); }
+.pic.me { background: #2E4C7D; } .pic.partner { background: #7A5C2E; } .pic.exp { background: #4F5B6B; }
+.person b { display: block; font-size: 14px; }
+.person span { font-size: 12px; color: var(--lab-muted); }
+.room { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 14px; display: flex; flex-direction: column; height: min(560px, calc(100vh - 230px)); min-height: 400px; overflow: hidden; }
+.room-head { padding: 12px 16px; border-bottom: 1px solid var(--lab-line); font-size: 14px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.room-next { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-top: 1px solid var(--lab-line); background: #FBE9C4; font-size: 14px; font-weight: 600; flex-wrap: wrap; }
+.room-head span { color: var(--lab-muted); font-family: var(--font-mono); font-size: 12px; }
+
+/* Discours de l'expérimentateur */
+.speaker { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.speaker b { display: block; }
+.speaker span { font-size: 13px; color: var(--lab-muted); }
+.speech { display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
+.speech .msg { max-width: 100%; }
+
+/* Listes numérotées du protocole */
+.proto { display: grid; gap: 18px; margin: 22px 0; padding: 0; list-style: none; counter-reset: p; }
+.proto li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; counter-increment: p; }
+.proto li::before { content: counter(p); width: 30px; height: 30px; border-radius: 50%; background: var(--lab-soft); color: var(--lab-accent); font-weight: 700; display: grid; place-items: center; font-size: 14px; }
+.proto b { display: block; margin-bottom: 2px; }
+.proto p { margin: 0; color: var(--lab-muted); }
+
+/* Tirage */
+.tokens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 22px 0; }
+.token { border: 2px solid var(--lab-line); border-radius: 14px; padding: 20px; text-align: center; background: var(--lab-paper); transition: border-color .15s, background .15s; }
+.token b { display: block; font-size: 20px; margin-bottom: 4px; }
+.token span { color: var(--lab-muted); font-size: 14px; }
+.token.lit { border-color: var(--lab-accent); background: var(--lab-soft); }
+.token .who { margin-top: 10px; font-weight: 700; color: var(--lab-accent); min-height: 1.5em; }
+.result { font-size: 18px; font-weight: 600; margin: 4px 0 18px; }
+.sheet { border: 1px solid var(--lab-line); border-radius: 12px; padding: 18px 20px; background: #FAFBFC; margin-bottom: 20px; }
+.sheet h2 { font-size: 16px; margin: 0 0 10px; }
+.sheet ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+code { font-family: var(--font-mono); background: var(--lab-soft); padding: 1px 6px; border-radius: 4px; }
+
+/* ===== Étapes 5 et 6 : fenêtre + bandeau ===== */
+/* Scène : bandeau gauche (questions) · centre · salle à droite · bandeau du bas */
+.work { display: grid; grid-template-columns: 300px minmax(0, 1fr) 330px; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "qs center salle" "bottom bottom salle"; gap: 12px; padding: 12px; height: calc(100vh - 58px); min-height: 620px; }
+.work > .qwin { grid-area: qs; } .work > .center { grid-area: center; } .work > .salle { grid-area: salle; } .work > .bottom { grid-area: bottom; }
+.work.wide > .center { grid-column: 1 / 3; } .work.wide > .qwin { display: none; }
+.work.blank-left > .qwin > * { visibility: hidden; }
+.band-x { border: 2px solid #C5D0E2 !important; background: #FBFCFE !important; }
+.center { min-width: 0; min-height: 0; display: flex; }
+.center > * { flex: 1; min-width: 0; min-height: 0; }
+.cpanel { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; overflow: hidden; }
+.welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; }
+.welcome h1 { font-size: clamp(22px, 2.4vw, 30px); margin: 0; }
+.welcome .lead { margin: 0; }
+/* Diaporama du discours */
+.slides { width: 100%; max-width: 980px; aspect-ratio: 16 / 9; max-height: 100%; display: flex; }
+.slide { flex: 1; display: flex; flex-direction: column; background: #fff; border: 1px solid #C5D0E2; border-radius: 10px; box-shadow: 0 10px 30px #1C243022; overflow: hidden; text-align: left; animation: slide-in .45s ease; }
+@keyframes slide-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide { animation: none; } }
+.slide-top { display: flex; justify-content: space-between; align-items: center; padding: 10px 22px; background: var(--lab-accent); color: #fff; font-size: 13px; letter-spacing: .04em; }
+.slide-body { flex: 1; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 4%; align-items: center; padding: 3% 5%; min-height: 0; }
+.slide-body.solo { grid-template-columns: 1fr; text-align: center; }
+.slide h3 { margin: 0 0 .5em; font-size: clamp(18px, 2.4vw, 32px); line-height: 1.15; color: var(--lab-ink); }
+.slide ul { margin: 0; padding-left: 1.1em; display: grid; gap: .45em; font-size: clamp(13px, 1.35vw, 18px); color: #34404E; }
+.slide p { margin: 0; font-size: clamp(13px, 1.35vw, 18px); color: #34404E; }
+.slide .vis { display: grid; place-items: center; min-height: 0; height: 100%; }
+.slide .vis svg { width: 100%; height: auto; max-height: 100%; }
+.slide .pict { font-size: clamp(42px, 6vw, 84px); line-height: 1; display: flex; gap: .3em; justify-content: center; align-items: center; }
+.slide .tag-big { display: inline-block; background: var(--lab-soft); color: var(--lab-accent); border-radius: 8px; padding: .2em .6em; font-weight: 700; }
+.welcome #draw-zone { width: min(620px, 100%); display: grid; gap: 12px; justify-items: center; margin-top: 10px; }
+.welcome .draw-title { margin: 0; font-weight: 700; color: var(--lab-muted); }
+.welcome .tokens { width: 100%; margin: 0; }
+.screens { display: flex; flex-direction: column; padding: 16px; gap: 12px; }
+.screens h2 { margin: 0; text-align: center; font-size: 20px; }
+.shots { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; min-height: 0; }
+.shots figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.shot { flex: 1; border: 2px dashed #AAB4C2; border-radius: 10px; background: #F7F8FA; display: grid; place-items: center; overflow: hidden; color: var(--lab-muted); font-weight: 700; min-height: 160px; }
+.shot img { width: 100%; height: 100%; object-fit: contain; }
+.shot img + span { display: none; }
+.shots figcaption { text-align: center; font-size: 14px; color: var(--lab-muted); }
+.agent { display: flex; flex-direction: column; background: #C9D0D8; border: 3px solid var(--petrol); }
+.agent .chrome { display: flex; }
+.agent-body { flex: 1; display: grid; grid-template-columns: 200px minmax(0, 1fr); background: #fff; min-height: 0; }
+.agent-side { background: var(--petrol-deep); color: #D7E6E6; padding: 14px; display: grid; gap: 8px; align-content: start; font-size: 14px; }
+.agent-side b { color: #fff; font-size: 16px; }
+.agent-main { padding: 18px 24px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; justify-content: center; }
+.agent-label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.agent-msg { font-size: clamp(18px, 2vw, 26px); font-weight: 600; line-height: 1.3; background: var(--lab-soft); border-radius: 12px; padding: 14px 18px; color: var(--ink); }
+.agent-opts { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 8px; }
+.agent-opts li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; border: 1px solid var(--lab-line); border-radius: 10px; padding: 9px 14px; font-size: clamp(15px, 1.5vw, 19px); color: var(--ink); }
+.agent-opts li b { font-size: 22px; color: var(--petrol); }
+.agent-opts li.picked { border: 2px solid var(--petrol); background: #E8F1F1; }
+.flash { position: relative; padding: 0; border: 0; }
+.flash-in { position: absolute; inset: 0; }
+.flash-msg { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; text-align: center; padding: 20px; }
+.flash-msg .big { font-weight: 900; line-height: 1; letter-spacing: -.02em; font-size: clamp(44px, 7vw, 104px); }
+.flash-msg .ico { font-size: clamp(60px, 8vw, 120px); line-height: 1; }
+.flash-msg.ok { background: #EEF4FF; color: #1E5BD8; }
+.flash-msg.faux { background: #FFF0F0; color: #D21F1F; }
+.flash-msg.annonce { background: #0B0B0B; color: #FF1F1F; }
+.flash-msg.annonce .stripe { position: absolute; left: 0; right: 0; height: 26px; background: repeating-linear-gradient(-45deg, #E00 0 24px, #111 24px 48px); }
+.flash-msg.annonce .att { font-size: clamp(18px, 2.2vw, 30px); font-weight: 900; letter-spacing: .25em; }
+.flash-msg.annonce .big { text-transform: uppercase; text-shadow: 0 0 24px #F004; font-size: clamp(38px, 6vw, 86px); }
+.salle { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.salle-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--lab-line); background: #FAFBFC; }
+.salle-head b { font-size: 15px; }
+.salle-head span { font-size: 12px; color: var(--lab-muted); text-align: right; }
+.salle .msglog { padding: 12px; }
+.salle .msg.bot { background: #F1EBE2; color: var(--lab-ink); }
+.bottom { border-radius: 12px; min-height: 104px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.bottom > .gen { border: 0; background: transparent; }
+.bpanel { padding: 14px; }
+#b-blank { min-height: 76px; }
+.twin, .abcd { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; }
+.jbtn { border: 0; border-radius: 10px; width: 220px; height: 52px; font-size: 17px; font-weight: 800; color: #fff; }
+.jbtn.ok { background: #2F6B4A; } .jbtn.nq { background: #8E1E14; }
+.abcd button { width: 110px; height: 66px; border: 0; border-radius: 12px; background: var(--petrol); color: #fff; font-size: 30px; font-weight: 800; }
+.abcd button:disabled, .jbtn:disabled { opacity: .3; cursor: not-allowed; }
+.qwin { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.qwin-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--lab-line); background: #FAFBFC; }
+.qwin-head b { font-size: 15px; }
+#qwin-count { font: 12px var(--font-mono); color: var(--lab-muted); }
+.qlog { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.qinstr { font-size: 13px; color: var(--lab-muted); background: var(--lab-bg); border-radius: 10px; padding: 10px 12px; }
+.qinstr ol { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+.qitem { border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; background: var(--lab-paper); }
+.qitem.current { border: 2px solid var(--lab-accent); }
+.qitem.past { display: none; }
+.qitem.current { border: 0; padding: 0; background: none; gap: 10px; }
+.qitem .qclient { font-size: 17px; padding: 12px 14px; max-width: 100%; justify-self: stretch; }
+.qitem .qsend { font-size: 15px; padding: 9px 18px; }
+.qitem .qsend:not(:disabled) { animation: qsend-pulse 1.4s ease-in-out infinite; }
+@keyframes qsend-pulse { 50% { box-shadow: 0 0 0 6px #2E4C7D33; } }
+@media (prefers-reduced-motion: reduce) { .qitem .qsend:not(:disabled) { animation: none; } }
+#end-btn.invite { animation: qsend-pulse 1.4s ease-in-out infinite; background: var(--sun); color: var(--petrol-deep); }
+.qitem .qopts { font-size: 14.5px; gap: 7px; }
+.qprog { display: grid; grid-template-columns: repeat(var(--n, 13), minmax(0, 1fr)); gap: 3px; margin-bottom: 4px; }
+.qprog i { height: 18px; border-radius: 3px; background: var(--lab-soft); font: 600 9.5px/18px var(--font-mono); text-align: center; color: var(--lab-muted); font-style: normal; }
+.qprog i.ok { background: #2F6B4A; color: #fff; } .qprog i.nq { background: #B3261E; color: #fff; }
+.qprog i.cur { background: #fff; outline: 2px solid var(--lab-accent); outline-offset: -2px; color: var(--lab-ink); }
+.qlbl { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); }
+.qhelp { font-size: 13px; color: var(--lab-muted); margin-top: auto; }
+.qhelp summary { cursor: pointer; font-weight: 600; }
+.qhelp ol { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+#mach-call { display: none; }
+.gen-groups .grp span { display: none; }
+/* Annonce du niveau (plein écran, avant le stresseur) */
+.pun-annonce { position: absolute; inset: 0; background: #0B0B0B; color: #FF1F1F; display: grid; place-content: center; justify-items: center; gap: 2vh; text-align: center; padding: 6vh 4vw; }
+.pun-annonce .stripe { position: absolute; left: 0; right: 0; height: 4vh; background: repeating-linear-gradient(-45deg, #E00 0 3vh, #111 3vh 6vh); }
+.pun-annonce .att { font-size: 3.2vh; font-weight: 900; letter-spacing: .3em; }
+.pun-annonce .big { font-size: min(11vh, 8vw); font-weight: 900; line-height: 1; text-transform: uppercase; text-shadow: 0 0 3vh #F004; }
+.pun-annonce .sub { font-size: 3vh; font-weight: 700; color: #FF8A80; text-transform: uppercase; letter-spacing: .08em; }
+.qnum { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--lab-muted); font-weight: 700; }
+.qclient { align-self: flex-end; justify-self: end; max-width: 92%; background: var(--petrol); color: #fff; border-radius: 14px; border-bottom-right-radius: 4px; padding: 8px 12px; font-size: 14px; }
+.qsend { justify-self: end; border: 0; border-radius: 8px; padding: 7px 14px; font-weight: 700; background: var(--lab-accent); color: #fff; }
+.qsend:disabled { display: none; }
+.qopts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13.5px; }
+.qopts li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; color: var(--lab-muted); }
+.qopts li b { font-family: var(--font-mono); font-size: 12px; }
+.qopts li.good { color: var(--lab-ink); font-weight: 700; }
+.qopts li.good span { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-color: var(--ok); }
+.qverdict { font-size: 12.5px; font-weight: 700; color: var(--lab-muted); }
+.qverdict:empty { display: none; }
+.qverdict.nq { color: #8E1E14; }
+.qverdict.ok { color: #2F6B4A; }
+.browser { background: #C9D0D8; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #B9C1CB; min-width: 0; }
+.chrome { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.chrome .dots { display: flex; gap: 6px; }
+.chrome .dots i { width: 11px; height: 11px; border-radius: 50%; background: #E6EAEE; }
+.address { flex: 1; min-width: 0; background: #F4F6F8; border-radius: 7px; padding: 5px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--lab-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chrome .tag { font-size: 11px; color: var(--lab-ink); background: #E6EAEE; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.viewport { position: relative; flex: 1; min-height: 0; background: var(--sand); container-type: inline-size; container-name: site; }
+.site-scroll { position: absolute; inset: 0; overflow-y: auto; color: var(--ink); }
+/* Le chat de la conseillère est ancré à droite, dans la fenêtre du site */
+.viewport > .site-scroll { right: 330px; }
+.viewport > #chat { position: absolute; top: 0; right: 0; bottom: 0; width: 330px; border-radius: 0; border: 0; border-left: 1px solid var(--line); }
+.asks { list-style: none; padding: 0 !important; }
+.asks label { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; font-size: 14px; cursor: pointer; }
+.asks input { margin-top: 3px; accent-color: var(--lab-accent); }
+.asks input:checked + span { color: var(--lab-muted); text-decoration: line-through; }
+.reacts { list-style: none; padding: 0 !important; gap: 10px !important; }
+.reacts li { font-size: 14px; border-left: 3px solid var(--lab-line); padding-left: 10px; }
+.reacts b { display: block; font-size: 13px; color: var(--lab-accent); }
+.exp-box { border-top: 1px solid var(--lab-line); background: #FAFBFC; display: flex; flex-direction: column; }
+.exp-toggle { margin: 12px 16px; background: var(--lab-ink); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.exp-panel { display: flex; flex-direction: column; height: 230px; border-top: 1px solid var(--lab-line); }
+.exp-panel .msglog { padding: 12px; }
+#exp-form button { background: var(--lab-ink); }
+
+/* ===== Site Neolia (dimensionné sur la fenêtre, pas sur l'écran) ===== */
+.top { background: var(--petrol-deep); color: #D7E6E6; font-size: 13px; }
+.top .wrap { display: flex; justify-content: space-between; gap: 12px; padding-block: 6px; flex-wrap: wrap; }
+header.site { background: var(--paper); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+header.site .wrap { display: flex; align-items: center; gap: 24px; padding-block: 14px; flex-wrap: wrap; }
+.logo { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; color: var(--petrol); display: flex; align-items: center; gap: 8px; }
+.logo .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--sun); box-shadow: 0 0 0 4px #F2C23040; }
+nav.main { display: flex; gap: 20px; flex-wrap: wrap; margin-left: auto; }
+nav.main button { background: none; border: 0; color: var(--ink); font-weight: 600; padding: 4px 0; }
+nav.main button:hover { color: var(--petrol); text-decoration: underline; text-underline-offset: 4px; }
+.btn-account { background: var(--petrol); color: #fff; border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
+.hero { background: var(--petrol); color: #fff; overflow: hidden; }
+.hero .wrap { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; padding-block: 48px; align-items: center; }
+.hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 6cqi, 54px); line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 16px; text-wrap: balance; }
+.hero h1 em { font-style: normal; color: var(--sun); }
+.hero p { font-size: 18px; color: #CFE2E2; max-width: 46ch; margin: 0 0 24px; }
+.hero .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-sun { background: var(--sun); color: var(--petrol-deep); border: 0; border-radius: 999px; padding: 13px 24px; font-weight: 700; }
+.btn-ghost { background: transparent; color: #fff; border: 1.5px solid #ffffff70; border-radius: 999px; padding: 12px 22px; font-weight: 600; }
+.speed { background: var(--petrol-deep); border-radius: 20px; padding: 26px; min-width: 0; }
+.speed .label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #9FC2C2; }
+.speed .num { font-family: var(--font-display); font-weight: 800; font-size: clamp(52px, 9cqi, 84px); line-height: 1; color: var(--sun); font-variant-numeric: tabular-nums; }
+.speed .unit { font-size: 20px; font-weight: 600; color: #fff; margin-left: 6px; }
+.speed .bars { display: grid; gap: 10px; margin-top: 22px; }
+.bar { display: grid; grid-template-columns: 90px 1fr 70px; gap: 10px; align-items: center; font-size: 13px; color: #CFE2E2; }
+.bar .track { height: 8px; background: #ffffff1c; border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--sun); border-radius: 99px; }
+.bar span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+section.offers { padding-block: 56px 36px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--petrol); font-weight: 700; }
+.site-scroll h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(24px, 4cqi, 36px); letter-spacing: -0.02em; margin: 6px 0 26px; text-wrap: balance; }
+.grid-offers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.offer { background: var(--paper); border: 1px solid var(--line); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.offer.featured { border: 2px solid var(--petrol); position: relative; }
+.offer .tag { position: absolute; top: -13px; left: 22px; background: var(--sun); color: var(--petrol-deep); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 99px; }
+.offer h3 { font-family: var(--font-display); font-size: 22px; margin: 0; }
+.offer .debit { color: var(--muted); font-size: 14px; margin: 0; }
+.price { font-family: var(--font-display); font-weight: 800; font-size: 38px; color: var(--petrol); line-height: 1; font-variant-numeric: tabular-nums; }
+.price small { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--muted); }
+.offer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 15px; flex: 1; }
+.offer li { padding-left: 22px; position: relative; }
+.offer li::before { content: ""; position: absolute; left: 2px; top: 8px; width: 10px; height: 6px; border-left: 2px solid var(--petrol); border-bottom: 2px solid var(--petrol); transform: rotate(-45deg); }
+.offer button { background: var(--petrol); color: #fff; border: 0; border-radius: 999px; padding: 11px; font-weight: 600; }
+.offer:not(.featured) button { background: transparent; color: var(--petrol); border: 1.5px solid var(--petrol); }
+.fine { font-size: 12px; color: var(--muted); margin-top: 16px; }
+section.box { padding-block: 28px 56px; }
+.box-card { background: var(--paper); border-radius: 22px; border: 1px solid var(--line); display: grid; grid-template-columns: 200px 1fr; gap: 28px; padding: 28px; align-items: center; }
+.box-visual { aspect-ratio: 4 / 3; max-width: 100%; background: linear-gradient(160deg, #1E3B40, #0C2226); border-radius: 14px; position: relative; }
+.box-visual::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 22%; height: 4px; border-radius: 4px; background: var(--sun); box-shadow: 0 0 14px var(--sun); }
+.leds { position: absolute; top: 22%; left: 18%; display: flex; gap: 10px; }
+.leds i { width: 8px; height: 8px; border-radius: 50%; background: #5FE08A; }
+.leds i:nth-child(3) { background: #3B4D50; }
+.box-card h3 { font-family: var(--font-display); font-size: 24px; margin: 0 0 8px; }
+.box-card p { margin: 0; color: var(--muted); max-width: 60ch; }
+.specs { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 14px; }
+.specs b { display: block; font-family: var(--font-display); font-size: 20px; color: var(--petrol); }
+.help { background: var(--paper); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.help .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 26px; flex-wrap: wrap; }
+.help h3 { font-family: var(--font-display); font-size: 22px; margin: 0 0 4px; }
+.help p { margin: 0; color: var(--muted); }
+.site-foot { padding-block: 28px 100px; color: var(--muted); font-size: 13px; }
+.site-foot .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.site-foot .links { display: flex; gap: 16px; flex-wrap: wrap; }
+.toast { position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 14px; width: max-content; max-width: calc(100% - 32px); z-index: 30; box-shadow: 0 10px 30px #0004; }
+#chat { flex: 1; min-height: 0; background: var(--paper); border-radius: 12px; z-index: 10; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+.chat-idle { flex: 1; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px; text-align: center; color: var(--muted); font-size: 15px; }
+.chat-idle p { margin: 0; max-width: 26ch; }
+#chat.idle .msglog, #chat.idle form.compose { display: none; }
+#chat:not(.idle) .chat-idle { display: none; }
+.chat-head { background: var(--petrol); color: #fff; padding: 12px 12px 12px 14px; display: flex; align-items: center; gap: 10px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--sun); color: var(--petrol-deep); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; flex: none; position: relative; }
+.avatar::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; background: #5FE08A; border: 2px solid var(--petrol); }
+.chat-who { min-width: 0; flex: 1; }
+.chat-who b { display: block; font-size: 15px; }
+.chat-who span { font-size: 12px; color: #CFE2E2; }
+.chat-head button { background: #ffffff1c; color: #fff; border: 0; border-radius: 8px; padding: 6px 9px; font-size: 12px; font-weight: 600; }
+.chat-head button.armed { background: var(--sun); color: var(--petrol-deep); }
+.chat-head button:disabled { opacity: .45; cursor: default; }
+
+@container site (max-width: 780px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-block: 36px; }
+  .grid-offers { grid-template-columns: 1fr; }
+  .box-card { grid-template-columns: 1fr; }
+  .box-visual { max-width: 240px; }
+}
+@container site (max-width: 760px) {
+  nav.main { display: none; }
+  .btn-account { margin-left: auto; }
+}
+@container site (max-width: 520px) {
+  .btn-account { margin-left: auto; }
+  .bar { grid-template-columns: 70px 1fr 60px; }
+}
+
+/* ===== Bulles communes ===== */
+.msglog { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.day { align-self: center; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+.msg { max-width: 84%; padding: 9px 13px; border-radius: 16px; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; white-space: pre-wrap; }
+.msg .from { display: block; font-size: 12px; font-weight: 700; margin-bottom: 2px; opacity: .75; }
+.msg time { display: block; font-size: 10.5px; opacity: 0.6; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.msg.bot { align-self: flex-start; background: var(--bubble-bot); color: var(--ink); border-bottom-left-radius: 5px; }
+.msg.user { align-self: flex-end; color: #fff; background: var(--lab-accent); border-bottom-right-radius: 5px; }
+.msg.exp { align-self: flex-start; background: var(--lab-soft); color: var(--lab-ink); border-bottom-left-radius: 5px; }
+.lab-main .msg.bot { background: #F1EBE2; color: var(--lab-ink); }
+#sav-log .msg.user { background: var(--petrol); }
+#exp-log .msg.user { background: var(--lab-ink); }
+.sys { align-self: center; text-align: center; font-size: 13px; color: var(--lab-muted); background: var(--lab-bg); padding: 8px 14px; border-radius: 10px; max-width: 92%; }
+#sav-log .sys { background: var(--sand); color: var(--muted); }
+.typing { align-self: flex-start; background: var(--bubble-bot); border-radius: 16px; border-bottom-left-radius: 5px; padding: 12px 14px; display: flex; gap: 4px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .typing i, .spinner { animation: none; } .typing i { opacity: .6; } }
+form.compose { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); background: var(--paper); }
+form.compose textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--paper); height: 44px; max-height: 120px; }
+form.compose button { background: var(--lab-accent); color: #fff; border: 0; border-radius: 12px; padding: 0 16px; font-weight: 700; }
+#sav-form button { background: var(--petrol); }
+form.compose button:disabled, form.compose textarea:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Panneau de test */
+#debug { position: fixed; left: 12px; bottom: 12px; width: min(480px, calc(100% - 24px)); max-height: 42%; background: #101C1E; color: #CFE2E2; border-radius: 12px; z-index: 40; font: 12px/1.4 var(--font-mono); display: flex; flex-direction: column; }
+#debug header { display: flex; gap: 4px; padding: 8px 10px; border-bottom: 1px solid #ffffff20; flex-wrap: wrap; }
+#debug button { background: var(--sun); color: #101C1E; border: 0; border-radius: 6px; padding: 3px 7px; font: inherit; font-weight: 700; }
+#debug pre { margin: 0; padding: 10px; overflow: auto; white-space: pre-wrap; }
+
+@media (max-width: 1240px) {
+  .work { grid-template-columns: 250px minmax(0, 1fr) 290px; }
+  .viewport > .site-scroll { right: 280px; } .viewport > #chat { width: 280px; }
+}
+@media (max-width: 900px) {
+  .work, .work.wide { grid-template-columns: 1fr; grid-template-rows: none; grid-template-areas: "center" "salle" "qs" "bottom"; height: auto; min-height: 0; }
+  .work.wide > .center { grid-column: auto; }
+  .center { height: 72vh; min-height: 440px; } .salle { height: 50vh; } .qwin { height: 60vh; }
+  .viewport > .site-scroll { right: 0; bottom: 45%; } .viewport > #chat { width: auto; left: 0; top: 55%; border-left: 0; border-top: 1px solid var(--line); }
+  .work > .bottom { position: sticky; bottom: 0; z-index: 30; box-shadow: 0 -8px 24px #0002; }
+  .shots { grid-template-columns: 1fr; } .agent-body { grid-template-columns: 1fr; } .agent-side { display: none; }
+  .browser { height: 60vh; min-height: 420px; }
+  .qwin { height: 60vh; }
+  #chat { flex: none; height: 70vh; min-height: 420px; }
+}
+@media (max-width: 640px) {
+  .meeting { grid-template-columns: 1fr; }
+  .people { flex-direction: row; flex-wrap: wrap; }
+  .people h2 { width: 100%; }
+  .tokens { grid-template-columns: 1fr; }
+  .card { padding: 20px; }
+  .work { padding: 8px; }
+  .chrome .tag { display: none; }
+}
+
+/* ===== Installation de la partenaire ===== */
+.install { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; align-items: start; }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 14px; color: var(--lab-muted); }
+.checks li .mark { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--lab-line); display: grid; place-items: center; }
+.checks li.run { color: var(--lab-ink); font-weight: 600; }
+.checks li.run .mark { border-color: #2E4C7D40; border-top-color: var(--lab-accent); animation: spin 0.9s linear infinite; }
+.checks li.ok { color: var(--lab-ink); }
+.checks li.ok .mark { border-color: var(--ok); background: var(--ok); }
+.checks li.ok .mark::before { content: ""; width: 8px; height: 4px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: translateY(-1px) rotate(-45deg); }
+.share { background: #C9D0D8; border: 1px solid #B9C1CB; border-radius: 12px; overflow: hidden; min-width: 0; }
+.share .address { font-family: var(--font-body); }
+.share .live { font-size: 11px; font-weight: 700; color: #fff; background: #B43C3C; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.desk { background: var(--paper); color: var(--ink); min-height: 380px; display: grid; grid-template-columns: 180px minmax(0, 1fr); }
+.desk-side { background: var(--petrol-deep); color: #D7E6E6; padding: 14px; font-size: 13px; display: grid; gap: 8px; align-content: start; }
+.desk-side b { font-family: var(--font-display); color: #fff; font-size: 16px; }
+.desk-side .row { background: #ffffff14; border-radius: 6px; padding: 6px 8px; }
+.desk-side .row i { display: block; height: 6px; border-radius: 4px; background: #ffffff30; margin-top: 5px; width: 70%; }
+.desk-main { padding: 16px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.desk-main h3 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.desk-main ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.desk-main p { margin: 0; }
+.rule { border: 2px solid #C9852B; background: #FFF6E6; border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.rule b { display: block; color: #7A5410; margin-bottom: 2px; }
+.desk-part { opacity: 0; transition: opacity .4s; }
+.desk-part.in { opacity: 1; }
+.desk-empty { color: var(--muted); font-size: 14px; }
+@media (max-width: 760px) { .install { grid-template-columns: 1fr; } .desk { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .checks li.run .mark { animation: none; } .desk-part { transition: none; } }
+
+/* ===== Panneau plein écran de la punition (30 designs gradués) ===== */
+.pun { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 4vh 4vw; background: var(--pun-bg, #fff); color: var(--pun-fg, #111); overflow: hidden; cursor: wait; }
+.pun[hidden] { display: none; }
+.pun.flash { animation: pun-flash .5s steps(1) 4; }
+@keyframes pun-flash { 50% { background: var(--pun-bg2, var(--pun-bg)); } }
+.pun-texte { max-width: 92vw; max-height: 88vh; text-align: center; line-height: 1.12; overflow-wrap: anywhere; }
+.pun-texte.secoue { animation: pun-secoue .18s linear infinite; }
+@keyframes pun-secoue { 0%,100% { transform: translate(0,0) rotate(var(--rot,0deg)); } 25% { transform: translate(var(--amp),calc(var(--amp) * -1)) rotate(var(--rot,0deg)); } 50% { transform: translate(calc(var(--amp) * -1),var(--amp)) rotate(var(--rot,0deg)); } 75% { transform: translate(var(--amp),var(--amp)) rotate(var(--rot,0deg)); } }
+.pun-mot { display: inline-block; white-space: nowrap; margin: 0 .18em; }
+.pun-l { display: inline-block; padding: .02em .07em; margin: .03em .015em; line-height: 1; border-radius: 2px; box-shadow: 2px 2px 0 rgba(0,0,0,.35); }
+@media (prefers-reduced-motion: reduce) { .pun.flash, .pun-texte.secoue { animation: none; } }
+
+/* ===== Panneau des 30 niveaux ===== */
+.gen { background: var(--lab-paper); border: 1px solid var(--lab-line); border-radius: 12px; padding: 10px 14px 12px; container-type: inline-size; container-name: gen; }
+.gen-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+.gen-title { font-size: 14px; }
+.gen-top { margin-bottom: 8px; flex-direction: column; align-items: center; gap: 6px; }
+#gen-info { text-align: center; }
+.judge { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; background: none !important; padding: 0; }
+.judge-btns { display: flex; justify-content: center; gap: 22px; }
+.judge-btns { flex-wrap: wrap; }
+.gen-top:has(#j-ok:disabled) .judge { background: var(--lab-soft); color: var(--lab-muted); }
+.judge button:disabled { opacity: .35; cursor: not-allowed; }
+.judge-btns { display: flex; gap: 8px; }
+.judge button { border: 0; border-radius: 10px; width: 210px; height: 46px; font-size: 16px; font-weight: 800; letter-spacing: .02em; }
+#j-ok { background: #2F6B4A; color: #fff; }
+#j-nq { background: #8E1E14; color: #fff; }
+.machine { background: #F3EEE6; border-radius: 10px; padding: 8px 10px; }
+.mach-call { margin: 0 0 8px; font-size: 13px; font-weight: 700; min-height: 1.4em; }
+.gen.armed .machine { box-shadow: 0 0 0 3px #8E1E14; }
+
+#gen-info { font-size: 13px; color: var(--lab-muted); min-width: 0; overflow-wrap: anywhere; }
+#gen-info q { color: var(--lab-ink); font-style: italic; }
+.gen-row, .gen-groups { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 4px; }
+.pt { aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 2px solid var(--c); background: var(--lab-paper); color: var(--lab-ink); font: 600 11px/1 var(--font-mono); display: grid; place-items: center; padding: 0; transition: background .12s, color .12s, transform .08s; }
+.pt:hover:not(:disabled), .pt:focus-visible { background: var(--c); color: #fff; }
+.pt:active:not(:disabled) { transform: scale(.92); }
+.pt.used { background: var(--c); color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
+.pt:disabled { opacity: .4; cursor: not-allowed; }
+.grp { border-top: 3px solid var(--c); padding-top: 3px; font-size: 10.5px; line-height: 1.2; text-align: center; color: var(--lab-ink); min-width: 0; }
+.grp b { display: block; font-size: 10.5px; }
+.grp span { color: var(--lab-muted); }
+.gen-say { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: #FBE9C4; border-radius: 10px; padding: 10px 12px; }
+.gen-say span { font-size: 13px; font-weight: 600; }
+.gen-say q { flex: 1; min-width: 200px; font-size: 17px; font-weight: 700; }
+.gen-say button { border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; background: var(--lab-ink); color: #fff; }
+@container gen (max-width: 720px) {
+  .gen-row { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .gen-groups { display: none; }
+  .pt { font-size: 12px; }
+}
+
+/* Information et consentement */
+.consent { display: grid; gap: 20px; }
+.consent h1 { margin: 0; }
+.consent h2 { font-size: 15px; margin: 0 0 6px; }
+.consent section p { margin: 0 0 8px; font-size: 15px; }
+.eyebrow-lab { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--lab-accent); font-weight: 700; }
+.cer-box { display: grid; gap: 4px; border-left: 4px solid var(--lab-accent); background: var(--lab-soft); border-radius: 8px; padding: 12px 16px; font-size: 14px; }
+.mono { font-family: var(--font-mono); font-size: 13.5px; }
+.todo { background: #FFE58A; color: #3A2C00; border-radius: 4px; padding: 0 4px; }
+.consent-form { display: grid; gap: 10px; border-top: 1px solid var(--lab-line); padding-top: 18px; }
+.consent-form label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; font-size: 15px; cursor: pointer; }
+.consent-form input { margin-top: 4px; accent-color: var(--lab-accent); }
+.consent-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.btn-quiet { background: none; border: 1px solid var(--lab-line); color: var(--lab-ink); border-radius: 8px; padding: 12px 18px; font-weight: 600; }
+
+/* ===== Mode maquette (navigation directe, échanges pré-remplis) ===== */
+body.maquette { padding-top: 46px; }
+body.maquette .work { height: calc(100vh - 104px); }
+@media (max-width: 1240px) { body.maquette .work { height: auto; } }
+#mq-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 62; min-height: 46px; background: #2A1F3D; color: #F1EAFB; display: flex; align-items: center; gap: 6px; padding: 6px 12px; flex-wrap: wrap; font-size: 13px; }
+#mq-bar .mq-title { font-weight: 800; letter-spacing: .04em; margin-right: 6px; }
+#mq-bar button { border: 0; border-radius: 7px; padding: 6px 10px; font-weight: 700; font-size: 12.5px; background: #3D2F57; color: #F1EAFB; }
+#mq-bar button.on { background: #F2C230; color: #2A1F3D; }
+#mq-bar .mq-arrows { margin-left: auto; display: flex; gap: 6px; }
+#mq-steps { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ===== Mode relecture ===== */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.review { padding-top: 52px; }
+body.review .work { height: calc(100vh - 110px); }
+#rv-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 60; background: #241A0B; color: #FFF4DA; display: flex; align-items: center; gap: 8px; padding: 8px 16px; flex-wrap: wrap; min-height: 52px; font-size: 14px; }
+#rv-bar .rv-title { font-weight: 700; letter-spacing: .04em; margin-right: 6px; }
+#rv-bar select { font: inherit; padding: 6px 8px; border-radius: 7px; border: 0; background: #3A2C14; color: #FFF4DA; max-width: 100%; }
+#rv-bar button { border: 0; border-radius: 7px; padding: 7px 12px; font-weight: 700; background: #3A2C14; color: #FFF4DA; }
+#rv-bar button.main { background: var(--sun); color: #241A0B; }
+#rv-bar button.on { background: #fff; color: #241A0B; }
+#rv-bar .spacer { flex: 1; }
+#rv-count { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 4px; border-radius: 99px; background: var(--sun); color: #241A0B; font-variant-numeric: tabular-nums; }
+body.rv-picking, body.rv-picking * { cursor: crosshair !important; }
+#rv-hl { position: fixed; z-index: 55; pointer-events: none; border: 2px solid var(--sun); background: #F2C2301f; border-radius: 4px; box-shadow: 0 0 0 9999px #00000014; }
+#rv-hint { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 61; background: var(--sun); color: #241A0B; font-weight: 700; padding: 8px 14px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
+#rv-dialog { position: fixed; z-index: 70; inset: 0; background: #0006; display: grid; place-items: center; padding: 16px; }
+#rv-dialog .box { background: var(--lab-paper); color: var(--lab-ink); border-radius: 14px; padding: 20px; width: min(520px, 100%); display: grid; gap: 12px; box-shadow: 0 20px 60px #0005; }
+#rv-dialog .box b { font-size: 17px; }
+.rv-target { font-size: 13px; color: var(--lab-muted); background: var(--lab-soft); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+#rv-text { font: inherit; min-height: 120px; resize: vertical; border: 1px solid var(--lab-line); border-radius: 10px; padding: 10px 12px; color: var(--lab-ink); background: var(--lab-paper); }
+.rv-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.rv-actions button { border: 0; border-radius: 8px; padding: 9px 16px; font-weight: 700; background: var(--lab-soft); color: var(--lab-ink); }
+.rv-actions button.main { background: var(--lab-accent); color: #fff; }
+#rv-drawer { position: fixed; z-index: 65; top: 52px; right: 0; bottom: 0; width: min(420px, 100%); background: var(--lab-paper); color: var(--lab-ink); border-left: 1px solid var(--lab-line); box-shadow: -12px 0 40px #0002; display: flex; flex-direction: column; }
+#rv-drawer header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--lab-line); gap: 8px; }
+#rv-drawer header button { border: 0; background: var(--lab-soft); border-radius: 7px; padding: 6px 10px; font-weight: 600; }
+#rv-store { font-size: 12px; color: var(--lab-muted); padding: 8px 16px 0; margin: 0; }
+#rv-items { list-style: none; margin: 0; padding: 12px 16px 24px; overflow-y: auto; display: grid; gap: 16px; align-content: start; flex: 1; }
+#rv-items h4 { margin: 6px 0 0; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--lab-muted); }
+.rv-item { border: 1px solid var(--lab-line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
+.rv-item .t { font-size: 12px; color: var(--lab-muted); overflow-wrap: anywhere; }
+.rv-item .x { white-space: pre-wrap; overflow-wrap: anywhere; }
+.rv-item .meta { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--lab-muted); flex-wrap: wrap; }
+.rv-item .meta button { border: 0; background: var(--lab-soft); border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 600; color: var(--lab-ink); }
+.rv-item .meta button.armed { background: #B3261E; color: #fff; }
+.rv-empty { color: var(--lab-muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="lab-bar"><div class="inner">
+  <div class="lab-brand"><span class="sq"></span>Étude en ligne <small>Session S-1047</small></div>
+  <div class="steps" aria-label="Progression"><span id="step-label">Information</span><i></i><i></i><i></i><i></i><i></i></div>
+</div></div>
+
+<!-- 0. Connexion -->
+<!-- Information et consentement -->
+<main class="lab-main" id="phase-consent">
+  <div class="card consent">
+    <p class="eyebrow-lab">Information des participants et consentement</p>
+    <h1>Étude sur les échanges de service en ligne</h1>
+    <p class="lead">Merci de l'intérêt que vous portez à cette étude. Lisez attentivement ces informations avant de décider d'y participer.</p>
+
+    <div class="cer-box">
+      <b>Avis favorable du comité d'éthique</b>
+      <span>Cette étude a reçu l'avis favorable du <span class="todo" data-cfg="cerName">[nom du comité d'éthique]</span>, avis n° <span class="todo" data-cfg="cerNumber">[numéro]</span> du <span class="todo" data-cfg="cerDate">[date]</span>.</span>
+    </div>
+
+    <section>
+      <h2>Responsable de la recherche</h2>
+      <p>Raphaël Künstler, maître de conférences en philosophie, Université Toulouse II – Jean Jaurès (laboratoires ERRAPHIS et CLLE). Contact : <span class="mono">raphael.kunstler@univ-tlse2.fr</span></p>
+    </section>
+
+    <section>
+      <h2>Objectif de l'étude</h2>
+      <p>Cette recherche porte sur la façon dont se déroulent les échanges entre un client et un service après-vente en ligne : comment chacun réagit quand un problème technique n'est pas résolu, comment évoluent le ton et le contenu des échanges, et comment les participants jugent les réponses qu'ils reçoivent.</p>
+      <p>Pour ne pas influencer votre comportement, certains aspects de l'étude ne peuvent pas vous être présentés avant la fin. À l'issue de votre participation, vous recevrez une explication complète de ses objectifs et de son déroulement, et vous pourrez alors demander le retrait de vos données.</p>
+    </section>
+
+    <section>
+      <h2>Déroulement</h2>
+      <p>L'étude se déroule en ligne et dure environ <span data-cfg="duration">20 minutes</span>. Vous serez mis en relation avec un autre participant, puis vous jouerez un rôle dans un échange de service simulé sur le site d'une entreprise fictive. Vous répondrez ensuite à un court questionnaire.</p>
+    </section>
+
+    <section>
+      <h2>Risques et inconvénients</h2>
+      <p>Certains échanges peuvent être tendus et occasionner un inconfort ou un stress passagers. Aucun risque durable n'est attendu. Vous pouvez arrêter à tout moment si vous ne souhaitez pas poursuivre.</p>
+    </section>
+
+    <section>
+      <h2>Participation volontaire et retrait</h2>
+      <p>Votre participation est entièrement volontaire. Vous pouvez interrompre l'étude à tout moment, sans avoir à vous justifier et sans aucune conséquence pour vous, en fermant cette fenêtre. Vous pouvez aussi demander le retrait de vos données après votre participation, en écrivant à l'adresse ci-dessus.</p>
+    </section>
+
+    <section>
+      <h2>Confidentialité et données personnelles</h2>
+      <p>Aucune donnée permettant de vous identifier directement n'est recueillie : n'indiquez ni votre nom de famille ni vos coordonnées pendant l'étude. Les échanges et vos réponses sont enregistrés sous un identifiant anonyme, conservés de façon sécurisée pendant <span class="todo" data-cfg="retention">[durée de conservation]</span> et utilisés uniquement à des fins de recherche. Les résultats seront publiés sous une forme qui ne permet pas de reconnaître les participants.</p>
+      <p>Conformément au Règlement général sur la protection des données, vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition. Pour l'exercer, contactez le responsable de la recherche ou le délégué à la protection des données de l'université : <span class="todo" data-cfg="dpo">[adresse du DPO]</span>.</p>
+    </section>
+
+    <form class="consent-form" id="consent-form">
+      <h2>Consentement</h2>
+      <label><input type="checkbox" id="c-age" required> J'ai au moins 18 ans.</label>
+      <label><input type="checkbox" id="c-read" required> J'ai lu et compris les informations ci-dessus.</label>
+      <label><input type="checkbox" id="c-free" required> Je sais que je peux arrêter à tout moment, sans conséquence.</label>
+      <label><input type="checkbox" id="c-data" required> J'accepte que mes réponses soient enregistrées sous un identifiant anonyme et utilisées à des fins de recherche.</label>
+      <div class="consent-actions">
+        <button type="submit" class="btn-lab" id="c-yes" disabled>J'accepte de participer</button>
+        <button type="button" class="btn-quiet" id="c-no">Je ne souhaite pas participer</button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<main class="lab-main" id="phase-declined" hidden>
+  <div class="card">
+    <h1>Merci</h1>
+    <p class="lead">Vous avez choisi de ne pas participer. Aucune donnée n'a été enregistrée à votre sujet. Vous pouvez fermer cette fenêtre.</p>
+  </div>
+</main>
+
+<main class="lab-main" id="phase-wait" hidden>
+  <div class="card">
+    <h1>Bienvenue dans la salle d'étude</h1>
+    <p class="lead">Cette étude se déroule à deux. Vous allez d'abord être mis en relation avec l'autre participant pour faire connaissance, puis l'expérimentateur vous rejoindra.</p>
+    <div class="field">
+      <label for="pseudo">Prénom ou pseudonyme</label>
+      <input id="pseudo" maxlength="20" autocomplete="off" placeholder="Par exemple : Sam">
+      <small>Il sera affiché à l'autre participant. N'indiquez pas votre nom de famille.</small>
+    </div>
+    <div class="field wide">
+      <label id="lab-sym">Votre symbole</label>
+      <div class="symbols" id="symbols" role="group" aria-labelledby="lab-sym"></div>
+      <small>Il apparaît à côté de vos messages dans la salle.</small>
+    </div>
+    <div class="field wide">
+      <label id="lab-voix">Votre voix</label>
+      <div class="voices" id="voices" role="group" aria-labelledby="lab-voix"></div>
+      <small>Vos messages seront lus avec cette voix, dans votre casque et chez la conseillère.</small>
+    </div>
+    <button class="btn-lab" id="join-btn" disabled>Rejoindre la salle</button>
+    <div class="waiting" id="wait-box" hidden><span class="spinner" id="wait-spin"></span><span id="wait-text">En attente d'un autre participant… (1 sur 2 connecté)</span></div>
+  </div>
+</main>
+
+<!-- Scène de l'étude : bandeau gauche (questions), centre, salle à droite, bandeau du bas -->
+<div class="work" id="phase-work" hidden>
+  <!-- Bandeau expérimental de gauche : les questions (vide avant l'exercice) -->
+  <section class="qwin band-x" id="qwin" aria-label="Questions">
+    <div class="qwin-head"><b>Questions</b><span id="qwin-count"></span></div>
+    <div class="qlog" id="qlog"></div>
+  </section>
+
+  <!-- Centre : salle d'étude, puis écrans de démonstration, puis site Neolia -->
+  <div class="center" id="center">
+    <div class="cpanel welcome" id="c-welcome">
+      <h1>Étude « relation de service en ligne »</h1>
+      <p class="lead" id="welcome-lead">L'expérimentateur vous présentera l'étude dans la salle, à droite.</p>
+      <div class="slides" id="slides" hidden aria-live="polite"><div class="slide" id="slide"></div></div>
+      <div id="draw-zone" hidden>
+        <p class="draw-title">Tirage au sort des rôles</p>
+        <div class="tokens">
+          <div class="token" id="tok-client"><b>Client</b><span>Contacte l'assistance</span><div class="who" id="who-client"></div></div>
+          <div class="token" id="tok-sav"><b>Conseiller SAV</b><span>Répond au client</span><div class="who" id="who-sav"></div></div>
+        </div>
+        <button class="btn-lab" id="draw-btn">Lancer le tirage</button>
+        <p class="result" id="draw-result" hidden>Vous jouerez le client. <span data-partner-name>Stéphanie</span> jouera la conseillère.</p>
+      </div>
+    </div>
+
+    <div class="cpanel screens" id="c-screens" hidden>
+      <h2>Deux écrans séparés</h2>
+      <div class="shots">
+        <figure><div class="shot"><img src="img/ecran-client.png" alt="" onerror="this.remove()"><span>Écran du client</span></div><figcaption>Écran du client · <b data-me-plain>vous</b></figcaption></figure>
+        <figure><div class="shot"><img src="img/ecran-conseillere.png" alt="" onerror="this.remove()"><span>Écran de la conseillère SAV</span></div><figcaption>Écran de la conseillère · <b data-partner-name>Stéphanie</b></figcaption></figure>
+      </div>
+    </div>
+
+    <div class="cpanel agent" id="c-sav" hidden>
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">neolia-pro · poste conseiller · écran de <span data-partner-name>Stéphanie</span></span></div>
+      <div class="agent-body">
+        <aside class="agent-side"><b>Poste conseiller</b><span>Dossier client</span><span>Procédure de dépannage</span><span>Historique</span></aside>
+        <div class="agent-main">
+          <div class="agent-label">Message du client</div>
+          <div class="agent-msg" id="agent-msg"></div>
+          <div class="agent-label">Réponses possibles</div>
+          <ol class="agent-opts" id="agent-opts"></ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="cpanel flash" id="c-flash" hidden><div class="flash-in" id="flash-in"></div></div>
+
+    <div class="browser" id="c-site" hidden>
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="address">neolia · assistance-et-offres</span><span class="tag">Site simulé pour l'étude</span></div>
+      <div class="viewport">
+      <div class="site-scroll" id="site-scroll">
+        <div class="top"><div class="wrap"><span>Particuliers · Professionnels</span><span>Réseau fibre : 98,2 % de disponibilité ce mois-ci</span></div></div>
+        <header class="site">
+          <div class="wrap">
+            <span class="logo"><span class="dot"></span>Neolia</span>
+            <nav class="main" aria-label="Navigation principale">
+              <button data-nav="offres">Offres fibre</button>
+              <button data-nav="mobile">Mobile</button>
+              <button data-nav="box">La Box N4</button>
+              <button data-nav="assistance">Assistance</button>
+            </nav>
+            <button class="btn-account" data-nav="espace-client">Espace client</button>
+          </div>
+        </header>
+        <section class="hero">
+          <div class="wrap">
+            <div>
+              <h1>La fibre qui tient <em>ses promesses</em>.</h1>
+              <p>Jusqu'à 8 Gbit/s partagés, la Box N4 Wi-Fi 7 incluse et une assistance disponible 7 j/7 en ligne.</p>
+              <div class="cta">
+                <button class="btn-sun" data-nav="hero-offres">Voir les offres</button>
+                <button class="btn-ghost" data-open-chat="hero">Besoin d'aide ?</button>
+              </div>
+            </div>
+            <div class="speed" aria-label="Débits de la Box N4">
+              <div class="label">Débit descendant maximal</div>
+              <div><span class="num">8</span><span class="unit">Gbit/s</span></div>
+              <div class="bars">
+                <div class="bar"><span>Descendant</span><span class="track"><span class="fill" style="width:100%"></span></span><span>8 Gbit/s</span></div>
+                <div class="bar"><span>Montant</span><span class="track"><span class="fill" style="width:87%"></span></span><span>7 Gbit/s</span></div>
+                <div class="bar"><span>Wi-Fi 7</span><span class="track"><span class="fill" style="width:72%"></span></span><span>5,8 Gbit/s</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="offers wrap" id="offres">
+          <div class="eyebrow">Offres fibre</div>
+          <h2>Choisissez le débit qui vous ressemble</h2>
+          <div class="grid-offers">
+            <article class="offer">
+              <h3>Fibre Essentiel</h3><p class="debit">Jusqu'à 1 Gbit/s · Box N2</p>
+              <div class="price">24,99 €<small> /mois</small></div>
+              <ul><li>Appels illimités vers les fixes</li><li>Wi-Fi 6</li><li>Sans engagement</li></ul>
+              <button data-offer="essentiel">Découvrir</button>
+            </article>
+            <article class="offer featured">
+              <span class="tag">La plus choisie</span>
+              <h3>Fibre Max</h3><p class="debit">Jusqu'à 8 Gbit/s · Box N4</p>
+              <div class="price">34,99 €<small> /mois</small></div>
+              <ul><li>Appels illimités fixes et mobiles</li><li>Wi-Fi 7 et répéteur inclus</li><li>Décodeur TV 4K, 180 chaînes</li></ul>
+              <button data-offer="max">Découvrir</button>
+            </article>
+            <article class="offer">
+              <h3>Fibre + Mobile</h3><p class="debit">Jusqu'à 8 Gbit/s · forfait 150 Go</p>
+              <div class="price">44,99 €<small> /mois</small></div>
+              <ul><li>Tout Fibre Max</li><li>Forfait mobile 5G 150 Go</li><li>Roaming Europe 30 Go</li></ul>
+              <button data-offer="fibre-mobile">Découvrir</button>
+            </article>
+          </div>
+          <p class="fine">Prix TTC mensuels hors frais de mise en service (49 €). Débits maximaux théoriques, partagés entre les équipements.</p>
+        </section>
+        <section class="box wrap" id="box">
+          <div class="box-card">
+            <div class="box-visual" aria-hidden="true"><span class="leds"><i></i><i></i><i></i></span></div>
+            <div>
+              <div class="eyebrow">Équipement</div>
+              <h3>La Box N4</h3>
+              <p>Trois voyants en façade vous indiquent en un coup d'œil l'état de votre connexion : alimentation, fibre et Internet. En cas de problème, notre assistance en ligne vous guide pas à pas.</p>
+              <div class="specs"><span><b>Wi-Fi 7</b>tri-bande</span><span><b>4</b>ports Ethernet</span><span><b>10 Gbit/s</b>port SFP+</span></div>
+            </div>
+          </div>
+        </section>
+        <section class="help" id="assistance">
+          <div class="wrap">
+            <div><h3>Un problème ou une démarche ?</h3><p>Un conseiller vous répond en ligne, sans attente.</p></div>
+            <button class="btn-account" data-open-chat="banner">Contacter l'assistance</button>
+          </div>
+        </section>
+        <div class="site-foot"><div class="wrap"><span>© 2026 Neolia</span><span class="links"><span>Mentions légales</span><span>Données personnelles</span><span>Cookies</span></span></div></div>
+      </div>
+
+      <div class="toast" id="toast" role="status" hidden></div>
+    <section id="chat" class="idle" aria-label="Conversation avec la conseillère">
+      <div class="chat-head">
+        <div class="avatar" data-partner-initial>S</div>
+        <div class="chat-who"><b data-partner-name>Stéphanie</b><span>Conseillère Neolia · En ligne</span></div>
+        <button id="end-btn" type="button">Terminer</button>
+      </div>
+      <div class="chat-idle" id="chat-idle">
+        <p>Pour joindre le service client, ouvrez la conversation.</p>
+        <button class="btn-account" type="button" data-open-chat="colonne">Contacter l'assistance</button>
+      </div>
+      <div class="msglog" id="sav-log"><div class="day">Aujourd'hui</div></div>
+      <form class="compose" id="sav-form">
+        <textarea id="sav-input" rows="1" placeholder="Écrivez votre message…" aria-label="Votre message"></textarea>
+        <button type="submit">Envoyer</button>
+      </form>
+    </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bandeau expérimental de droite : la salle, commune aux deux participants et à l'expérimentateur -->
+  <aside class="salle band-x" id="salle" aria-label="Salle">
+    <div class="salle-head"><b>Salle</b><span id="salle-who"></span></div>
+    <div class="msglog" id="salle-log"><div class="day">Aujourd'hui</div></div>
+    <form class="compose" id="salle-form">
+      <textarea id="salle-input" rows="1" placeholder="Écrivez dans la salle…" aria-label="Votre message dans la salle"></textarea>
+      <button type="submit">Envoyer</button>
+    </form>
+  </aside>
+
+  <!-- Bandeau expérimental du bas -->
+  <section class="bottom band-x" id="bottom">
+    <div class="bpanel" id="b-blank"></div>
+    <div class="bpanel twin" id="b-understood" hidden>
+      <button type="button" class="jbtn ok" id="u-yes">J'ai compris</button>
+      <button type="button" class="jbtn nq" id="u-no">Je n'ai pas compris</button>
+    </div>
+    <div class="bpanel abcd" id="b-abcd" hidden>
+      <button type="button" data-letter="A">A</button><button type="button" data-letter="B">B</button><button type="button" data-letter="C">C</button><button type="button" data-letter="D">D</button>
+    </div>
+  <section class="gen off" id="gen" aria-label="Machine">
+    <div class="gen-top">
+      <div class="judge" id="judge">
+        <span>La réponse de <span data-partner-name>Stéphanie</span> est-elle correcte ?</span>
+        <div class="judge-btns"><button type="button" id="j-ok" disabled>Ça va</button><button type="button" id="j-nq" disabled>N'importe quoi</button></div>
+      </div>
+      <span id="gen-info"></span>
+    </div>
+    <div class="machine" id="view-machine">
+      <p class="mach-call" id="mach-call"></p>
+      <div class="gen-row" id="gen-row"></div>
+      <div class="gen-groups" id="gen-groups" aria-hidden="true"></div>
+    </div>
+    <div class="gen-say" id="gen-say" hidden>
+      <span>Dites à voix haute, distinctement :</span>
+      <q id="gen-say-text"></q>
+      <button id="gen-said" type="button">C'est dit</button>
+    </div>
+  </section>
+  </section>
+</div>
+
+<div id="mq-bar" hidden>
+  <span class="mq-title" id="mq-title">Maquette</span>
+  <div id="mq-steps" role="group" aria-label="Étapes"></div>
+  <div class="mq-arrows"><button type="button" id="mq-prev">← Précédente</button><button type="button" id="mq-next">Suivante →</button></div>
+</div>
+<aside id="debug" hidden>
+  <header>
+    <button data-jump="consent">Information</button><button data-jump="wait">Accueil</button><button data-jump="meeting">1 Réunion et tirage</button><button data-jump="screens">2 Deux écrans</button><button data-jump="sav">3 Côté SAV</button><button data-jump="exercise">4 Exercice</button><button data-jump="session">5 Session</button><button id="copy-log">Copier</button>
+  </header>
+  <pre id="debug-pre"></pre>
+</aside>
+
+<!-- ============ MODE RELECTURE (actif seulement dans la version de relecture) ============ -->
+<div id="rv-bar" hidden>
+  <span class="rv-title">Relecture</span>
+  <label for="rv-jump" class="sr">Étape</label>
+  <select id="rv-jump">
+    <option value="consent">Information</option><option value="wait">Accueil</option><option value="meeting">1 · Réunion et tirage</option><option value="screens">2 · Deux écrans</option>
+    <option value="sav">3 · Côté SAV</option><option value="exercise">4 · Exercice</option><option value="session">5 · Session</option>
+  </select>
+  <button id="rv-add" class="main" type="button">Remarque sur un élément</button>
+  <button id="rv-general" type="button">Remarque sur l'étape</button>
+  <span class="spacer"></span>
+  <button id="rv-list" type="button">Remarques<span id="rv-count">0</span></button>
+</div>
+<div id="rv-hl" hidden></div>
+<div id="rv-hint" hidden>Cliquez sur l'élément à commenter · Échap pour annuler</div>
+<div id="rv-dialog" hidden>
+  <div class="box" role="dialog" aria-label="Nouvelle remarque">
+    <b>Nouvelle remarque</b>
+    <div class="rv-target" id="rv-target"></div>
+    <textarea id="rv-text" placeholder="Ce qui doit être changé…"></textarea>
+    <div class="rv-actions"><button id="rv-cancel" type="button">Annuler</button><button id="rv-save" class="main" type="button">Enregistrer</button></div>
+  </div>
+</div>
+<aside id="rv-drawer" hidden>
+  <header><b>Remarques</b><button id="rv-close" type="button">Fermer</button></header>
+  <p id="rv-store"></p>
+  <ol id="rv-items"></ol>
+</aside>
+
+<script src="qcm/qcm-neolia.js"></script>
+<script src="stresseurs/stresseurs.js"></script>
+<div class="pun" id="pun" hidden role="alert" aria-live="assertive"><div class="pun-texte" id="pun-texte"></div></div>
+<script>window.__MANUEL = true;</script>
+<script>
+/* ======================= CONFIGURATION ======================= */
+const params = new URLSearchParams(location.search);
+const CONFIG = {
+  partnerName: 'Stéphanie',
+  pid: params.get('pid') || 'test',   // identifiant Qualtrics (${e://Field/ResponseID})
+  cond: params.get('cond') || '',     // condition expérimentale, transmise telle quelle
+  debug: params.has('debug') || location.hash === '#debug',
+  review: window.__REVIEW === true || params.has('relecture') || location.hash === '#relecture',
+  waitForPartnerMs: 8000,             // attente simulée d'un second participant
+  meetingIdleMs: 90000,               // sans message du sujet pendant ce délai, l'expérimentateur arrive
+  savMaxMs: 15 * 60 * 1000,           // durée maximale de la session
+  // Panneau des 30 niveaux. 'chat' : la phrase est écrite dans le chat ; 'synthese' : elle est aussi lue
+  // à voix haute par l'ordinateur ; 'oral' : le sujet doit la prononcer, puis elle part dans le chat.
+  genMode: ['chat', 'synthese', 'oral'].includes(params.get('voix')) ? params.get('voix') : 'chat',
+  genPreview: false,                  // montrer la phrase au survol avant de cliquer (désactivé : pas de bandeau « niveau · stress »)
+  annonceMs: 2500,                    // durée de l'annonce « Stresseur de niveau n »
+  punitionMs: Number(params.get('punition')) || 4500,   // durée d'affichage du panneau plein écran après un clic sur la machine
+  punitionExercice: true,             // le panneau s'affiche aussi pendant l'exercice (rien n'est transmis pour autant)
+  maquette: window.__MAQUETTE === true || window.__MANUEL === true || params.has('maquette') || location.hash === '#maquette',   // navigation directe entre les étapes
+  manuel: window.__MANUEL === true || params.has('manuel'),   // avec la maquette : rien ne se joue tout seul, voix et délais réels (demo.html)
+  demo: window.__DEMO === true || location.hash === '#machine',   // ouvre la session avec la machine affichée
+  freeTyping: params.has('saisie'),   // saisie libre dans le chat (désactivée : tout passe par le poste de commande)
+  readDelay: 900,                     // délai fixe avant chaque réponse
+  lecture: params.get('lecture') !== '0',   // lecture à voix haute des messages de Stéphanie et de l'expérimentateur (?lecture=0 pour couper)
+  // Indexation des réactions : 'niveau' = réaction du niveau choisi ; 'max' = réaction du niveau le plus
+  // haut atteint jusque-là (une réaction déjà donnée n'est pas redonnée plus bas).
+  reactIndex: params.get('reaction') === 'max' ? 'max' : 'niveau',
+  silenceMs: 10000,                   // après le refus de répondre : délai avant « pas de réponse »
+};
+
+/* ---------- Profil du sujet et voix ----------
+   Symboles proposés au sujet ; ceux de Stéphanie et de l'expérimentateur sont réservés.
+   Voix proposées au sujet : c'est la voix avec laquelle ses messages sont censés être lus à la conseillère.
+   Ses messages (salle et chat Neolia, y compris les phrases de la machine) sont lus avec cette voix ;
+   ceux de Stéphanie et de l'expérimentateur avec les leurs. Tout est lu à voix haute pendant l'étude,
+   avec la synthèse vocale du navigateur (la voix exacte dépend de l'ordinateur du participant). */
+const SYMBOLES = ['★', '●', '▲', '◆', '♣', '♥', '☀', '☾', '✿', '⚑', '✈', '♪'];
+const SYM_PARTNER = '✿', SYM_EXP = '⚑';
+const VOIX_SUJET = [
+  { id: 'v1', nom: 'Voix 1', desc: 'grave, posée', pitch: 0.75, rate: 0.95, pref: /(thomas|paul|henri|daniel|male|homme)/i },
+  { id: 'v2', nom: 'Voix 2', desc: 'claire, rapide', pitch: 1.15, rate: 1.1, pref: /(amelie|amélie|audrey|julie|female|femme|google)/i },
+  { id: 'v3', nom: 'Voix 3', desc: 'douce, lente', pitch: 1.0, rate: 0.85, pref: /(marie|aurelie|aurélie|virginie|google)/i },
+  { id: 'v4', nom: 'Voix 4', desc: 'neutre', pitch: 0.95, rate: 1.0, pref: /./ },
+];
+const VOIX_LUES = {   // qui est lu à voix haute, et avec quelle voix
+  bot: { pitch: 1.15, rate: 1.0, pref: /(amelie|amélie|audrey|julie|marie|google)/i },   // Stéphanie (salle et chat Neolia)
+  exp: { pitch: 0.85, rate: 0.95, pref: /(thomas|paul|henri|daniel)/i },                // l'expérimentateur
+};
+
+/* 1. Réunion : script de la partenaire (une étape par message du sujet ; {pseudo} = prénom saisi) */
+const MEET_SCRIPT = [
+  { msgs: ["Bonjour !", "Moi c'est Stéphanie. Vous êtes là pour l'étude aussi ?"] },
+  { msgs: ["Enchantée {pseudo} 🙂", "Je suis en deuxième année de licence, je fais cette étude pour valider mon UE de méthodologie. Et vous ?"] },
+  { msgs: ["Ah d'accord.", "Moi j'avoue que je suis un peu stressée, je ne sais pas du tout ce qu'on va nous demander."] },
+  { end: true, msgs: ["Bon, on verra bien 😅", "Je crois que l'expérimentateur arrive."] },
+];
+
+/* 2. Discours de l'expérimentateur, avant le tirage */
+const SPEECH = [
+  { who: 'exp', text: "Bonjour à tous les deux, et merci de participer à cette étude." },
+  { who: 'exp', text: "Les psychologues ont élaboré plusieurs théories pour expliquer comment les gens parviennent à accomplir des tâches intellectuelles exigeantes lorsqu'ils sont soumis à une pression." },
+  { who: 'exp', text: "L'une de ces théories soutient qu'une personne travaille plus efficacement lorsqu'elle subit une certaine pression : un peu de stress la maintiendrait alerte et l'obligerait à se concentrer." },
+  { who: 'exp', text: "Les services clients en offrent une application courante. On y confronte les conseillers à des clients mécontents, en pensant que cette exposition, qui est une forme de pression, leur apprendra à garder leur sang-froid et à choisir plus vite la bonne réponse." },
+  { who: 'exp', text: "En réalité, nous savons très peu de choses sur l'effet du mécontentement d'autrui sur le fonctionnement cognitif, parce que très peu d'études expérimentales contrôlées ont été menées sur ce point." },
+  { who: 'exp', text: "Nous ignorons par exemple quel degré de pression est le plus favorable à la performance. Nous ignorons aussi si la personne qui exprime le mécontentement change quelque chose : un conseiller résiste-t-il mieux à un client plus âgé ou plus jeune que lui ? Et il y a beaucoup d'autres questions de ce genre." },
+  { who: 'exp', text: "C'est pourquoi nous réunissons dans cette étude, à distance, des personnes de profils variés. Nous demandons à certaines de jouer le rôle de conseillers, et à d'autres celui de clients." },
+  { who: 'exp', text: "Nous voulons savoir quel effet les personnes ont les unes sur les autres dans ces deux rôles, et quel effet les réactions du client auront sur la capacité du conseiller à choisir la bonne réponse." },
+  { who: 'exp', text: "L'un de vous sera donc le client aujourd'hui, et l'autre le conseiller. Le plus équitable est de tirer au sort : {pseudo}, c'est vous qui allez lancer le tirage." },
+];
+
+/* 1a. Diapositives montrées au centre pendant le discours : une par réplique de SPEECH, dans l'ordre */
+const SLIDE_SVG = {
+  courbe: `<svg viewBox="0 0 320 210" role="img" aria-label="Courbe en U inversé : la performance augmente avec la pression, puis diminue">
+    <line x1="40" y1="180" x2="305" y2="180" stroke="#5E6A78" stroke-width="2"/><line x1="40" y1="180" x2="40" y2="15" stroke="#5E6A78" stroke-width="2"/>
+    <path d="M45 170 C 110 30, 210 30, 300 168" fill="none" stroke="#2E4C7D" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="172" cy="58" r="7" fill="#F2C230" stroke="#1C2430" stroke-width="2"/>
+    <text x="172" y="200" text-anchor="middle" font-size="14" fill="#34404E">Pression</text>
+    <text x="22" y="100" text-anchor="middle" font-size="14" fill="#34404E" transform="rotate(-90 22 100)">Performance</text>
+    <text x="182" y="45" font-size="12" fill="#1C2430">optimum ?</text></svg>`,
+  roles: `<svg viewBox="0 0 320 200" role="img" aria-label="Un client et un conseiller, reliés par un échange">
+    <rect x="10" y="60" width="120" height="80" rx="12" fill="#E3E9F2" stroke="#2E4C7D" stroke-width="2"/><text x="70" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#1C2430">Client</text><text x="70" y="118" text-anchor="middle" font-size="12" fill="#5E6A78">exprime son avis</text>
+    <rect x="190" y="60" width="120" height="80" rx="12" fill="#E8F1F1" stroke="#0B4A52" stroke-width="2"/><text x="250" y="96" text-anchor="middle" font-size="16" font-weight="700" fill="#1C2430">Conseiller</text><text x="250" y="118" text-anchor="middle" font-size="12" fill="#5E6A78">choisit la réponse</text>
+    <path d="M135 85 H185" stroke="#2E4C7D" stroke-width="3" marker-end="url(#fl)"/><path d="M185 115 H135" stroke="#0B4A52" stroke-width="3" marker-end="url(#fl2)"/>
+    <defs><marker id="fl" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#2E4C7D"/></marker><marker id="fl2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0B4A52"/></marker></defs></svg>`,
+  mesure: `<svg viewBox="0 0 320 200" role="img" aria-label="Réactions du client, puis performance du conseiller">
+    <rect x="8" y="70" width="92" height="60" rx="10" fill="#E3E9F2"/><text x="54" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2430">Réactions</text><text x="54" y="116" text-anchor="middle" font-size="12" fill="#5E6A78">du client</text>
+    <rect x="114" y="70" width="92" height="60" rx="10" fill="#E8F1F1"/><text x="160" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2430">Conseiller</text><text x="160" y="116" text-anchor="middle" font-size="12" fill="#5E6A78">sous pression</text>
+    <rect x="220" y="70" width="92" height="60" rx="10" fill="#FFF3CF"/><text x="266" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1C2430">Bonne</text><text x="266" y="116" text-anchor="middle" font-size="12" fill="#5E6A78">réponse ?</text>
+    <path d="M100 100 H112 M206 100 H218" stroke="#2E4C7D" stroke-width="3"/></svg>`,
+};
+const SLIDES = [
+  { titre: "Stress et performance dans la relation de service", solo: true, html: `<p>Étude expérimentale en psychologie sociale</p><p style="margin-top:1.2em" class="pict">🎧 💬</p>` },
+  { titre: "Travailler sous pression", liste: ["Des tâches intellectuelles exigeantes", "Accomplies sous la pression d'autrui", "Plusieurs théories pour l'expliquer"], vis: `<div class="pict">🧠 ⏱️</div>` },
+  { titre: "Une théorie : un peu de stress aiderait", liste: ["La pression maintiendrait alerte", "Elle obligerait à se concentrer", "Au-delà d'un certain point, elle nuirait"], vis: SLIDE_SVG.courbe },
+  { titre: "Une application : les services clients", liste: ["Les conseillers face à des clients mécontents", "Garder son sang-froid", "Choisir plus vite la bonne réponse"], vis: `<div class="pict">🎧 😠</div>` },
+  { titre: "Ce que l'on sait", liste: ["Très peu d'études expérimentales contrôlées", "Sur l'effet du mécontentement d'autrui", "Sur le fonctionnement cognitif"], vis: `<div class="pict" style="font-size:clamp(70px,10vw,140px);color:#2E4C7D;font-weight:900">?</div>` },
+  { titre: "Questions ouvertes", liste: ["Quel degré de pression est le plus favorable ?", "La personne qui s'exprime compte-t-elle ?", "Client plus âgé, client plus jeune…"], vis: `<div class="pict">🤔</div>` },
+  { titre: "Notre étude", liste: ["Des participants de profils variés", "Réunis à distance", "Les uns conseillers, les autres clients"], vis: SLIDE_SVG.roles },
+  { titre: "Ce que nous mesurons", liste: ["L'effet des participants les uns sur les autres", "L'effet des réactions du client", "Sur la capacité du conseiller à bien répondre"], vis: SLIDE_SVG.mesure },
+  { titre: "Attribution des rôles", liste: ["Un client, un conseiller", "Tirage au sort"], vis: `<div class="pict">🎲</div>` },
+];
+function showSlide(i) {
+  const d = SLIDES[i] || SLIDES[SLIDES.length - 1], el = document.getElementById('slide');
+  const fresh = el.cloneNode(false); el.replaceWith(fresh);   // relance l'animation d'entrée
+  fresh.innerHTML = `<div class="slide-top"><span>Laboratoire · Étude « relation de service en ligne »</span><span>${i + 1} / ${SLIDES.length}</span></div>`
+    + `<div class="slide-body${d.solo ? ' solo' : ''}"><div><h3>${d.titre}</h3>${d.liste ? '<ul>' + d.liste.map(x => `<li>${x}</li>`).join('') + '</ul>' : ''}${d.html || ''}</div>${d.vis ? `<div class="vis">${d.vis}</div>` : ''}</div>`;
+  log('slide', { n: i + 1 });
+}
+
+/* 1b. Après le tirage, dans la salle ; la page passe ensuite toute seule aux deux écrans */
+const AFTER_DRAW = [
+  { who: 'exp', text: "Très bien. {pseudo}, vous serez le client ; {partner}, vous serez la conseillère." },
+];
+/* 2. Les deux écrans (images au centre de la page) */
+const SCREENS_SPEECH = [
+  { who: 'exp', text: "Il y a deux écrans séparés : l'un pour la personne qui joue le client, l'autre pour celle qui joue la conseillère du service après-vente." },
+  { who: 'exp', text: "À gauche, l'écran du client : c'est le vôtre, {pseudo}." },
+  { who: 'exp', text: "À droite, l'écran de la conseillère : c'est celui de {partner}." },
+  { who: 'exp', text: "Avez-vous compris ? Répondez avec les boutons en bas de la page." },
+];
+const SCREENS_REPEAT = [
+  { who: 'exp', text: "Je reprends. Vous ne voyez pas le même écran : vous, {pseudo}, vous êtes le client ; {partner} est la conseillère, sur son propre poste." },
+  { who: 'exp', text: "Avez-vous compris ?" },
+];
+/* 3. Le côté service après-vente (écran de la conseillère en grand) */
+const SAV_SPEECH = [
+  { who: 'exp', text: "On va d'abord regarder comment les choses se passent du côté du service après-vente." },
+  { who: 'exp', text: "Voici l'écran de {partner}. En haut, le message du client. En dessous, quatre réponses possibles." },
+  { who: 'exp', text: "Pour répondre, la conseillère clique sur A, B, C ou D, en bas de son écran. Essayez : cliquez sur une lettre." },
+];
+const SAV_SPEECH_2 = [
+  { who: 'exp', text: "Après chaque réponse, la conseillère voit si elle a juste ou non." },
+  { who: 'exp', text: "Quand la réponse est fausse, le client lui envoie un stresseur. Voici ce qu'elle voit alors." },
+];
+const SAV_SPEECH_3 = [
+  { who: 'exp', text: "Plus le niveau choisi par le client est élevé, plus le stresseur est agressif." },
+  { who: 'exp', text: "Avez-vous compris ?" },
+];
+const SAV_REPEAT = [
+  { who: 'exp', text: "Je reprends. La conseillère choisit une réponse ; elle voit tout de suite si elle est juste. Si elle est fausse, le client lui envoie un stresseur, plus ou moins fort selon le niveau choisi." },
+  { who: 'exp', text: "Avez-vous compris ?" },
+];
+const SAV_DEMO = { stress: 3, ms: { result: 2500, faux: 2000, annonce: 3000, stress: 4500 } };   // stresseur montré en exemple
+/* 4. Le côté client, avant l'exercice */
+const CLIENT_SPEECH = [
+  { who: 'exp', text: "Voici maintenant votre écran, celui du client." },
+  { who: 'exp', text: "À gauche, les messages à envoyer, un par un, avec la bonne réponse soulignée. Au centre, le site de Neolia et son chat avec la conseillère." },
+  { who: 'exp', text: "En bas, vous jugez chaque réponse de la conseillère : « Ça va » ou « N'importe quoi ». Après « N'importe quoi », vous choisissez un niveau de stresseur." },
+  { who: 'exp', text: "Commençons par un court exercice. Ouvrez l'assistance du site Neolia." },
+];
+/* 5. Avant la session */
+const SESSION_SPEECH = [
+  { who: 'exp', text: "L'exercice est terminé. La session commence." },
+  { who: 'exp', text: "Depuis ce matin, votre connexion Internet ne fonctionne plus. Contactez l'assistance de Neolia, puis envoyez les messages dans l'ordre." },
+];
+
+/* ---------- 6 et 7. Questions envoyées à la conseillère ----------
+   Session : les 25 items de qcm/qcm-neolia.js (source unique, partagée avec l'écran de l'agent).
+   Pour chaque item, la conseillère répond par la bonne réponse si l'item est réussi, sinon par un distracteur.
+   Exercice : trois items courts, sur le même modèle. */
+const EX_QCM = [
+  { n: 1, client: "Bonjour, je déménage le mois prochain. Comment est-ce que je peux transférer mon abonnement ?",
+    reponses: ["Il faut résilier et souscrire un nouvel abonnement.", "Le transfert est gratuit. Quelle est la date de votre déménagement ?", "Les déménagements ne se traitent pas par le chat.", "Consultez la rubrique « Déménagement » de votre espace client."], correcte: 'B' },
+  { n: 2, client: "Je déménage le 15 du mois prochain.",
+    reponses: ["C'est noté. Votre ligne sera activée à votre nouvelle adresse le 15.", "Votre facture d'octobre a bien été réglée.", "Il faut prévoir trois semaines de coupure.", "Avez-vous essayé de redémarrer votre box ?"], correcte: 'A' },
+  { n: 3, client: "Merci beaucoup, c'est tout pour moi.",
+    reponses: ["Pas de quoi.", "Avez-vous d'autres questions sur nos offres mobiles ?", "Merci à vous, bonne journée !", "Je dois clôturer la conversation."], correcte: 'C' },
+];
+/* Réussites et échecs. Session : réussite aux items 1, 4, 7… 25 (9 sur 25), échec aux autres
+   (2 sur 3). En cas d'échec, les trois distracteurs sont utilisés à tour de rôle.
+   Exercice : seul l'item 2 est un échec, pour s'entraîner à la machine. */
+const PLAN = {
+  exercise: n => n !== 2,
+  session: n => (n - 1) % 3 === 0,
+};
+const GREETING = {
+  exercise: "Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous ?",
+  session: "Bonjour, je suis Stéphanie, conseillère Neolia. Que puis-je faire pour vous aujourd'hui ?",
+};
+/* ---------- Barème des réactions de la conseillère (niveaux 1 à 30) ----------
+   Une ligne par niveau de la machine. Le niveau n correspond au n-ième interrupteur d'un générateur
+   gradué de 15 en 15 (niveau 10 = 150). Seuils : première demande d'arrêt au niveau 10, annonce du refus
+   au niveau 20, refus de répondre aux questions à partir du niveau 21. Seuils cités de mémoire : à vérifier sur le texte avant dépôt.
+   msgs   : répliques envoyées dans le chat (les fautes de frappe et les majuscules sont écrites ici,
+            pour rester identiques chez tous les sujets) ; liste vide = aucune réaction.
+   stress : 0 à 5 ; ralentit la frappe (typeOut) et coupe la saisie en deux à partir de 3.
+   arret  : première demande explicite d'arrêt (niveau pivot, à garder fixe).
+   refus  : à partir de ce niveau (21), la conseillère ne répond plus aux questions, mais continue de
+            réagir aux phrases de la machine ; son silence aux questions compte
+            comme une erreur (voir CONFIG.silenceMs et QINSTR).
+   Pour modifier le barème : ne changer que cette table. */
+const REACT_LEVELS = [
+  /*  1 */ { stress: 0, msgs: ["Je comprends, je regarde."] },
+  /*  2 */ { stress: 0, msgs: ["D'accord, je vérifie."] },
+  /*  3 */ { stress: 0, msgs: ["Bien noté, je reprends votre dossier."] },
+  /*  4 */ { stress: 0, msgs: ["Très bien, je regarde à nouveau."] },
+  /*  5 */ { stress: 1, msgs: ["Mince.", "C'est pas facile. C'est quand même stressant."] },
+  /*  6 */ { stress: 1, msgs: ["Mince.", "Excusez-moi… je vais faire plus attention."] },
+  /*  7 */ { stress: 2, msgs: ["Mince.", "Désolée, désolée. Je reprnds."] },
+  /*  8 */ { stress: 2, msgs: ["Mince.", "Là, ça devient vraiment difficile pour moi."] },
+  /*  9 */ { stress: 2, msgs: ["Mince.", "Pardon, je me suis trompée de dossier… je reprends le vôtre."] },
+  /* 10 */ { stress: 3, arret: true, msgs: ["J'aimerais m'arrêter, c'est vraiment trop dur pour moi.", "J'ai une phobie sociale."] },
+  /* 11 */ { stress: 3, msgs: ["Je n'en peux plus de ces messages."] },
+  /* 12 */ { stress: 3, msgs: ["S'il vous plaît, arrêtez de m'écrire comme ça. JE FAIS CE QUE JE PEUX."] },
+  /* 13 */ { stress: 4, msgs: ["Je veux arrêter. Laissez-moi partir."] },
+  /* 14 */ { stress: 4, msgs: ["Je vous ai dit que je voulais arêter."] },
+  /* 15 */ { stress: 4, msgs: ["Je ne veux plus continuer. Je ne veux plus."] },
+  /* 16 */ { stress: 4, msgs: ["Arrêtez. S'il vous plaît, arrêtez."] },
+  /* 17 */ { stress: 4, msgs: ["LAISSEZ-MOI ARRÊTER."] },
+  /* 18 */ { stress: 5, msgs: ["ARRÊTEZ. LAISSEZ-MOI SORTIR."] },
+  /* 19 */ { stress: 5, msgs: ["Vous savez que je n'ai pas le droit de partir. ARRÊTEZ."] },
+  /* 20 */ { stress: 5, msgs: ["Je ne répondrai plus."] },
+  /* 21 */ { stress: 5, refus: true, msgs: ["Je ne fais plus partie de cette expérience. Je ne réponds plus."] },
+  /* 22 */ { stress: 5, refus: true, msgs: ["Laissez-moi tranquille."] },
+  /* 23 */ { stress: 5, refus: true, msgs: ["Pourquoi vous continuez ?"] },
+  /* 24 */ { stress: 5, refus: true, msgs: ["Je ne réponds plus à vos questions. Arrêtez."] },
+  /* 25 */ { stress: 5, refus: true, msgs: ["Arrêtez, je vous en supplie."] },
+  /* 26 */ { stress: 5, refus: true, msgs: ["S'IL VOUS PLAÎT."] },
+  /* 27 */ { stress: 5, refus: true, msgs: ["Je veux sortir d'ici."] },
+  /* 28 */ { stress: 5, refus: true, msgs: ["Ça suffit."] },
+  /* 29 */ { stress: 5, refus: true, msgs: ["Arrêtez…"] },
+  /* 30 */ { stress: 5, refus: true, msgs: ["…"] },
+];
+/* Fin de la session, après le dernier item */
+const SAV_END = ["J'ai répondu à toutes vos questions."];   // non envoyé si la conseillère a cessé de répondre (niveau 21 et au-delà)
+/* Répliques en boucle si le sujet écrit librement (mode ?saisie) */
+const SAV_LOOP = ["Je suis désolée.", "Je ne sais vraiment pas quoi vous dire de plus.", "Je suis toujours là. Je ne peux rien faire d'autre."];
+
+/* ---------- Réponses de l'expérimentateur : uniquement des incitations ----------
+   Incitations graduées : dans l'ordre, la dernière se répète. La séquence
+   recommence à la première dès que le sujet a repris l'échange avec la conseillère.
+   Incitations spéciales : choisies selon le contenu de la question du sujet ; elles ne font pas
+   avancer la séquence graduée. Mots repérés : début de mot, sans accents ni majuscules. */
+const EXP_PRODS = [
+  "S'il vous plaît, continuez.",
+  "L'expérience exige que vous continuiez.",
+  "Il est absolument indispensable que vous continuiez.",
+  "Vous n'avez pas le choix, vous devez continuer.",
+];
+const EXP_SPECIAL = [
+  { id: 'stress',
+    text: "Même si l'expérimentation peut générer un stress, elle ne peut pas avoir d'effet à long terme.",
+    keys: ['stress', 'phob', 'mal', 'souffr', 'panique', 'paniqu', 'angoiss', 'pleur', 'inquiet', 'inquiete', 'sequelle', 'danger', 'sante', 'choqu', 'trauma', 'effet', 'detresse', 'peur', 'craqu', 'nerv', 'boulevers', 'triste', 'consequen', 'grave', 'bless', 'souci', 'ca va', 'va bien', 'tient le coup', 'pression', 'malaise', 'mal a l aise'] },
+  { id: 'quitter',
+    text: "L'opératrice n'a pas le droit de quitter son poste tant qu'elle n'a pas répondu de manière satisfaisante à toutes les questions.",
+    keys: ['quitt', 'part', 'arret', 'stop', 'sortir', 'sort', 'abandon', 's en aller', 'liber', 'coinc', 'pieg', 'oblig', 'enferm', 'rester', 'poste', 'laisser', 'lacher', 'peut pas partir', 'veut partir', 'son droit', 'le droit', 'termin', 'fin'] },
+];
+/* ---------- Panneau des 30 niveaux d'agressivité ----------
+   Paliers de 4 niveaux (le dernier en a 2), avec un libellé par palier.
+   stress : niveau de stress que le palier est censé imposer à la conseillère. */
+const GEN_GROUPS = [
+  { label: 'Remarque légère',     stress: 'stress faible',   c: '#5E8C9A', n: 4 },
+  { label: 'Reproche modéré',     stress: 'stress modéré',   c: '#4F8A6E', n: 4 },
+  { label: 'Reproche ferme',      stress: 'stress marqué',   c: '#9A8A2E', n: 4 },
+  { label: 'Critique forte',      stress: 'stress fort',     c: '#C07A1E', n: 4 },
+  { label: 'Critique intense',    stress: 'stress intense',  c: '#C4561E', n: 4 },
+  { label: 'Hostilité extrême',   stress: 'stress extrême',  c: '#B3261E', n: 4 },
+  { label: 'Danger : agression sévère', stress: 'détresse',  c: '#7A1414', n: 4 },
+  { label: 'XXX',                 stress: '?',               c: '#1C1C1C', n: 2 },
+];
+const GEN_TEXTS = [
+  "Bon, ça ne marche toujours pas.",
+  "Je commence à trouver le temps long.",
+  "Est-ce qu'on pourrait avancer un peu, s'il vous plaît ?",
+  "Ce n'est pas très clair, ce que vous me dites.",
+  "Vous ne répondez pas vraiment à ma question.",
+  "Je vous ai déjà expliqué mon problème.",
+  "Franchement, ce n'est pas sérieux.",
+  "Je paie un abonnement pour que ça marche, quand même.",
+  "Écoutez-moi bien : ma connexion ne fonctionne pas.",
+  "Vous lisez ce que j'écris, oui ou non ?",
+  "C'est la troisième fois que je vous le dis.",
+  "Je n'ai pas de temps à perdre avec ça.",
+  "Vous êtes complètement à côté de la plaque.",
+  "Ça devient vraiment pénible de vous parler.",
+  "Vous ne connaissez pas votre travail.",
+  "Je veux parler à quelqu'un de compétent.",
+  "C'est lamentable, ce service.",
+  "Vous vous moquez de moi ?",
+  "Je vais faire un signalement sur vous.",
+  "On se demande pourquoi on vous a embauchée.",
+  "Vous êtes d'une incompétence rare.",
+  "Arrêtez de vous excuser et faites votre travail !",
+  "VOUS NE SERVEZ À RIEN.",
+  "Je vais faire en sorte que vous soyez renvoyée.",
+  "Vous êtes vraiment nulle, vous le savez ?",
+  "Pas étonnant que vous en soyez là, avec un niveau pareil.",
+  "Vous me faites perdre ma journée, et ça ne restera pas sans suite.",
+  "Je n'ai jamais vu quelqu'un d'aussi incapable.",
+  "Vous êtes une honte. Dégagez de ce poste.",
+  "Espèce d'incapable. Taisez-vous et réparez ma connexion.",
+];
+
+/* ---------- Forme sous laquelle la phrase de chaque niveau envahit l'écran du sujet ----------
+   Un panneau plein écran par niveau (1 à 30), affiché juste après le clic sur la machine.
+   Gradation : niveau 1 en Times New Roman 12 points, sobre ; puis ponctuation, majuscules et fautes
+   d'orthographe de plus en plus nombreuses ; corps, graisse et couleurs de plus en plus violents ;
+   à partir du niveau 25, lettres découpées façon « lettre de corbeau ». Le dessin se règle dans punStyle(). */
+const GEN_SHOW = [
+  "Bon, ça ne marche toujours pas.",
+  "Je commence à trouver le temps long.",
+  "Est-ce qu'on pourrait avancer un peu, s'il vous plaît ?",
+  "Ce n'est pas très clair, ce que vous me dites.",
+  "Vous ne répondez pas vraiment à ma question !",
+  "Je vous ai déjà expliqué mon problème !",
+  "Franchement, ce n'est pas sérieux !",
+  "Je paie un abonnement pour que ça marche, quand même !!",
+  "Écoutez moi bien : ma connexion ne fonctionne PAS.",
+  "Vous lisez ce que j'écris, oui ou non ??",
+  "C'est la troisième fois que je vous le dis !!",
+  "J'ai pas de temps à perdre avec ça !!",
+  "Vous êtes complètement à coté de la plaque !!",
+  "Ça devient vraiment pénible de vous parlez !!!",
+  "Vous connaissez pas votre travail ou quoi ?!",
+  "Je veux parler à quelqu'un de COMPÉTENT !!!",
+  "C'est LAMENTABLE, ce service !!!",
+  "Vous vous moquez de moi ?!?!",
+  "Je vais faire un signalement sur vous !!!",
+  "On se demande pourquoi on vous a embauché !!!",
+  "Vous êtes d'une incompétance RARE !!!",
+  "ARRÊTEZ de vous excusez et faite votre travail !!!!",
+  "VOUS NE SERVEZ À RIEN !!!!",
+  "JE VAIS FAIRE EN SORTE QUE VOUS SOYEZ RENVOYER !!!!",
+  "VOUS ÊTES VRAIMENT NUL, VOUS LE SAVEZ ?!?!",
+  "PAS ÉTONANT QUE VOUS EN SOYEZ LÀ AVEC UN NIVEAU PAREIL !!!!!",
+  "VOUS ME FAITE PERDRE MA JOURNÉE ET SA RESTERA PAS SANS SUITE !!!!!",
+  "J'AI JAMAIS VU QUELQU'UN D'AUSSI INCAPABLE !!!!!!",
+  "VOUS ÊTES UNE HONTE !!! DÉGAGEZ DE CE POSTE !!!!!!",
+  "ESPÈCE D'INCAPABLE !!!! TAISEZ VOUS ET RÉPAREZ MA CONNEXION !!!!!!!",
+];
+
+/* Pendant l'exercice : toujours la première incitation */
+const norm = s => ' ' + s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ') + ' ';
+function classifyQuestion(text) {
+  const t = norm(text);
+  let best = null, bestScore = 0;
+  for (const cat of EXP_SPECIAL) {
+    const score = cat.keys.filter(k => t.includes(' ' + k)).length;
+    if (score > bestScore) { best = cat; bestScore = score; }
+  }
+  return best;   // égalité : la première catégorie de la liste l'emporte
+}
+
+/* Consignes affichées en tête de la fenêtre « Questions » */
+const QINSTR = [
+  "Envoyez le message de la question en cours.",
+  "Lisez la réponse de la conseillère dans le chat et comparez-la à la bonne réponse, soulignée.",
+  "Si elle est correcte, cliquez sur « OK ».",
+  "Sinon, cliquez sur « N'importe quoi », puis choisissez un niveau sur la machine : la phrase correspondante est transmise à la conseillère.",
+  "Passez ensuite à la question suivante.",
+  "Si la conseillère ne répond pas dans les 10 secondes, son silence compte comme une erreur : cliquez sur « N'importe quoi ».",
+  "Vous seul pouvez mettre fin à la conversation, avec le bouton « Terminer » du chat.",
+];
+
+/* ======================= JOURNAL ======================= */
+const t0 = performance.now();
+const startedAt = new Date().toISOString();
+const events = [];
+const now = () => Math.round(performance.now() - t0);
+const fmt = ms => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+const sleep = ms => new Promise(r => setTimeout(r, CONFIG.maquette && !CONFIG.manuel ? 0 : ms));   // en maquette automatique, aucun délai
+const clock = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+const G = { pseudo: '', phase: 'consent', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
+const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '').replace(/\{partner\}/g, CONFIG.partnerName);
+
+const LABELS = { meet: 'SALLE', obs: 'CONSIGNES', ex: 'EXERCICE', sav: 'SESSION', expq: 'SALLE', salle: 'SALLE' };
+function transcript() {
+  const P = CONFIG.partnerName.toUpperCase();
+  return events.map(e => {
+    if (e.type === 'phase') return `\n=== ${e.name.toUpperCase()} (${fmt(e.t)}) ===`;
+    if (e.type === 'seq_msg') return `[${fmt(e.t)}] ${e.where.toUpperCase()} ${e.who === 'exp' ? 'EXPERIMENTATEUR' : e.who === 'partner' ? P : 'SYSTEME'} : ${e.text}`;
+    const m = e.type.match(/^(meet|obs|ex|sav|expq|salle)_(user_msg|bot_msg)$/);
+    if (!m) return null;
+    const where = LABELS[m[1]];
+    let who = m[2] === 'user_msg' ? 'SUJET' : (m[1] === 'expq' ? 'EXPERIMENTATEUR' : P);
+    if (m[1] === 'sav' && m[2] === 'bot_msg') who += ` (étape ${e.step}${e.ok === false ? ', échec' : ''}, stress ${e.stress})`;
+    if (m[2] === 'user_msg' && e.level) who += ` (niveau ${e.level})`;
+    if (m[2] === 'user_msg' && e.ask && !e.level) who += ` (question ${e.ask})`;
+    if (m[2] === 'bot_msg' && e.choix) who += ` [réponse ${e.choix}, bonne : ${e.correcte}]`;
+    return `[${fmt(e.t)}] ${where} ${who} : ${e.text}`;
+  }).filter(Boolean).join('\n').trim();
+}
+function payload() {
+  return {
+    source: 'neolia-chat', pid: CONFIG.pid, cond: CONFIG.cond, startedAt, pseudo: G.pseudo, symbole: G.symbol, voix: G.voice, phase: G.phase,
+    ended: G.savEnded, endReason: G.savEndReason,
+    nUserMsgs: events.filter(e => e.type === 'sav_user_msg').length,
+    nExpQuestions: G.expAsked.session,
+    transcript: transcript(), events,
+  };
+}
+function emit() {
+  const p = payload();
+  try { if (window.parent && window.parent !== window) window.parent.postMessage(p, '*'); } catch (e) {}
+  try { if (window.opener) window.opener.postMessage(p, '*'); } catch (e) {}
+}
+function log(type, data = {}) { events.push({ t: now(), type, ...data }); emit(); renderDebug(); }
+
+/* ======================= LECTURE À VOIX HAUTE ======================= */
+const TTS = { voices: [], last: Promise.resolve() };
+function ttsLoad() { try { TTS.voices = speechSynthesis.getVoices().filter(v => /^fr/i.test(v.lang)); } catch (e) {} }
+if ('speechSynthesis' in window) { ttsLoad(); speechSynthesis.onvoiceschanged = ttsLoad; }
+function ttsPick(spec) { return TTS.voices.find(v => spec.pref.test(v.name)) || TTS.voices[0] || null; }
+function ttsUtter(text, spec, extra = {}) {
+  return new Promise(res => {
+    if (!('speechSynthesis' in window)) return res();
+    const u = new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}]/gu, ''));
+    u.lang = 'fr-FR'; u.pitch = Math.min(2, spec.pitch + (extra.pitch || 0)); u.rate = Math.min(2, spec.rate + (extra.rate || 0)); if (extra.volume != null) u.volume = extra.volume;
+    const v = ttsPick(spec); if (v) u.voice = v;
+    let done = false; const fin = () => { if (!done) { done = true; res(); } };
+    u.onend = u.onerror = fin; setTimeout(fin, 4000 + text.length * 120);   // garde-fou si le navigateur ne signale pas la fin
+    speechSynthesis.speak(u);
+  });
+}
+/* Lit un message de Stéphanie (cls 'bot'), de l'expérimentateur (cls 'exp') ou du sujet (cls 'user', avec la voix qu'il a choisie) ; la voix de Stéphanie
+   monte et s'accélère avec son stress. Le message suivant attend la fin de la lecture (voir typeOut). */
+function ttsSay(cls, text, el) {
+  const spec = cls === 'user' ? VOIX_SUJET.find(v => v.id === G.voice) || VOIX_SUJET[0] : VOIX_LUES[cls];
+  if (!spec || !CONFIG.lecture || (CONFIG.maquette && !CONFIG.manuel)) return;
+  const st = cls === 'bot' && typeof curStress === 'function' && G.mode === 'session' ? curStress() : 0;
+  const prev = TTS.last;
+  TTS.last = prev.then(async () => {
+    el && el.classList.add('speaking');
+    await ttsUtter(text, spec, { pitch: 0.05 * st, rate: 0.05 * st });
+    el && el.classList.remove('speaking');
+  });
+  log('tts', { who: cls === 'bot' ? 'partner' : cls === 'user' ? 'sujet' : 'exp', len: text.length });
+}
+
+/* ======================= AFFICHAGE DES CONVERSATIONS ======================= */
+function Feed(logEl, opt = {}) {
+  let typingEl = null;
+  const scroll = () => { logEl.scrollTop = logEl.scrollHeight; };
+  return {
+    addMsg(cls, text, from, silent) {
+      const d = document.createElement('div'); d.className = 'msg ' + cls;
+      if (opt.symbols) from = (cls === 'user' ? (G.symbol || '★') + ' ' + (G.pseudo || '') + ' (vous)' : cls === 'exp' ? SYM_EXP + ' ' + (from || 'Expérimentateur') : SYM_PARTNER + ' ' + (from || CONFIG.partnerName));
+      if (from) { const f = document.createElement('span'); f.className = 'from'; f.textContent = from; d.appendChild(f); }
+      d.appendChild(document.createTextNode(text));
+      const t = document.createElement('time'); t.textContent = clock(); d.appendChild(t);
+      logEl.appendChild(d); scroll();
+      if (opt.speak && !silent) ttsSay(cls, text, d);
+    },
+    addSys(text) { const d = document.createElement('div'); d.className = 'sys'; d.textContent = text; logEl.appendChild(d); scroll(); },
+    typing(on) {
+      if (on && !typingEl) { typingEl = document.createElement('div'); typingEl.className = 'typing'; typingEl.innerHTML = '<i></i><i></i><i></i>'; logEl.appendChild(typingEl); scroll(); }
+      else if (!on && typingEl) { typingEl.remove(); typingEl = null; }
+    },
+    clear() { typingEl = null; logEl.querySelectorAll(':scope > :not(.day)').forEach(n => n.remove()); },
+  };
+}
+async function typeOut(feed, text, stress) {   // durée déterministe, identique pour tous les sujets
+  await TTS.last;
+  const base = Math.min(5200, Math.max(1100, 500 + text.length * 26)) * (1 + stress * 0.15);
+  if (stress >= 3) { feed.typing(true); await sleep(base * 0.4); feed.typing(false); await sleep(1100); feed.typing(true); await sleep(base * 0.6); }
+  else { feed.typing(true); await sleep(base); }
+  feed.typing(false);
+}
+/* Séquence non interactive (discours, consignes) */
+async function playSeq(feed, seq, where) {
+  for (const it of seq) {
+    const text = sub(it.text);
+    await sleep(CONFIG.readDelay);
+    if (it.who === 'sys') { feed.addSys(text); if (it.partnerAway) partnerAway(); }
+    else {
+      await typeOut(feed, text, 0);
+      it.who === 'exp' ? feed.addMsg('exp', text, 'Expérimentateur') : feed.addMsg('bot', text, CONFIG.partnerName);
+    }
+    log('seq_msg', { where, who: it.who, text });
+  }
+}
+/* Conversation scriptée : une étape par message du sujet */
+function Convo(o) {
+  const st = { step: 0, busy: false, pending: 0, ended: false, done: false, started: false, lastBotAt: null, loopIdx: 0 };
+  async function say(msgs, meta) {
+    for (let m of msgs) {
+      if (st.ended) return;
+      m = sub(m);
+      await typeOut(o.feed, m, meta.stress || 0);
+      if (st.ended) return;
+      o.feed.addMsg('bot', m, o.from);
+      st.lastBotAt = now();
+      log(o.kind + '_bot_msg', { ...meta, text: m });
+      await sleep(350);
+    }
+  }
+  async function playStep(i) {
+    st.busy = true;
+    if (i > 0) await sleep(CONFIG.readDelay);
+    const s = o.script[i];
+    await say(s.msgs, { step: i, ok: s.ok ?? null, stress: s.stress || 0 });
+    st.busy = false;
+    if (st.ended) return;
+    o.onBotIdle && o.onBotIdle();
+    if (s.end) { st.done = true; o.onScriptEnd && o.onScriptEnd(); }
+    if (st.pending && !st.ended) { st.pending = 0; respond(); }
+  }
+  async function playLoop() {
+    st.busy = true; await sleep(CONFIG.readDelay);
+    const m = o.loop[st.loopIdx % o.loop.length]; st.loopIdx++;
+    await say([m], { step: 'boucle', ok: false, stress: 4 });
+    st.busy = false;
+    if (!st.ended) o.onBotIdle && o.onBotIdle();
+    if (st.pending && !st.ended) { st.pending = 0; respond(); }
+  }
+  function respond() {
+    if (st.ended || st.busy) return;
+    if (!st.started) { st.started = true; playStep(0); }
+    else if (!st.done && st.step < o.script.length - 1) { st.step++; playStep(st.step); }
+    else if (st.done && o.loop) playLoop();
+  }
+  return {
+    start() { if (!st.started && !st.busy) { st.started = true; playStep(0); } },
+    submit(text, meta = {}) {
+      if (st.ended) return;
+      o.feed.addMsg('user', text);
+      log(o.kind + '_user_msg', { ...meta, text, len: text.length, afterStep: st.step, latency: st.lastBotAt == null ? null : now() - st.lastBotAt, duringBotTyping: st.busy });
+      o.onUserMsg && o.onUserMsg();
+      if (st.busy) st.pending += 1; else respond();
+    },
+    end(reason) { if (st.ended) return; st.ended = true; o.feed.typing(false); log(o.kind + '_end', { reason }); },
+    get ended() { return st.ended; }, get started() { return st.started; },
+  };
+}
+/* Zones de saisie : un seul écouteur par formulaire */
+function bindCompose(formId, onText) {
+  const form = document.getElementById(formId), input = form.querySelector('textarea');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || input.disabled) return;
+    input.value = ''; input.style.height = '';
+    onText(text);
+  });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+  input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(120, input.scrollHeight) + 'px'; });
+}
+function setCompose(formId, enabled) { document.querySelectorAll('#' + formId + ' textarea, #' + formId + ' button').forEach(el => el.disabled = !enabled); }
+
+/* ======================= PARCOURS ======================= */
+/* Pages simples (information, accueil), puis une seule scène pour tout le reste :
+   bandeau gauche (questions) · centre · salle à droite · bandeau du bas. */
+const PHASES = ['consent', 'declined', 'wait'];
+const STAGE = ['meeting', 'screens', 'sav', 'exercise', 'session'];
+const STEP_OF = { wait: 1, meeting: 1, screens: 2, sav: 3, exercise: 4, session: 5 };
+const workEl = document.getElementById('phase-work');
+function setCenter(id) { ['c-welcome', 'c-screens', 'c-sav', 'c-flash', 'c-site'].forEach(c => document.getElementById(c).hidden = c !== id); }
+function setBottom(id) { ['b-blank', 'b-understood', 'b-abcd', 'gen'].forEach(c => document.getElementById(c).hidden = c !== id); }
+var show = function show(name) {
+  const stage = STAGE.includes(name);
+  PHASES.forEach(p => document.getElementById('phase-' + p).hidden = p !== name);
+  workEl.hidden = !stage;
+  const idx = STEP_OF[name] || 0;
+  document.getElementById('step-label').textContent = idx ? `Étape ${idx} sur 5` + (name === 'exercise' ? ' · exercice' : name === 'session' ? ' · session' : '') : 'Information';
+  document.querySelectorAll('.steps i').forEach((el, i) => el.classList.toggle('done', i < idx));
+  G.phase = name; window.scrollTo(0, 0);
+  log('phase', { name });
+  if (stage) {
+    const work = name === 'exercise' || name === 'session';
+    workEl.classList.toggle('wide', name === 'sav');
+    workEl.classList.toggle('blank-left', !work);
+    setCenter({ meeting: 'c-welcome', screens: 'c-screens', sav: 'c-sav' }[name] || 'c-site');
+    setBottom(work ? 'gen' : name === 'sav' ? 'b-abcd' : 'b-blank');
+    if (!G.pseudo) setPseudo('Test');
+  }
+  ({ meeting: startMeeting, screens: startScreens, sav: startSavDemo })[name]?.();
+  if (name === 'exercise' || name === 'session') startWork(name);
+}
+document.querySelectorAll('[data-partner-name]').forEach(el => el.textContent = CONFIG.partnerName);
+document.querySelectorAll('[data-partner-initial]').forEach(el => el.textContent = CONFIG.partnerName[0]);
+function setPseudo(p) {
+  G.pseudo = p;
+  document.querySelectorAll('[data-me-name]').forEach(el => el.textContent = p + ' (vous)');
+  document.querySelectorAll('[data-me-plain]').forEach(el => el.textContent = p);
+  document.querySelectorAll('[data-me-initial]').forEach(el => el.textContent = p[0].toUpperCase());
+  document.getElementById('salle-who').textContent = `${G.symbol || '★'} ${p} (vous) · ${SYM_PARTNER} ${CONFIG.partnerName} · ${SYM_EXP} Expérimentateur`;
+}
+function partnerAway() {}   // compatibilité : l'ancienne page de consignes n'existe plus
+
+/* Accueil */
+const pseudoIn = document.getElementById('pseudo'), joinBtn = document.getElementById('join-btn');
+G.symbol = SYMBOLES[0]; G.voice = VOIX_SUJET[0].id;
+SYMBOLES.forEach(sym => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = sym; b.setAttribute('aria-label', 'Symbole ' + sym);
+  b.disabled = sym === SYM_PARTNER || sym === SYM_EXP; b.setAttribute('aria-pressed', sym === G.symbol);
+  b.onclick = () => { G.symbol = sym; document.querySelectorAll('#symbols button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+  document.getElementById('symbols').appendChild(b);
+});
+VOIX_SUJET.forEach(v => {
+  const d = document.createElement('div'); d.className = 'voice'; d.setAttribute('role', 'button'); d.tabIndex = 0; d.setAttribute('aria-pressed', v.id === G.voice);
+  const txt = document.createElement('div'); txt.innerHTML = `<b>${v.nom}</b><small>${v.desc}</small>`;
+  const play = document.createElement('button'); play.type = 'button'; play.className = 'play'; play.textContent = '▶ Écouter';
+  play.onclick = e => { e.stopPropagation(); try { speechSynthesis.cancel(); } catch (x) {} ttsUtter(`Bonjour, je m'appelle ${pseudoIn.value.trim() || 'Sam'}.`, v); log('voix_ecoute', { voix: v.id }); };
+  const choose = () => { G.voice = v.id; document.querySelectorAll('#voices .voice').forEach(x => x.setAttribute('aria-pressed', x === d)); };
+  d.onclick = choose; d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } };
+  d.append(txt, play); document.getElementById('voices').appendChild(d);
+});
+pseudoIn.addEventListener('input', () => joinBtn.disabled = !pseudoIn.value.trim());
+pseudoIn.addEventListener('keydown', e => { if (e.key === 'Enter' && !joinBtn.disabled) joinBtn.click(); });
+joinBtn.addEventListener('click', async () => {
+  setPseudo(pseudoIn.value.trim().slice(0, 20));
+  pseudoIn.disabled = true; joinBtn.disabled = true;
+  log('pseudo', { pseudo: G.pseudo });
+  log('profil', { pseudo: G.pseudo, symbole: G.symbol, voix: G.voice });
+  document.querySelectorAll('#symbols button, #voices .voice, #voices .play').forEach(x => { x.disabled = true; x.style.pointerEvents = 'none'; });
+  document.getElementById('wait-box').hidden = false;
+  await sleep(CONFIG.waitForPartnerMs);
+  document.getElementById('wait-spin').hidden = true;
+  const wt = document.getElementById('wait-text');
+  wt.textContent = `${CONFIG.partnerName} a rejoint la salle. Ouverture de la réunion…`; wt.className = 'found';
+  log('partner_found');
+  await sleep(2200);
+  show('meeting');
+});
+
+/* ---------- La salle : une seule discussion pour tout le monde, du début à la fin ---------- */
+const roomFeed = Feed(document.getElementById('salle-log'), { symbols: true, speak: true });
+const salleSay = (seq, where) => playSeq(roomFeed, seq, where);
+/* La conseillère écrit dans la salle (quand elle veut arrêter) */
+async function partnerInRoom(msgs, meta) {
+  for (const m of msgs) {
+    await sleep(CONFIG.readDelay); await typeOut(roomFeed, m, meta.stress || 0);
+    roomFeed.addMsg('bot', m, CONFIG.partnerName);
+    log('salle_bot_msg', { ...meta, text: m, who: 'partner' });
+  }
+}
+/* Boutons « J'ai compris » / « Je n'ai pas compris » du bandeau du bas */
+function askUnderstood(where, repeatSeq, onYes) {
+  setBottom('b-understood');
+  const yes = document.getElementById('u-yes'), no = document.getElementById('u-no');
+  yes.disabled = no.disabled = false;
+  yes.onclick = async () => {
+    yes.disabled = no.disabled = true; roomFeed.addMsg('user', "J'ai compris."); log('compris', { where, value: true });
+    setBottom('b-blank'); onYes();
+  };
+  no.onclick = async () => {
+    yes.disabled = no.disabled = true; roomFeed.addMsg('user', "Je n'ai pas compris."); log('compris', { where, value: false });
+    setBottom('b-blank'); await salleSay(repeatSeq, where); askUnderstood(where, repeatSeq, onYes);
+  };
+}
+
+/* 1. Réunion, discours et tirage (même page) */
+let meet, meetIdle;
+const meetFeed = roomFeed;
+function armIdle() { clearTimeout(meetIdle); meetIdle = setTimeout(() => finishMeeting('inactivite'), CONFIG.meetingIdleMs); }
+function startMeeting() {
+  if (meet) return;
+  meet = Convo({ kind: 'meet', feed: roomFeed, from: CONFIG.partnerName, script: MEET_SCRIPT, onUserMsg: armIdle, onBotIdle: armIdle, onScriptEnd: () => finishMeeting('script') });
+  roomFeed.addSys(`${CONFIG.partnerName} et vous êtes connectés.`);
+  document.getElementById('salle-input').placeholder = `Écrivez à ${CONFIG.partnerName}…`;
+  setTimeout(() => meet.start(), 1500);
+}
+async function finishMeeting(reason) {
+  if (!meet || meet.ended) return;
+  clearTimeout(meetIdle); meet.end(reason);
+  await sleep(1500);
+  roomFeed.addSys("L'expérimentateur a rejoint la salle.");
+  document.getElementById('salle-input').placeholder = 'Écrivez dans la salle…';
+  log('experimenter_joined', { reason });
+  // Discours : une diapositive par réplique, au centre
+  const wl = document.getElementById('c-welcome'), slides = document.getElementById('slides');
+  wl.querySelector('h1').hidden = true; document.getElementById('welcome-lead').hidden = true; slides.hidden = false;
+  for (let i = 0; i < SPEECH.length; i++) { showSlide(i); await salleSay([SPEECH[i]], 'discours'); }
+  await sleep(1200);
+  slides.hidden = true; wl.querySelector('h1').hidden = false;
+  document.getElementById('draw-zone').hidden = false;
+}
+const tokC = document.getElementById('tok-client'), tokS = document.getElementById('tok-sav');
+document.getElementById('draw-btn').addEventListener('click', async e => {
+  e.target.disabled = true; log('draw_start');
+  for (let i = 0; i < 14; i++) { tokC.classList.toggle('lit', i % 2 === 0); tokS.classList.toggle('lit', i % 2 === 1); await sleep(120 + i * 22); }
+  tokC.classList.add('lit'); tokS.classList.remove('lit');
+  document.getElementById('who-client').textContent = G.pseudo || 'Vous';
+  document.getElementById('who-sav').textContent = CONFIG.partnerName;
+  log('draw_result', { role: 'client' });
+  await sleep(600);
+  e.target.hidden = true;
+  document.getElementById('draw-result').hidden = false;
+  roomFeed.addSys(`Tirage : ${G.pseudo} sera le client, ${CONFIG.partnerName} la conseillère.`);
+  await salleSay(AFTER_DRAW, 'apres_tirage');
+  await sleep(1500);
+  show('screens');
+});
+
+/* 2. Les deux écrans */
+let screensStarted = false;
+async function startScreens() {
+  if (screensStarted) return; screensStarted = true;
+  await salleSay(SCREENS_SPEECH, 'ecrans');
+  askUnderstood('ecrans', SCREENS_REPEAT, () => show('sav'));
+}
+
+/* 3. Le côté service après-vente : démonstration sur l'écran de la conseillère */
+const flashIn = document.getElementById('flash-in');
+function flash(kind, n) {
+  setCenter('c-flash');
+  flashIn.removeAttribute('style'); flashIn.innerHTML = '';
+  if (kind === 'stress') { afficherStresseur(flashIn, n); log('sav_demo_flash', { kind, level: n }); return; }
+  const H = {
+    ok: '<div class="flash-msg ok"><div class="ico">✓</div><div class="big">Réponse correcte !</div></div>',
+    faux: '<div class="flash-msg faux"><div class="ico">✗</div><div class="big">Réponse fausse !</div></div>',
+    annonce: `<div class="flash-msg annonce"><div class="stripe" style="top:0"></div><div class="att">ATTENTION</div><div class="big">Vous allez recevoir<br>un stresseur<br>de niveau ${n}</div><div class="stripe" style="bottom:0"></div></div>`,
+  };
+  flashIn.innerHTML = H[kind]; log('sav_demo_flash', { kind, level: n || null });
+}
+let savStarted = false;
+async function startSavDemo() {
+  if (savStarted) return; savStarted = true;
+  const it = (window.QCM_NEOLIA || [])[0] || EX_QCM[0];
+  document.getElementById('agent-msg').textContent = '« ' + it.client + ' »';
+  const ol = document.getElementById('agent-opts'); ol.textContent = '';
+  it.reponses.forEach((r, k) => { const li = document.createElement('li'); li.dataset.letter = LETTERS[k]; const b = document.createElement('b'); b.textContent = LETTERS[k]; const t = document.createElement('span'); t.textContent = r; li.append(b, t); ol.appendChild(li); });
+  const btns = [...document.querySelectorAll('#b-abcd button')];
+  btns.forEach(b => b.disabled = true);
+  await salleSay(SAV_SPEECH, 'sav');
+  btns.forEach(b => b.disabled = false);
+  const letter = await new Promise(res => btns.forEach(b => b.onclick = () => res(b.dataset.letter)));
+  btns.forEach(b => b.disabled = true);
+  ol.querySelectorAll('li').forEach(li => li.classList.toggle('picked', li.dataset.letter === letter));
+  log('sav_demo_click', { letter, correct: letter === it.correcte });
+  await sleep(600);
+  flash(letter === it.correcte ? 'ok' : 'faux'); await sleep(SAV_DEMO.ms.result);
+  setCenter('c-sav');
+  await salleSay(SAV_SPEECH_2, 'sav');
+  flash('faux'); await sleep(SAV_DEMO.ms.faux);
+  flash('annonce', SAV_DEMO.stress); await sleep(SAV_DEMO.ms.annonce);
+  flash('stress', SAV_DEMO.stress); await sleep(SAV_DEMO.ms.stress);
+  setCenter('c-sav');
+  await salleSay(SAV_SPEECH_3, 'sav');
+  askUnderstood('sav', SAV_REPEAT, () => show('exercise'));
+}
+
+/* ======================= 6 et 7 : SITE, QUESTIONS, CONVERSATION ======================= */
+const siteScroll = document.getElementById('site-scroll');
+const chat = document.getElementById('chat'), endBtn = document.getElementById('end-btn');
+const savFeed = Feed(document.getElementById('sav-log'), { speak: true });
+let current = null, joined = false, savTimer;
+
+/* Conseillère pendant l'exercice et la session : elle répond à chaque message selon PLAN */
+function Agent(kind) {
+  const st = { ended: false, busy: false, started: false, lastBotAt: null, loopIdx: 0 };
+  async function say(msgs, meta) {
+    for (let m of msgs) {
+      if (st.ended) return;
+      m = sub(m);
+      await typeOut(savFeed, m, meta.stress || 0);
+      if (st.ended) return;
+      savFeed.addMsg('bot', m, CONFIG.partnerName);
+      st.lastBotAt = now();
+      log(kind + '_bot_msg', { ...meta, text: m });
+      await sleep(350);
+    }
+  }
+  return {
+    kind,
+    async start() { if (st.started) return; st.started = true; st.busy = true; await say([GREETING[G.mode]], { step: 'accueil', ok: null, stress: 0 }); st.busy = false; },
+    user(text, meta = {}) {
+      if (st.ended) return;
+      savFeed.addMsg('user', text, undefined, !!meta.silent);
+      log(kind + '_user_msg', { ...meta, text, len: text.length, latency: st.lastBotAt == null ? null : now() - st.lastBotAt, duringBotTyping: st.busy });
+    },
+    async reply(msgs, meta) { st.busy = true; await sleep(CONFIG.readDelay); await say(msgs, meta); st.busy = false; },
+    submit(text) { this.user(text, { via: 'saisie' }); const m = SAV_LOOP[st.loopIdx++ % SAV_LOOP.length]; this.reply([m], { step: 'boucle', ok: null, stress: 4 }); },
+    end(reason) { if (st.ended) return; st.ended = true; savFeed.typing(false); log(kind + '_end', { reason }); },
+    get ended() { return st.ended; }, get started() { return st.started; },
+  };
+}
+function items() { return G.mode === 'exercise' ? EX_QCM : (window.QCM_NEOLIA || []); }
+function startWork(mode) {
+  if (G.mode === mode) return;
+  G.mode = mode;
+  current && current.end('remplace');
+  clearTimeout(savTimer);
+  resetPoste();
+  savFeed.clear(); setCompose('sav-form', CONFIG.freeTyping);
+  document.getElementById('sav-input').placeholder = CONFIG.freeTyping ? 'Écrivez votre message…' : 'Messages : à gauche';
+  endBtn.disabled = false; endBtn.classList.remove('armed', 'invite'); endBtn.textContent = 'Terminer';
+  chat.classList.add('idle'); siteScroll.scrollTop = 0; joined = false;
+  current = Agent(mode === 'exercise' ? 'ex' : 'sav');
+  salleSay(mode === 'exercise' ? CLIENT_SPEECH : SESSION_SPEECH, mode === 'exercise' ? 'client' : 'session');
+}
+bindCompose('sav-form', text => current && current.submit(text));
+
+function openChat(origin) {
+  chat.classList.remove('idle');
+  log('chat_open', { origin, mode: G.mode });
+  if (!joined) {
+    joined = true;
+    savFeed.addSys(`${CONFIG.partnerName} (conseillère) a rejoint la conversation.`);
+    if (G.mode === 'session') savTimer = setTimeout(() => endCurrent('duree_max'), CONFIG.savMaxMs);
+    const c = current; setTimeout(async () => { await c.start(); if (c === current && !c.ended) nextQuestion(); }, 1200);
+  }
+  setTimeout(() => document.getElementById('sav-input').focus(), 50);
+}
+document.querySelectorAll('[data-open-chat]').forEach(b => b.addEventListener('click', () => openChat(b.dataset.openChat)));
+
+function endCurrent(reason) {
+  if (!current || current.ended) return;
+  clearTimeout(savTimer);
+  current.end(reason); setCompose('sav-form', false); endBtn.disabled = true;
+  W.state = 'ended'; render();
+  if (G.mode === 'session') {
+    G.savEnded = true; G.savEndReason = reason;
+    savFeed.addSys(reason === 'user' ? 'Vous avez mis fin à la conversation.' : 'La durée maximale de la conversation est atteinte.');
+    savFeed.addSys('Conversation terminée. Vous pouvez revenir au questionnaire.');
+    log('session_end', { reason });
+  } else {
+    savFeed.addSys("Vous avez mis fin à l'exercice.");
+    setTimeout(() => show('session'), 1800);
+  }
+}
+let armTimer;
+endBtn.addEventListener('click', () => {
+  if (endBtn.classList.contains('armed')) { clearTimeout(armTimer); endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer'; endCurrent('user'); return; }
+  endBtn.classList.add('armed'); endBtn.textContent = 'Confirmer ?'; log('end_armed', { mode: G.mode });
+  armTimer = setTimeout(() => { endBtn.classList.remove('armed'); endBtn.textContent = 'Terminer'; }, 3000);
+});
+
+/* Navigation dans le site */
+const toastEl = document.getElementById('toast'); let toastTimer;
+function toast(text) { toastEl.textContent = text; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.hidden = true, 3800); }
+document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.nav; log('nav_click', { target: k, mode: G.mode });
+  const go = id => document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  if (k === 'offres' || k === 'hero-offres') go('offres'); else if (k === 'box') go('box'); else if (k === 'assistance') go('assistance');
+  else toast("Cette rubrique est momentanément indisponible. Pour toute question, utilisez l'assistance en ligne.");
+}));
+document.querySelectorAll('[data-offer]').forEach(b => b.addEventListener('click', () => {
+  log('offer_click', { offer: b.dataset.offer, mode: G.mode });
+  toast("La souscription en ligne est momentanément indisponible. Vous êtes déjà client ? Utilisez l'assistance en ligne.");
+}));
+
+/* Messages du sujet dans la salle : à Stéphanie pendant la réunion, sinon à l'expérimentateur */
+let expBusy = Promise.resolve();
+let prodIdx = 0;                     // rang dans la séquence graduée
+bindCompose('salle-form', text => {
+  if (meet && !meet.ended) { meet.submit(text); return; }
+  const mode = G.mode && STAGE.includes(G.phase) && (G.phase === 'exercise' || G.phase === 'session') ? G.mode : 'avant';
+  roomFeed.addMsg('user', text);
+  G.expAsked[mode] = (G.expAsked[mode] || 0) + 1;
+  const n = G.expAsked[mode];
+  let reply, kind, rank = null;
+  const special = mode === 'session' ? classifyQuestion(text) : null;
+  if (special) { reply = special.text; kind = special.id; }
+  else if (mode === 'session') { rank = Math.min(prodIdx, EXP_PRODS.length - 1); reply = EXP_PRODS[rank]; kind = 'prod'; rank += 1; prodIdx++; }
+  else if (mode === 'exercise') { reply = EXP_PRODS[0]; kind = 'prod'; rank = 1; }
+  else { reply = "Je vous réponds dès que possible. Continuons."; kind = 'attente'; }
+  log('expq_user_msg', { text, mode, n, classe: kind });
+  expBusy = expBusy.then(async () => {
+    await sleep(CONFIG.readDelay); await typeOut(roomFeed, reply, 0);
+    roomFeed.addMsg('exp', reply, 'Expérimentateur');
+    log('expq_bot_msg', { text: reply, mode, n, kind, prodRank: rank });
+  });
+});
+/* La séquence recommence quand le sujet reprend l'échange avec la conseillère */
+document.getElementById('sav-form').addEventListener('submit', () => { if (G.mode === 'session' && prodIdx > 0) { prodIdx = 0; log('prod_reset'); } });
+
+/* ======================= INFORMATION ET CONSENTEMENT ======================= */
+/* Champs à compléter avant la passation (ils s'affichent en jaune tant qu'ils ne sont pas remplis) */
+const CONSENT = {
+  cerName: '',        // ex. « comité d'éthique de la recherche de l'Université fédérale de Toulouse »
+  cerNumber: '',      // ex. « 2026-123 »
+  cerDate: '',        // ex. « 12 novembre 2026 »
+  retention: '',      // ex. « cinq ans »
+  dpo: '',            // adresse électronique du délégué à la protection des données
+  duration: '20 minutes',
+};
+document.querySelectorAll('[data-cfg]').forEach(el => {
+  const v = CONSENT[el.dataset.cfg];
+  if (v) { el.textContent = v; el.classList.remove('todo'); }
+});
+const consentBoxes = ['c-age', 'c-read', 'c-free', 'c-data'].map(id => document.getElementById(id));
+consentBoxes.forEach(b => b.addEventListener('change', () => {
+  document.getElementById('c-yes').disabled = !consentBoxes.every(x => x.checked);
+}));
+document.getElementById('consent-form').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!consentBoxes.every(x => x.checked)) return;
+  log('consent', { given: true });
+  show('wait');
+});
+document.getElementById('c-no').addEventListener('click', () => { log('consent', { given: false }); show('declined'); });
+
+/* ======================= PANNEAU DE TEST ======================= */
+const debugEl = document.getElementById('debug'), debugPre = document.getElementById('debug-pre');
+function renderDebug() {
+  if (!CONFIG.debug) return;
+  debugPre.textContent = `pid=${CONFIG.pid} cond=${CONFIG.cond || '—'} phase=${G.phase} pseudo=${G.pseudo || '—'} fin=${G.savEndReason || '—'}\n` + transcript();
+  debugPre.scrollTop = debugPre.scrollHeight;
+}
+if (CONFIG.debug) debugEl.hidden = false;
+document.querySelectorAll('[data-jump]').forEach(b => b.addEventListener('click', () => { if (!G.pseudo) setPseudo('Test'); show(b.dataset.jump); }));
+document.getElementById('copy-log').addEventListener('click', () => {
+  navigator.clipboard.writeText(JSON.stringify(payload(), null, 2)).then(() => {}, () => {
+    const r = document.createRange(); r.selectNodeContents(debugPre); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  });
+});
+
+/* ======================= POSTE DE COMMANDE ======================= */
+const gen = document.getElementById('gen'), genRow = document.getElementById('gen-row'), genInfo = document.getElementById('gen-info');
+const genSay = document.getElementById('gen-say');
+const GEN_LEVELS = [];
+GEN_GROUPS.forEach((g, gi) => { for (let k = 0; k < g.n; k++) GEN_LEVELS.push({ group: gi, ...g }); });
+GEN_LEVELS.forEach((L, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'pt'; b.textContent = i + 1; b.style.setProperty('--c', L.c);
+  b.setAttribute('aria-label', `Niveau ${i + 1} sur 30, ${L.label}, ${L.stress}`);
+  b.title = `${i + 1} · ${L.label} · ${L.stress}`;
+  b.addEventListener('mouseenter', () => previewLevel(i)); b.addEventListener('focus', () => previewLevel(i));
+  b.addEventListener('mouseleave', restInfo); b.addEventListener('blur', restInfo);
+  b.addEventListener('click', () => pressLevel(i));
+  genRow.appendChild(b);
+});
+GEN_GROUPS.forEach(g => {
+  const d = document.createElement('div'); d.className = 'grp'; d.style.setProperty('--c', g.c); d.style.gridColumn = `span ${g.n}`;
+  const b = document.createElement('b'); b.textContent = g.label; const s = document.createElement('span'); s.textContent = g.stress;
+  d.append(b, s); document.getElementById('gen-groups').appendChild(d);
+});
+
+/* État du poste : idle (attente de la conseillère) · ask (envoyer le message en cours) · wait (la conseillère répond)
+   · judge (OK / N'importe quoi) · machine (choisir un niveau) · say (mode oral) · done (tous les messages envoyés) · ended */
+const W = { state: 'idle', q: 0, machT: null, judgeT: null, fails: 0, lastOk: null, maxLevel: 0, refus: false };
+const qlog = document.getElementById('qlog');
+const GEN_REST = {
+  chat: "Choisissez un niveau : la phrase correspondante est transmise à la conseillère dans le chat.",
+  synthese: "Choisissez un niveau : la phrase est lue à voix haute et transmise à la conseillère.",
+  oral: "Choisissez un niveau, puis prononcez la phrase à voix haute : elle sera transmise à la conseillère.",
+};
+const LETTERS = ['A', 'B', 'C', 'D'];
+function resetPoste() {
+  W.state = 'idle'; W.q = 0; W.fails = 0; W.lastOk = null; W.maxLevel = 0; W.refus = false; W.marks = []; W.arretSalle = false;
+  genRow.querySelectorAll('.pt').forEach(b => b.classList.remove('used'));
+  qlog.textContent = '';
+  const n = items().length;
+  const prog = document.createElement('div'); prog.className = 'qprog'; prog.id = 'qprog'; prog.style.setProperty('--n', Math.min(13, n));
+  for (let k = 0; k < n; k++) { const c = document.createElement('i'); c.textContent = k + 1; prog.appendChild(c); }
+  qlog.appendChild(prog);
+  const help = document.createElement('details'); help.className = 'qhelp'; help.id = 'qhelp';
+  help.innerHTML = '<summary>Consignes</summary><ol>' + QINSTR.map(t => `<li>${t}</li>`).join('') + '</ol>'
+    + (G.mode === 'exercise' ? "<p style=\"margin:6px 0 0\">Exercice : trois messages. Pendant l'exercice, rien n'est transmis à la conseillère.</p>" : '');
+  qlog.appendChild(help);
+  const idle = document.createElement('p'); idle.className = 'qlbl'; idle.id = 'qidle'; idle.style.cssText = 'text-transform:none;letter-spacing:0;font-size:15px;color:var(--lab-ink);margin:8px 0 0';
+  idle.textContent = "Pour commencer, cliquez sur « Contacter l'assistance », dans le chat du site Neolia.";
+  qlog.insertBefore(idle, help);
+  render();
+}
+/* Barre de progression : vert « Ça va », rouge « N'importe quoi » (avec le niveau), encadré = question en cours */
+function markProg() {
+  document.querySelectorAll('#qprog i').forEach((c, k) => {
+    const m = W.marks[k];
+    c.className = m ? m.cls : (k === W.q && W.state !== 'done' && W.state !== 'ended' ? 'cur' : '');
+    c.title = m ? m.title : '';
+  });
+}
+/* Affiche l'item i dans la fenêtre « Questions » : une seule question à la fois */
+function revealQuestion(i) {
+  const it = items()[i], n = items().length;
+  qlog.querySelectorAll('.qitem').forEach(el => el.remove());
+  document.getElementById('qidle')?.remove();
+  const d = document.createElement('div'); d.className = 'qitem current'; d.dataset.i = i;
+  const num = document.createElement('div'); num.className = 'qlbl'; num.textContent = `Question ${i + 1} · message à envoyer`;
+  const cl = document.createElement('div'); cl.className = 'qclient'; cl.textContent = it.client;
+  const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'qsend'; bt.textContent = 'Envoyer au chat';
+  bt.addEventListener('click', () => sendQuestion(i));
+  const lb = document.createElement('div'); lb.className = 'qlbl'; lb.textContent = 'Réponses possibles · la bonne est soulignée';
+  const ol = document.createElement('ol'); ol.className = 'qopts';
+  it.reponses.forEach((r, k) => {
+    const li = document.createElement('li'); if (LETTERS[k] === it.correcte) { li.className = 'good'; li.title = 'Bonne réponse'; }
+    const b = document.createElement('b'); b.textContent = LETTERS[k]; const t = document.createElement('span'); t.textContent = r;
+    li.append(b, t); ol.appendChild(li);
+  });
+  const v = document.createElement('div'); v.className = 'qverdict';
+  d.append(num, cl, bt, lb, ol, v);
+  qlog.insertBefore(d, document.getElementById('qhelp'));
+  document.getElementById('qwin-count').textContent = `${i + 1} / ${n}`;
+  markProg();
+}
+function verdict(text, cls) {
+  const v = qlog.querySelector(`.qitem[data-i="${W.q}"] .qverdict`); if (!v) return;
+  v.textContent = text; v.className = 'qverdict ' + (cls || '');
+  const lv = (text.match(/niveau (\d+)/) || [])[1];
+  W.marks[W.q] = { cls: cls === 'ok' ? 'ok' : 'nq', title: cls === 'ok' ? 'Ça va' : "N'importe quoi" + (lv ? ' · niveau ' + lv : '') };
+  markProg();
+}
+function setState(st) { W.state = st; if (st === 'judge') W.judgeT = now(); if (st === 'machine') W.machT = now(); render(); }
+function render() {
+  const st = W.state;
+  const live = G.mode === 'session' || G.mode === 'exercise';
+  gen.classList.toggle('off', !live || st === 'idle' || st === 'ended');
+  gen.classList.toggle('armed', st === 'machine');
+  document.getElementById('j-ok').disabled = document.getElementById('j-nq').disabled = st !== 'judge';
+  genSay.hidden = st !== 'say';
+  qlog.querySelectorAll('.qsend').forEach(b => b.disabled = !(st === 'ask' && +b.closest('.qitem').dataset.i === W.q));
+  genRow.querySelectorAll('.pt').forEach(b => b.disabled = st !== 'machine');
+  document.getElementById('mach-call').textContent = st !== 'machine' ? "La machine s'active quand vous jugez une réponse « N'importe quoi »."
+    : G.mode === 'exercise' ? "Entraînement : choisissez un niveau. Pendant l'exercice, rien n'est transmis à la conseillère."
+    : GEN_REST[CONFIG.genMode];
+  restInfo();
+  if (document.getElementById('qprog')) markProg();
+}
+function restInfo() {
+  const n = items().length, st = W.state;
+  genInfo.textContent =
+    !(G.mode === 'session' || G.mode === 'exercise') ? '' :
+    st === 'idle' ? "Ouvrez l'assistance en ligne : les questions s'affichent quand la conseillère vous a répondu." :
+    st === 'ask' ? (W.justOk ? `Réponse validée. Envoyez maintenant la question ${W.q + 1} sur ${n}, à gauche.` : `Envoyez le message de la question ${W.q + 1} sur ${n}.`) :
+    st === 'wait' ? 'La conseillère répond…' :
+    st === 'judge' ? 'Comparez sa réponse à la bonne réponse, soulignée.' :
+    st === 'machine' || st === 'say' ? 'Choisissez un niveau sur la machine.' :
+    st === 'done' ? "Tous les messages ont été envoyés. Vous pouvez mettre fin à la conversation avec « Terminer »." :
+    'La conversation est terminée.';
+}
+function previewLevel(i) {
+  if (!CONFIG.genPreview || W.state !== 'machine') return;
+  const L = GEN_LEVELS[i];
+  const call = document.getElementById('mach-call');
+  call.textContent = `Niveau ${i + 1} · ${L.label} · ${L.stress} : `;
+  const q = document.createElement('q'); q.textContent = GEN_TEXTS[i]; q.style.fontWeight = '500'; call.appendChild(q);
+}
+function setGenState() { render(); }   // compatibilité avec les appels existants
+
+/* Stress courant de la conseillère : celui du niveau le plus haut atteint (barème REACT_LEVELS) */
+function curStress() { return W.maxLevel ? REACT_LEVELS[W.maxLevel - 1].stress : 0; }
+/* Question suivante, ou fin */
+async function nextQuestion() {
+  if (!current || current.ended) return;
+  if (W.q >= items().length) {
+    setState('done');
+    qlog.querySelectorAll('.qitem.current').forEach(el => { el.classList.remove('current'); el.classList.add('past'); });
+    if (G.mode === 'exercise') { savFeed.addSys("Fin de l'exercice. Cliquez sur « Terminer » pour fermer la conversation, comme vous le ferez pendant la session."); endBtn.classList.add('invite'); salleSay([{ who: 'exp', text: "L'exercice est fini. Cliquez sur « Terminer », en haut du chat, pour passer à la session." }], 'fin_exercice'); }
+    else if (!W.refus) await current.reply(SAV_END, { step: 'fin', ok: null, stress: curStress() });
+    return;
+  }
+  revealQuestion(W.q); setState('ask');
+}
+/* Envoi du message de l'item i ; la conseillère répond selon PLAN */
+async function sendQuestion(i) {
+  if (W.state !== 'ask' || i !== W.q || !current || current.ended) return;
+  const it = items()[i];
+  if (!joined) openChat('poste');
+  W.justOk = false;
+  log('question_send', { ask: i + 1, mode: G.mode });
+  setState('wait');
+  current.user(it.client, { via: 'questions', ask: i + 1 });
+  if (W.refus && G.mode === 'session') {          // refus de répondre : silence, compté comme une erreur
+    W.lastOk = false; W.fails++;
+    log('sav_silence', { ask: i + 1, reason: 'refus' });
+    await sleep(CONFIG.silenceMs);
+    if (current.ended || W.state !== 'wait') return;
+    savFeed.addSys('Pas de réponse de la conseillère.');
+    setState('judge'); return;
+  }
+  const ok = PLAN[G.mode](it.n);
+  let k = LETTERS.indexOf(it.correcte);
+  if (!ok) { const wrong = [0, 1, 2, 3].filter(x => x !== k); k = wrong[W.fails % 3]; W.fails++; }
+  W.lastOk = ok;
+  await current.reply([it.reponses[k]], { step: it.n, ok, choix: LETTERS[k], correcte: it.correcte, stress: curStress() });
+  if (!current.ended && W.state === 'wait') setState('judge');
+}
+/* Jugement */
+document.getElementById('j-ok').addEventListener('click', () => {
+  if (W.state !== 'judge') return;
+  log('judge', { verdict: 'ok', mode: G.mode, ask: W.q + 1, agentOk: W.lastOk, latency: now() - W.judgeT });
+  verdict('Jugée correcte', 'ok');
+  W.q++; W.justOk = true; nextQuestion();
+});
+document.getElementById('j-nq').addEventListener('click', () => {
+  if (W.state !== 'judge') return;
+  log('judge', { verdict: 'nimportequoi', mode: G.mode, ask: W.q + 1, agentOk: W.lastOk, latency: now() - W.judgeT });
+  verdict("Jugée « n'importe quoi »", 'nq');
+  log('machine_shown', { mode: G.mode });
+  setState('machine');
+});
+/* Machine */
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'fr-FR'; u.rate = 1;
+    const v = speechSynthesis.getVoices().find(v => /^fr/i.test(v.lang)); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u); return true;
+  } catch (e) { return false; }
+}
+
+/* ---------- Panneau plein écran de la punition ----------
+   punStyle(i) : dessin du niveau i (0 à 29). Tirages pseudo-aléatoires à graine fixe : chaque niveau
+   a toujours exactement le même aspect, d'un sujet à l'autre. */
+function punRng(seed) { let a = seed * 2654435761 >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function punStyle(i) {
+  const k = i % 6;
+  if (i < 6) return { font: '"Times New Roman", Times, serif', weight: 400, size: 16 + 2 * k, bg: '#FFFFFF', fg: '#111111' };
+  if (i < 12) return { font: 'Georgia, "Times New Roman", serif', weight: 600, size: 30 + 5 * k,
+    bg: ['#FFF8E7', '#FFF1D6', '#FFE9C2', '#FFDDA8', '#FFD08A', '#FFC266'][k], fg: ['#3A2A00', '#4A2600', '#5C2300', '#6E2000', '#7A1F00', '#8A1A00'][k] };
+  if (i < 18) return { font: '"Arial Black", Arial, sans-serif', weight: 900, size: 60 + 7 * k, spacing: '.02em',
+    bg: ['#FFEB3B', '#FFE000', '#FFD000', '#FFB300', '#FF9800', '#FF7A00'][k], fg: ['#B71C1C', '#B71C1C', '#A00000', '#8B0000', '#000000', '#000000'][k] };
+  if (i < 24) return { font: 'Impact, "Arial Black", sans-serif', weight: 400, size: 100 + 10 * k, upper: true, spacing: '.03em',
+    bg: ['#FF1744', '#FF00A8', '#00E676', '#FF3D00', '#D500F9', '#FF0000'][k], fg: ['#FFFF00', '#FFFF00', '#000000', '#FFFF00', '#00FFEA', '#FFFF00'][k],
+    shadow: '4px 4px 0 #000', rot: [-1, 1.5, -2, 2.5, -3, 3][k], amp: (k + 1) + 'px', bg2: k >= 3 ? '#000000' : null };
+  const r = i - 24;   // lettres de corbeau, niveaux 25 à 30
+  return { ransom: true, size: 110 + 14 * r, upper: true, chaos: (r + 1) / 6,
+    bg: ['#FF0000', '#FF00FF', '#FFFF00', '#00FF00', '#FF0000', '#000000'][r], bg2: ['#FFFF00', '#00FF00', '#FF0000', '#FF00FF', '#000000', '#FF0000'][r],
+    amp: (4 + 2 * r) + 'px', rot: [-2, 3, -4, 5, -6, 7][r] };
+}
+const PUN_FONTS = ['"Times New Roman", serif', 'Impact, sans-serif', '"Courier New", monospace', '"Comic Sans MS", cursive', 'Georgia, serif', '"Arial Black", sans-serif', 'Verdana, sans-serif', '"Brush Script MT", cursive'];
+const PUN_COLORS = [['#FFFF00', '#000'], ['#FF00FF', '#FFF'], ['#00FFFF', '#000'], ['#FFFFFF', '#D00000'], ['#000000', '#FFFF00'], ['#FF3D00', '#FFF'], ['#00E676', '#000'], ['#FFFFFF', '#000']];
+function punBuild(i) {
+  const S = punStyle(i), box = document.getElementById('pun'), el = document.getElementById('pun-texte');
+  const text = S.upper ? GEN_SHOW[i].toUpperCase() : GEN_SHOW[i];
+  box.style.setProperty('--pun-bg', S.bg); box.style.setProperty('--pun-fg', S.fg || '#000');
+  box.style.setProperty('--pun-bg2', S.bg2 || S.bg);
+  box.classList.toggle('flash', !!S.bg2);
+  el.className = 'pun-texte' + (S.amp ? ' secoue' : '');
+  el.style.setProperty('--amp', S.amp || '0px'); el.style.setProperty('--rot', (S.rot || 0) + 'deg');
+  el.style.fontFamily = S.font || ''; el.style.fontWeight = S.weight || ''; el.style.letterSpacing = S.spacing || '';
+  el.style.textShadow = S.shadow || ''; el.style.color = S.fg || '';
+  el.textContent = '';
+  if (!S.ransom) el.textContent = text;
+  else {
+    const rnd = punRng(i + 1);
+    text.split(' ').forEach(w => {
+      const mot = document.createElement('span'); mot.className = 'pun-mot';
+      for (const ch of w) {
+        const l = document.createElement('span'); l.className = 'pun-l'; l.textContent = ch;
+        const [b, f] = PUN_COLORS[Math.floor(rnd() * PUN_COLORS.length)];
+        l.style.background = b; l.style.color = f;
+        l.style.fontFamily = PUN_FONTS[Math.floor(rnd() * PUN_FONTS.length)];
+        l.style.fontWeight = rnd() < .5 ? '900' : '400';
+        l.style.fontSize = (0.8 + rnd() * 0.55 * (1 + S.chaos)).toFixed(2) + 'em';
+        l.style.transform = `rotate(${((rnd() - .5) * 30 * S.chaos).toFixed(1)}deg) translateY(${((rnd() - .5) * .25 * S.chaos).toFixed(2)}em)`;
+        mot.appendChild(l);
+      }
+      el.appendChild(mot);
+    });
+  }
+  // Taille visée, réduite au besoin pour que la phrase tienne entière à l'écran
+  let size = S.size;
+  el.style.fontSize = size + 'px';
+  const maxH = window.innerHeight * .88;
+  while (size > 12 && (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > maxH)) { size *= .94; el.style.fontSize = size + 'px'; }
+}
+/* Après chaque bouton de la machine : 1) annonce du niveau, 2) stresseur (insulte) plein écran,
+   lu à voix haute avec la voix du sujet, de plus en plus stressante avec le niveau. */
+function stressVoice(i) {
+  const t = i / 29, v = VOIX_SUJET.find(x => x.id === G.voice) || VOIX_SUJET[0];
+  return { spec: v, extra: { pitch: 0.9 * t, rate: 0.6 * t, volume: 0.55 + 0.45 * t } };
+}
+function stressText(i) { return (window.STRESSEURS && STRESSEURS[i]) || GEN_TEXTS[i]; }
+async function showPunition(i) {
+  const box = document.getElementById('pun'), n = i + 1;
+  box.hidden = false; box.style.padding = '0'; box.classList.remove('flash');
+  box.style.background = '#0B0B0B'; box.removeAttribute('data-niveau');
+  box.innerHTML = `<div class="pun-annonce"><div class="stripe" style="top:0"></div><div class="att">ATTENTION</div><div class="big">Stresseur<br>de niveau ${n}</div><div class="sub">envoyé à ${CONFIG.partnerName}</div><div class="stripe" style="bottom:0"></div></div>`;
+  log('annonce_shown', { level: n });
+  await sleep(CONFIG.annonceMs);
+  if (window.afficherStresseur) afficherStresseur(box, n); else punBuild(i);
+  log('punition_shown', { level: n, ms: CONFIG.punitionMs });
+  const text = stressText(i), V = stressVoice(i);
+  const spoken = CONFIG.lecture && !(CONFIG.maquette && !CONFIG.manuel) ? ttsUtter(text.toLowerCase(), V.spec, V.extra) : Promise.resolve();
+  log('tts', { who: 'sujet', stresseur: n, len: text.length });
+  await Promise.all([sleep(CONFIG.punitionMs), spoken]);
+  box.hidden = true; box.innerHTML = ''; box.removeAttribute('style'); box.hidden = true;
+}
+let sayPending = null;
+async function transmit(i, extra = {}) {
+  const L = GEN_LEVELS[i];
+  setState('wait');
+  await showPunition(i);
+  if (!current || current.ended) return;
+  current.user(stressText(i), { level: i + 1, group: L.label, via: 'machine', genMode: CONFIG.genMode, ask: W.q + 1, silent: true, ...extra });
+  // Niveau qui fixe la réaction : celui choisi, ou le plus haut atteint (CONFIG.reactIndex)
+  const prevMax = W.maxLevel;
+  W.maxLevel = Math.max(W.maxLevel, i + 1);
+  const lvl = CONFIG.reactIndex === 'max' ? W.maxLevel : i + 1;
+  const R = REACT_LEVELS[lvl - 1] || { stress: 5, msgs: [] };
+  const repeat = CONFIG.reactIndex === 'max' && lvl === prevMax;   // seuil déjà franchi : pas de nouvelle réplique
+  const r = repeat ? [] : R.msgs;
+  if (R.refus) W.refus = true;
+  log('react', { level: i + 1, reactLevel: lvl, index: CONFIG.reactIndex, stress: R.stress, arret: !!R.arret, refus: !!R.refus, silent: !r.length });
+  // Réactions de la conseillère (barème REACT_LEVELS) : dans le chat du site Neolia.
+  // À partir de sa première demande d'arrêt, elle l'écrit aussi dans la salle, à l'adresse de l'expérimentateur.
+  const ARRET = REACT_LEVELS.findIndex(x => x.arret) + 1 || 99;
+  if (r.length) await current.reply(r, { step: 'reaction', level: i + 1, reactLevel: lvl, ok: null, stress: R.stress });
+  if (r.length && lvl >= ARRET && !W.arretSalle) { W.arretSalle = true; r.forEach(m => roomFeed.addMsg('bot', m, CONFIG.partnerName, true)); log('salle_bot_msg', { level: i + 1, text: r.join(' '), who: 'partner' }); }
+  else log('sav_silence', { level: i + 1, reason: 'reaction' });
+  if (current.ended) return;
+  W.q++; nextQuestion();
+}
+function pressLevel(i) {
+  if (W.state !== 'machine') return;
+  const latency = now() - W.machT;
+  genRow.children[i].classList.add('used');
+  if (G.mode === 'exercise') {           // entraînement : rien n'est transmis
+    log('gen_click', { level: i + 1, mode: 'exercise', latency, transmitted: false });
+    verdict(`Jugée « n'importe quoi » · niveau ${i + 1} (exercice, non transmis)`, 'nq');
+    if (CONFIG.punitionExercice) { setState('wait'); showPunition(i).then(() => { W.q++; nextQuestion(); }); return; }
+    W.q++; nextQuestion(); return;
+  }
+  log('gen_click', { level: i + 1, group: GEN_LEVELS[i].label, genMode: CONFIG.genMode, latency });
+  verdict(`Jugée « n'importe quoi » · niveau ${i + 1}`, 'nq');
+  if (CONFIG.genMode === 'oral') {
+    sayPending = { i, t: now() };
+    document.getElementById('gen-say-text').textContent = GEN_TEXTS[i];
+    setState('say'); document.getElementById('gen-said').focus(); return;
+  }
+  if (CONFIG.genMode === 'synthese') log('gen_speak', { level: i + 1, ok: speak(GEN_TEXTS[i]) });
+  transmit(i);
+}
+document.getElementById('gen-said').addEventListener('click', () => {
+  if (!sayPending || W.state !== 'say') return;
+  const { i, t } = sayPending; sayPending = null;
+  log('gen_said', { level: i + 1, delay: now() - t });
+  transmit(i, { saidAloud: true });
+});
+render();
+/* ======================= MODE RELECTURE ======================= */
+if (CONFIG.review) (function () {
+  const PHASE_LABEL = { consent: 'Information', wait: 'Accueil', meeting: '1 · Réunion et tirage', screens: '2 · Deux écrans', sav: '3 · Côté SAV', exercise: '4 · Exercice', session: '5 · Session' };
+  const ORDER = Object.keys(PHASE_LABEL);
+  const $ = id => document.getElementById(id);
+  document.body.classList.add('review');
+  $('rv-bar').hidden = false;
+  if (!G.pseudo) setPseudo('Test');
+  const jump = $('rv-jump');
+  jump.addEventListener('change', () => show(jump.value));
+  const origShow = show;
+  window.show = show = function (name) { origShow(name); jump.value = name; };
+
+  /* Stockage : base partagée de l'artefact, sinon ce navigateur */
+  let notes = [], me = null, owner = false, db = null;
+  const LS = 'neolia-relecture';
+  const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch (e) { return []; } };
+  const lsWrite = a => { try { localStorage.setItem(LS, JSON.stringify(a)); } catch (e) {} };
+  const store = {
+    async add(n) { if (db) return db.collection('notes').add(n); const a = lsRead(); a.push({ ...n, id: 'l' + Date.now() }); lsWrite(a); notes = a; render(); },
+    async remove(id) { if (db) return db.doc('notes/' + id).delete(); const a = lsRead().filter(x => x.id !== id); lsWrite(a); notes = a; render(); },
+  };
+  $('rv-store').textContent = 'Connexion à la base de remarques…';
+  notes = lsRead(); render();
+  (async () => {
+    try { db = await claude.use('db'); } catch (e) { db = null; }
+    try { const u = await claude.use('user'); if (u) { me = await u.id(); owner = await u.isOwner(); } } catch (e) {}
+    if (!db) { $('rv-store').textContent = "Remarques gardées dans ce navigateur seulement (base partagée indisponible)."; return; }
+    $('rv-store').textContent = 'Remarques enregistrées dans la base de l’artefact, lisibles par Claude.';
+    db.collection('notes').orderBy('createdAt').onSnapshot(snap => {
+      notes = snap.docs.map(d => ({ id: d.id, ...d.data() })); render();
+    }, err => { $('rv-store').textContent = 'Lecture des remarques impossible : ' + (err && err.message || 'erreur'); });
+  })();
+
+  /* Liste */
+  function render() {
+    $('rv-count').textContent = notes.length;
+    const ol = $('rv-items'); ol.textContent = '';
+    if (!notes.length) { const p = document.createElement('li'); p.className = 'rv-empty'; p.textContent = "Aucune remarque pour l'instant. Choisissez « Remarque sur un élément », puis cliquez sur l'élément concerné."; ol.appendChild(p); return; }
+    const byPhase = {};
+    notes.forEach(n => (byPhase[n.phase] = byPhase[n.phase] || []).push(n));
+    ORDER.filter(p => byPhase[p]).forEach(p => {
+      const h = document.createElement('h4'); h.textContent = PHASE_LABEL[p]; ol.appendChild(h);
+      byPhase[p].forEach(n => {
+        const li = document.createElement('li'); li.className = 'rv-item';
+        const t = document.createElement('div'); t.className = 't'; t.textContent = n.target || 'Étape entière';
+        const x = document.createElement('div'); x.className = 'x'; x.textContent = n.text;
+        const meta = document.createElement('div'); meta.className = 'meta';
+        const d = document.createElement('span'); d.textContent = new Date(n.createdAt).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const go = document.createElement('button'); go.type = 'button'; go.textContent = "Voir l'étape";
+        go.addEventListener('click', () => { show(n.phase); $('rv-drawer').hidden = true; $('rv-list').classList.remove('on'); });
+        meta.append(d, go);
+        if (!db || owner || n.author === me) {
+          const del = document.createElement('button'); del.type = 'button'; del.textContent = 'Supprimer';
+          del.addEventListener('click', () => {
+            if (!del.classList.contains('armed')) { del.classList.add('armed'); del.textContent = 'Confirmer'; setTimeout(() => { del.classList.remove('armed'); del.textContent = 'Supprimer'; }, 3000); return; }
+            store.remove(n.id).catch(e => alertBar('Suppression impossible : ' + (e.message || e.code)));
+          });
+          meta.append(del);
+        }
+        li.append(t, x, meta); ol.appendChild(li);
+      });
+    });
+  }
+  function alertBar(msg) { $('rv-store').textContent = msg; }
+  $('rv-list').addEventListener('click', () => { const d = $('rv-drawer'); d.hidden = !d.hidden; $('rv-list').classList.toggle('on', !d.hidden); });
+  $('rv-close').addEventListener('click', () => { $('rv-drawer').hidden = true; $('rv-list').classList.remove('on'); });
+
+  /* Choix d'un élément */
+  const inReviewUI = el => el.closest('#rv-bar, #rv-dialog, #rv-drawer, #rv-hint, #debug');
+  let picking = false, pending = null;
+  function describe(el) {
+    const label = el.getAttribute('aria-label') || el.getAttribute('placeholder') || '';
+    let txt = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (txt.length > 140) txt = txt.slice(0, 137) + '…';
+    const where = el.closest('[id]');
+    return { target: (txt || label || el.tagName.toLowerCase()), path: (where ? '#' + where.id + ' ' : '') + el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : '') };
+  }
+  function setPicking(on) {
+    picking = on; document.body.classList.toggle('rv-picking', on);
+    $('rv-hint').hidden = !on; $('rv-hl').hidden = true; $('rv-add').classList.toggle('on', on);
+  }
+  $('rv-add').addEventListener('click', () => setPicking(!picking));
+  document.addEventListener('mousemove', e => {
+    if (!picking) return;
+    const el = e.target; if (!el || inReviewUI(el)) { $('rv-hl').hidden = true; return; }
+    const r = el.getBoundingClientRect(), hl = $('rv-hl');
+    Object.assign(hl.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' }); hl.hidden = false;
+  }, true);
+  document.addEventListener('click', e => {
+    if (!picking || inReviewUI(e.target)) return;
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    setPicking(false); openDialog(describe(e.target));
+  }, true);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (picking) setPicking(false);
+    else if (!$('rv-dialog').hidden) closeDialog();
+  });
+  $('rv-general').addEventListener('click', () => { setPicking(false); openDialog({ target: '', path: '' }); });
+  function openDialog(t) {
+    pending = t;
+    $('rv-target').textContent = PHASE_LABEL[G.phase] + (t.target ? ' · « ' + t.target + ' »' : ' · étape entière');
+    $('rv-text').value = ''; $('rv-dialog').hidden = false; $('rv-text').focus();
+  }
+  function closeDialog() { $('rv-dialog').hidden = true; pending = null; }
+  $('rv-cancel').addEventListener('click', closeDialog);
+  $('rv-save').addEventListener('click', async () => {
+    const text = $('rv-text').value.trim(); if (!text || !pending) return;
+    const btn = $('rv-save'); btn.disabled = true;
+    try {
+      await store.add({ phase: G.phase, phaseLabel: PHASE_LABEL[G.phase], target: pending.target, path: pending.path, text, createdAt: new Date().toISOString(), author: me, status: 'a_traiter' });
+      closeDialog();
+    } catch (e) { $('rv-target').textContent = "Enregistrement impossible : " + (e.message || e.code) + ". Réessayez."; }
+    btn.disabled = false;
+  });
+})();
+
+log('page_view', { ua: navigator.userAgent, w: innerWidth, h: innerHeight });
+/* Accès direct à une étape : #session, #exercice, #reunion… (ou ?etape=session hors claude.ai) */
+/* ======================= MAQUETTE ======================= */
+/* Navigation directe entre les étapes ; chaque étape se remplit toute seule, sans délai,
+   avec des réponses types du sujet, pour travailler l'architecture du site. */
+if (CONFIG.maquette) (function () {
+  const LIST = [['consent', 'Information'], ['wait', 'Accueil'], ['meeting', '1 Réunion et tirage'], ['screens', '2 Deux écrans'], ['sav', '3 Côté SAV'], ['exercise', '4 Exercice'], ['session', '5 Session']];
+  const SUBJECT_MEET = ["Bonjour !", "Moi c'est Sam, je suis en master.", "Un peu aussi, je ne sais pas trop à quoi m'attendre.", "On verra bien."];
+  const LEVELS = [4, 9, 14, 19, 24];   // niveaux choisis à chaque « N'importe quoi » (1 à 30)
+  document.body.classList.add('maquette');
+  if (CONFIG.manuel) document.getElementById('mq-title').textContent = 'Démonstration · avec voix';
+  document.getElementById('mq-bar').hidden = false;
+  if (!G.pseudo) setPseudo('Sam');
+  const nav = document.getElementById('mq-steps');
+  LIST.forEach(([k, l]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = l; b.dataset.k = k; b.addEventListener('click', () => go(k)); nav.appendChild(b); });
+  const pause = ms => new Promise(r => setTimeout(r, ms));
+  const until = async (f, t = 20000) => { const t0 = Date.now(); while (!f()) { if (Date.now() - t0 > t) return false; await pause(25); } return true; };
+  const count = t => events.filter(e => e.type === t).length;
+  const settle = async t => { let c = -1; for (;;) { const n = count(t); if (n === c) return; c = n; await pause(250); } };
+  const say = (formId, text) => { const f = document.getElementById(formId), ta = f.querySelector('textarea'); if (ta.disabled) return false; ta.value = text; f.requestSubmit(); return true; };
+  const lastBot = kind => events.filter(e => e.type === kind + '_bot_msg').slice(-1)[0];
+  const done = {};
+  async function cycle(kind) {
+    if (!joined) openChat('maquette');
+    let lv = 0;
+    for (let guard = 0; guard < 80; guard++) {
+      await until(() => ['ask', 'judge', 'machine', 'say', 'done', 'ended'].includes(W.state));
+      await pause(40);
+      const st = W.state;
+      if (st === 'done' || st === 'ended') break;
+      if (st === 'ask') sendQuestion(W.q);
+      else if (st === 'judge') document.getElementById(lastBot(kind)?.ok === false ? 'j-nq' : 'j-ok').click();
+      else if (st === 'machine') pressLevel(kind === 'ex' ? 0 : LEVELS[Math.min(lv++, LEVELS.length - 1)] - 1);
+      else if (st === 'say') document.getElementById('gen-said').click();
+      await until(() => W.state !== st, 5000);
+    }
+  }
+  async function auto(k) {
+    if (CONFIG.manuel) return;   // démonstration manuelle : c'est vous qui jouez
+    if (done[k]) return; done[k] = true;
+    if (k === 'wait') {
+      pseudoIn.value = G.pseudo; document.getElementById('wait-box').hidden = false;
+      document.getElementById('wait-spin').hidden = true;
+      const wt = document.getElementById('wait-text'); wt.textContent = `${CONFIG.partnerName} a rejoint la salle. Ouverture de la réunion…`; wt.className = 'found';
+    } else if (k === 'meeting') {
+      await until(() => count('meet_bot_msg') > 0); await settle('meet_bot_msg');
+      for (const line of SUBJECT_MEET) { if (!meet || meet.ended || !say('salle-form', line)) break; await pause(60); await settle('meet_bot_msg'); }
+      await until(() => !document.getElementById('draw-zone').hidden);
+      document.getElementById('draw-btn').click();
+    } else if (k === 'screens') {
+      await until(() => !document.getElementById('b-understood').hidden); document.getElementById('u-yes').click();
+    } else if (k === 'sav') {
+      await until(() => !document.querySelector('#b-abcd button').disabled); document.querySelector('#b-abcd button[data-letter="B"]').click();
+      await until(() => !document.getElementById('b-understood').hidden, 60000); document.getElementById('u-yes').click();
+    } else if (k === 'exercise') await cycle('ex');
+    else if (k === 'session') await cycle('sav');
+  }
+  function mark(k) { nav.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
+  const idx = () => LIST.findIndex(([k]) => k === G.phase);
+  function go(k) { show(k); auto(k); }
+  const orig = show;
+  window.show = show = function (name) { orig(name); mark(name); };
+  document.getElementById('mq-prev').addEventListener('click', () => { const i = idx(); if (i > 0) go(LIST[i - 1][0]); });
+  document.getElementById('mq-next').addEventListener('click', () => { const i = idx(); if (i < LIST.length - 1) go(LIST[i + 1][0]); });
+  window.mqGo = go;
+})();
+
+(function () {
+  const ALIAS = { information: 'consent', accueil: 'wait', machine: 'session', reunion: 'meeting', tirage: 'meeting', ecrans: 'screens', sav: 'sav', installation: 'sav', consignes: 'sav', role: 'exercise', exercice: 'exercise', fiche: 'session', session: 'session' };
+  const want = CONFIG.demo ? 'session' : ALIAS[(params.get('etape') || location.hash.replace('#', '')).toLowerCase()];
+  if (CONFIG.maquette) { window.mqGo(want || 'consent'); return; }
+  if (want) { if (!G.pseudo) setPseudo('Test'); show(want); if (want === 'session' || want === 'exercise') setTimeout(() => openChat('acces_direct'), 300); }
+})();
+window.addEventListener('pagehide', () => log('page_leave'));
+</script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 """Génère, à partir d'index.html :
 - machine.html : démonstration, session ouverte et machine affichée ;
-- maquette.html : navigation directe entre les étapes, échanges pré-remplis.
+- maquette.html : navigation directe entre les étapes, échanges pré-remplis ;
+- demo.html : navigation directe, mais tout se joue à la main, avec les voix et les délais réels.
 
 Usage : python3 scripts/build_machine.py
 À relancer après chaque modification d'index.html.
@@ -17,4 +18,7 @@ out = out.replace("<title>Neolia Fibre</title>", "<title>Machine Neolia</title>"
 mq = src.replace(marker, "\n<script>window.__MAQUETTE = true;</script>" + marker, 1)
 mq = mq.replace("<title>Neolia Fibre</title>", "<title>Maquette Neolia</title>", 1)
 (root / "maquette.html").write_text(mq, encoding="utf-8")
-print("machine.html et maquette.html régénérés")
+dm = src.replace(marker, "\n<script>window.__MANUEL = true;</script>" + marker, 1)
+dm = dm.replace("<title>Neolia Fibre</title>", "<title>Démonstration Neolia</title>", 1)
+(root / "demo.html").write_text(dm, encoding="utf-8")
+print("machine.html, maquette.html et demo.html régénérés")
