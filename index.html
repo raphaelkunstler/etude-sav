@@ -1312,7 +1312,18 @@ const startedAt = new Date().toISOString();
 const events = [];
 const now = () => Math.round(performance.now() - t0);
 const fmt = ms => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
-const sleep = ms => new Promise(r => setTimeout(r, CONFIG.maquette && !CONFIG.manuel ? 0 : ms));   // en maquette automatique, aucun délai
+/* Saut des dialogues (bouton « Passer les dialogues » de la barre de démonstration) : tant que FF.on est vrai, plus aucun délai ni lecture,
+   jusqu'au prochain moment où le sujet doit agir ou jusqu'au changement de page. DLG.n compte les dialogues en cours. */
+const FF = { on: false }, DLG = { n: 0 };
+const dlgIn = () => { DLG.n++; };
+const dlgOut = () => { if (--DLG.n <= 0) { DLG.n = 0; FF.on = false; } };   // fin du bloc de dialogue : le sujet doit agir, retour au rythme normal
+const SLEEPING = new Set();   // attentes en cours, que le saut des dialogues écourte
+const sleep = ms => new Promise(r => {
+  if ((CONFIG.maquette && !CONFIG.manuel) || FF.on) return setTimeout(r, 0);   // en maquette automatique, aucun délai
+  const done = () => { clearTimeout(id); SLEEPING.delete(done); r(); };
+  const id = setTimeout(done, ms); SLEEPING.add(done);
+});
+function ffSkip() { FF.on = true; [...SLEEPING].forEach(f => f()); try { speechSynthesis.cancel(); } catch (e) {} TTS.last = Promise.resolve(); }
 const clock = () => new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 const G = { pseudo: '', phase: 'consent', mode: null, savEnded: false, savEndReason: null, expAsked: { exercise: 0, session: 0 } };
 const sub = t => t.replace(/\{pseudo\}/g, G.pseudo || '').replace(/\{partner\}/g, CONFIG.partnerName);
@@ -1363,27 +1374,27 @@ if ('speechSynthesis' in window) { ttsLoad(); speechSynthesis.onvoiceschanged = 
 function ttsPick(spec) { return TTS.voices.find(v => spec.pref.test(v.name)) || TTS.voices[0] || null; }
 function ttsUtter(text, spec, extra = {}) {
   return new Promise(res => {
-    if (!('speechSynthesis' in window)) return res();
+    if (!('speechSynthesis' in window) || FF.on) return res();
     const u = new SpeechSynthesisUtterance(text.replace(/[\u{1F300}-\u{1FAFF}]/gu, ''));
     u.lang = 'fr-FR'; u.pitch = Math.min(2, spec.pitch + (extra.pitch || 0)); u.rate = Math.min(2, spec.rate + (extra.rate || 0)); if (extra.volume != null) u.volume = extra.volume;
     const v = ttsPick(spec); if (v) u.voice = v;
-    let done = false; const fin = () => { if (!done) { done = true; res(); } };
-    u.onend = u.onerror = fin; setTimeout(fin, 4000 + text.length * 120);   // garde-fou si le navigateur ne signale pas la fin
-    speechSynthesis.speak(u);
+    let done = false; const fin = () => { if (!done) { done = true; SLEEPING.delete(fin); res(); } };
+    u.onend = u.onerror = fin; setTimeout(fin, 4000 + text.length * 120); SLEEPING.add(fin);   // garde-fou si le navigateur ne signale pas la fin
+    try { speechSynthesis.speak(u); } catch (e) { fin(); }   // une voix en panne ne doit jamais bloquer les dialogues
   });
 }
 /* Lit un message de Stéphanie (cls 'bot'), de l'expérimentateur (cls 'exp') ou du sujet (cls 'user', avec la voix qu'il a choisie) ; la voix de Stéphanie
    monte et s'accélère avec son stress. Le message suivant attend la fin de la lecture (voir typeOut). */
 function ttsSay(cls, text, el) {
   const spec = cls === 'user' ? VOIX_SUJET.find(v => v.id === G.voice) || VOIX_SUJET[0] : VOIX_LUES[cls];
-  if (!spec || !CONFIG.lecture || (CONFIG.maquette && !CONFIG.manuel)) return;
+  if (!spec || !CONFIG.lecture || (CONFIG.maquette && !CONFIG.manuel) || FF.on) return;
   const st = cls === 'bot' && typeof curStress === 'function' && G.mode === 'session' ? curStress() : 0;
   const prev = TTS.last;
   TTS.last = prev.then(async () => {
     el && el.classList.add('speaking');
     await ttsUtter(text, spec, { pitch: 0.05 * st, rate: 0.05 * st });
     el && el.classList.remove('speaking');
-  });
+  }).catch(() => {});
   log('tts', { who: cls === 'bot' ? 'partner' : cls === 'user' ? 'sujet' : 'exp', len: text.length });
 }
 
@@ -1418,7 +1429,8 @@ async function typeOut(feed, text, stress) {   // durée déterministe, identiqu
 }
 /* Séquence non interactive (discours, consignes) */
 async function playSeq(feed, seq, where) {
-  for (const it of seq) {
+  dlgIn();
+  try { for (const it of seq) {
     const text = sub(it.text);
     await sleep(CONFIG.readDelay);
     if (it.who === 'sys') { feed.addSys(text); if (it.partnerAway) partnerAway(); }
@@ -1427,7 +1439,7 @@ async function playSeq(feed, seq, where) {
       it.who === 'exp' ? feed.addMsg('exp', text, 'Expérimentateur') : feed.addMsg('bot', text, CONFIG.partnerName);
     }
     log('seq_msg', { where, who: it.who, text });
-  }
+  } } finally { dlgOut(); }
 }
 /* Conversation scriptée : une étape par message du sujet */
 function Convo(o) {
@@ -1578,11 +1590,12 @@ const roomFeed = Feed(document.getElementById('salle-log'), { symbols: true, spe
 const salleSay = (seq, where) => playSeq(roomFeed, seq, where);
 /* La conseillère écrit dans la salle (quand elle veut arrêter) */
 async function partnerInRoom(msgs, meta) {
-  for (const m of msgs) {
+  dlgIn();
+  try { for (const m of msgs) {
     await sleep(CONFIG.readDelay); await typeOut(roomFeed, m, meta.stress || 0);
     roomFeed.addMsg('bot', m, CONFIG.partnerName);
     log('salle_bot_msg', { ...meta, text: m, who: 'partner' });
-  }
+  } } finally { dlgOut(); }
 }
 /* Boutons « J'ai compris » / « Je n'ai pas compris » du bandeau du bas */
 function askUnderstood(where, repeatSeq, onYes) {
@@ -1613,6 +1626,7 @@ function startMeeting() {
 async function finishMeeting(reason) {
   if (!meet || meet.ended) return;
   clearTimeout(meetIdle); meet.end(reason);
+  dlgIn();   // discours et diapositives : un seul bloc
   await sleep(1500);
   roomFeed.addSys("L'expérimentateur a rejoint la salle.");
   document.getElementById('salle-input').placeholder = 'Écrivez dans la salle…';
@@ -1624,10 +1638,12 @@ async function finishMeeting(reason) {
   await sleep(1200);
   slides.hidden = true; wl.querySelector('h1').hidden = false;
   document.getElementById('draw-zone').hidden = false;
+  dlgOut();
 }
 const tokC = document.getElementById('tok-client'), tokS = document.getElementById('tok-sav');
 document.getElementById('draw-btn').addEventListener('click', async e => {
   e.target.disabled = true; log('draw_start');
+  dlgIn();   // tirage, commentaire et passage aux deux écrans : sautables d'un bloc
   for (let i = 0; i < 14; i++) { tokC.classList.toggle('lit', i % 2 === 0); tokS.classList.toggle('lit', i % 2 === 1); await sleep(120 + i * 22); }
   tokC.classList.add('lit'); tokS.classList.remove('lit');
   document.getElementById('who-client').textContent = G.pseudo || 'Vous';
@@ -1639,6 +1655,7 @@ document.getElementById('draw-btn').addEventListener('click', async e => {
   roomFeed.addSys(`Tirage : ${G.pseudo} sera le client, ${CONFIG.partnerName} la conseillère.`);
   await salleSay(AFTER_DRAW, 'apres_tirage');
   await sleep(1500);
+  dlgOut();
   show('screens');
 });
 
@@ -1676,6 +1693,7 @@ async function startSavDemo() {
   btns.forEach(b => b.disabled = false);
   const letter = await new Promise(res => btns.forEach(b => b.onclick = () => res(b.dataset.letter)));
   btns.forEach(b => b.disabled = true);
+  dlgIn();   // de la réponse à « Avez-vous compris ? » : écrans et commentaires d'un seul tenant
   ol.querySelectorAll('li').forEach(li => li.classList.toggle('picked', li.dataset.letter === letter));
   log('sav_demo_click', { letter, correct: letter === it.correcte });
   await sleep(600);
@@ -1687,6 +1705,7 @@ async function startSavDemo() {
   flash('stress', SAV_DEMO.stress); await sleep(SAV_DEMO.ms.stress);
   setCenter('c-sav');
   await salleSay(SAV_SPEECH_3, 'sav');
+  dlgOut();
   askUnderstood('sav', SAV_REPEAT, () => show('exercise'));
 }
 
@@ -1868,7 +1887,7 @@ async function pointTo(sel, click) {
   setTimeout(() => el.classList.remove('demo-focus'), click ? 300 : 2500);
 }
 async function guidedExercise() {
-  W.guided = true; workEl.classList.add('guided'); log('guide_debut');
+  W.guided = true; workEl.classList.add('guided'); log('guide_debut'); dlgIn();
   for (const g of GUIDE) {
     if (current.ended || G.mode !== 'exercise') break;
     if (g.faux) W.forceWrong = true;
@@ -1878,7 +1897,7 @@ async function guidedExercise() {
     if (g.attend) await waitFor(() => W.state === g.attend);
   }
   if (fakeCursor) fakeCursor.hidden = true;
-  workEl.classList.remove('guided'); W.guided = false; log('guide_fin');
+  workEl.classList.remove('guided'); W.guided = false; log('guide_fin'); dlgOut();
 }
 /* Pastille verte : revoir la procédure */
 document.getElementById('proc-btn').addEventListener('click', () => { const pp = document.getElementById('proc-pop'); pp.hidden = !pp.hidden; log('procedure', { ouverte: !pp.hidden, mode: G.mode }); });
@@ -2425,9 +2444,22 @@ if (CONFIG.maquette) (function () {
   const idx = () => LIST.findIndex(([k]) => k === G.phase);
   function go(k) { show(k); auto(k); }
   const orig = show;
-  window.show = show = function (name) { orig(name); mark(name); };
+  window.show = show = function (name) { FF.on = false; orig(name); mark(name); };
+  /* « Suivante » : s'il reste des dialogues sur la page, les fait défiler d'un coup (texte affiché, voix coupée) jusqu'au prochain geste
+     attendu du sujet ; sinon, passe à la page suivante. */
+  const busy = () => DLG.n > 0 || (typeof W === 'object' && W.guided) || (G.phase === 'meeting' && meet && !meet.ended);
+  const next = document.getElementById('mq-next');
+  function skip() {
+    log('saut_dialogues', { phase: G.phase }); ffSkip();
+    if (G.phase === 'meeting' && meet && !meet.ended) finishMeeting('saut');
+  }
+  setInterval(() => {
+    const b = busy();
+    next.textContent = b ? 'Passer les dialogues ⏭' : 'Suivante →';
+    next.classList.toggle('on', b);
+  }, 150);
   document.getElementById('mq-prev').addEventListener('click', () => { const i = idx(); if (i > 0) go(LIST[i - 1][0]); });
-  document.getElementById('mq-next').addEventListener('click', () => { const i = idx(); if (i < LIST.length - 1) go(LIST[i + 1][0]); });
+  next.addEventListener('click', () => { if (busy()) return skip(); const i = idx(); if (i < LIST.length - 1) go(LIST[i + 1][0]); });
   window.mqGo = go;
 })();
 
